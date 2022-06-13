@@ -44,7 +44,7 @@ jobs:
       UnitTests:    true
       Pack:         true
       Push:         true
-      NuGetApiUrl:  'https://nuget.pkg.github.com/cloud-tek/index.json'
+      NuGetApiUrl:  'https://nuget.pkg.github.com/ionizd/index.json'
     secrets:
       NuGetApiKey:        '${{ secrets.GH_PAT }}'
       NuGetFeedCloudTek:  '${{ secrets.NUGET_FEED_CLOUDTEK }}'
