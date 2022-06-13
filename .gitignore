@@ -1,0 +1,13 @@
+.husky/
+node_modules/
+
+[Bb]in/
+[Oo]bj/
+*.log
+*.DotSettings
+
+.idea/
+
+artifacts/
+test/results/
+test/coverage/
