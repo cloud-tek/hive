@@ -44,9 +44,9 @@ jobs:
       UnitTests:    true
       Pack:         true
       Push:         true
-      NuGetApiUrl:  '${{ secrets.NUGET_FEED_IONIZD }}'
+      NuGetApiUrl:  ${{ secrets.NUGET_FEED_IONIZD }}
     secrets:
-      NuGetFeedCloudTek:  '${{ secrets.NUGET_FEED_CLOUDTEK }}'
-      NuGetFeedIonizd:    '${{ secrets.NUGET_FEED_IONIZD }}'
-      NuGetUsername:      '${{ secrets.NUGET_USERNAME }}'
-      NuGetPassword:      '${{ secrets.NUGET_PASSWORD }}'
+      NuGetFeedCloudTek:  ${{ secrets.NUGET_FEED_CLOUDTEK }}
+      NuGetFeedIonizd:    ${{ secrets.NUGET_FEED_IONIZD }}
+      NuGetUsername:      ${{ secrets.NUGET_USERNAME }}
+      NuGetPassword:      ${{ secrets.NUGET_PASSWORD }}
