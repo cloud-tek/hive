@@ -85,6 +85,7 @@ jobs:
         uses: cloud-tek/actions/auto-release@0.17
         with:
           branch: main
+          configuration: .config/configuration.changelog.json
       - name: setup gitversion
         uses: gittools/actions/gitversion/setup@v0.9.7
         with:
