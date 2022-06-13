@@ -1,0 +1,198 @@
+name: "nuke"
+
+on:
+  workflow_call:
+    secrets:
+      NuGetApiKey:
+        description: "NuGet API Key"
+        required: false
+    inputs:
+      Directory:
+        description: "Project directory"
+        type: string
+        required: true
+      NetCoreVersion:
+        type: string
+        required: true
+      Compile:
+        description: "Flag indicating if Compile task is to be run"
+        type: boolean
+        default: false
+        required: false
+      Publish:
+        description: "Flag indicating if Publish task is to be run after the Unit&Integration tests"
+        type: boolean
+        default: false
+        required: false
+      Pack:
+        description: "Flag indicating if Pack task is to be run after the Unit&Integration tests"
+        type: boolean
+        default: false
+        required: false
+      Push:
+        description: "Flag indicating if Push task is to be run after the Pack task"
+        type: boolean
+        default: false
+        required: false
+      UnitTests:
+        description: "Flag indicating if UnitTests task is to be run"
+        type: boolean
+        default: false
+        required: false
+      IntegrationTests:
+        description: "Flag indicating if IntegrationTests task is to be run"
+        type: boolean
+        default: false
+        required: false
+      ModuleTests:
+        description: "Flag indicating if ModuleTests task is to be run"
+        type: boolean
+        default: false
+        required: false
+      SystemTests:
+        description: "Flag indicating if SystemTests task is to be run"
+        type: boolean
+        default: false
+        required: false
+      SmokeTests:
+        description: "Flag indicating if SmokeTests task is to be run"
+        type: boolean
+        default: false
+        required: false
+      NuGetApiUrl:
+        description: "NuGet Url"
+        type: string
+        required: false
+
+jobs:
+  nuke:
+    name: nuke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: "0"
+      - id: auto-release
+        uses: cloud-tek/actions/auto-release@0.16
+        with:
+          branch: main
+      - name: setup gitversion
+        uses: gittools/actions/gitversion/setup@v0.9.7
+        with:
+          versionSpec: '5.x'
+      - name: run giversion
+        uses: gittools/actions/gitversion/execute@v0.9.7
+      - name: nuget.config (pwsh)
+        shell: pwsh
+        run: |
+          $nuget = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+              <add key="nuget.cloudtek.io" value="${{ secrets.NUGET_FEED_CLOUDTEK }}" protocolVersion="3"/>
+              <add key="nuget.ionizd.io" value="${{ secrets.NUGET_FEED_IONIZD }}" protocolVersion="3"/>
+            </packageSources>
+            <packageRestore>
+              <add key="enabled" value="True" />
+              <add key="automatic" value="True" />
+            </packageRestore>
+            <bindingRedirects>
+              <add key="skip" value="False" />
+            </bindingRedirects>
+            <packageManagement>
+              <add key="format" value="0" />
+              <add key="disabled" value="False" />
+            </packageManagement>
+            <packageSourceCredentials>
+              <nuget.cloudtek.io>
+                <add key="Username" value="${{ secrets.NUGET_USERNAME }}"/>
+                <add key="ClearTextPassword" value="${{ secrets.NUGET_PASSWORD }}" />
+              </nuget.cloudtek.io>
+              <nuget.ionizd.io>
+                <add key="Username" value="${{ secrets.NUGET_USERNAME }}"/>
+                <add key="ClearTextPassword" value="${{ secrets.NUGET_PASSWORD }}" />
+              </nuget.ionizd.io>
+            </packageSourceCredentials>
+          </configuration>
+          "@
+          $nuget | Out-File -FilePath ${{ github.workspace }}/nuget.config
+      - uses: actions/setup-dotnet@v1
+        if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        name: dotnet installer
+        with:
+          dotnet-version: ${{ inputs.NetCoreVersion }}
+      - name: global.json
+        if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        shell: bash
+        run: |
+          echo "{ \"tools\": { \"dotnet\": \"${{ inputs.NetCoreVersion }}\" } }" > global.json
+      - run: |
+          dotnet nuget list source
+          dotnet tool restore
+        name: dotnet tool restore
+        if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        working-directory: ${{ inputs.Directory }}
+        shell: bash
+      - name: dotnet nuke Compile
+        if: ${{ inputs.Compile && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        shell: bash
+        working-directory: ${{ inputs.Directory }}
+        run: |
+          dotnet nuke Compile
+      - name: dotnet nuke UnitTests
+        shell: bash
+        if: ${{ inputs.UnitTests && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        working-directory: ${{ inputs.Directory }}
+        run: |
+          dotnet nuke UnitTests
+      - name: dotnet nuke IntegrationTests
+        shell: bash
+        if: ${{ inputs.IntegrationTests && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        working-directory: ${{ inputs.Directory }}
+        run: |
+          dotnet nuke IntegrationTests
+      - name: dotnet nuke Publish
+        shell: bash
+        if: ${{ inputs.Publish && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        working-directory: ${{ inputs.Directory }}
+        run: |
+          dotnet nuke Publish
+      - name: dotnet nuke Pack
+        shell: bash
+        if: ${{ inputs.Pack && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        working-directory: ${{ inputs.Directory }}
+        run: |
+          dotnet nuke Pack
+      - name: dotnet nuke Push
+        shell: bash
+        if: ${{ inputs.Push && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        working-directory: ${{ inputs.Directory }}
+        run: |
+          dotnet nuke --target Push --nuget-api-url ${{ inputs.NuGetApiUrl }} --nuget-api-key ${{ secrets.NuGetApiKey }}
+      - name: dotnet nuke ModuleTests
+        shell: bash
+        if: ${{ inputs.ModuleTests && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        working-directory: ${{ inputs.Directory }}
+        run: |
+          dotnet nuke ModuleTests
+      - name: dotnet nuke SystemTests
+        shell: bash
+        if: ${{ inputs.SystemTests && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        working-directory: ${{ inputs.Directory }}
+        run: |
+          dotnet nuke SystemTests
+      # https://github.com/marketplace/actions/test-reporter
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: XUnit Tests # Name of the check run which will be created
+          path: tests/results/*.trx
+          reporter: dotnet-trx # Format of test results
+    # https://github.com/marketplace/actions/cobertura-report
+    # - uses: 5monkeys/cobertura-action@master
+    #   with:
+    #     path: test/results/*.trx
+    #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+    #     minimum_coverage: 1
