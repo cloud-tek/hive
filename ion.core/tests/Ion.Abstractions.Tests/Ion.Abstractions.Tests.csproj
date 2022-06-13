@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<RootNamespace>Ion.Tests</RootNamespace>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="Configuration\test-dataannotations-options00.json" />
+		<None Remove="Configuration\test-dataannotations-options01.json" />
+		<None Remove="Configuration\test-dataannotations-options02.json" />
+		<None Remove="Configuration\test-dataannotations-options03.json" />
+		<None Remove="Configuration\test-dataannotations-options04.json" />
+		<None Remove="Configuration\test-validator-options01.json" />
+		<None Remove="Configuration\test-validator-options02.json" />
+		<None Remove="Configuration\test-validator-options03.json" />
+		<None Remove="Configuration\test-validator-options04.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Configuration\test-dataannotations-options00.json" />
+		<EmbeddedResource Include="Configuration\test-dataannotations-options01.json" />
+		<EmbeddedResource Include="Configuration\test-dataannotations-options02.json" />
+		<EmbeddedResource Include="Configuration\test-dataannotations-options03.json" />
+		<EmbeddedResource Include="Configuration\test-dataannotations-options04.json" />
+		<EmbeddedResource Include="Configuration\test-validator-options01.json" />
+		<EmbeddedResource Include="Configuration\test-validator-options02.json" />
+		<EmbeddedResource Include="Configuration\test-validator-options03.json" />
+		<EmbeddedResource Include="Configuration\test-validator-options04.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+		<PackageReference Include="xunit" Version="2.4.1" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="coverlet.collector" Version="3.1.0">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Ion.Testing\Ion.Testing.csproj" />
+		<ProjectReference Include="..\..\src\Ion.Abstractions\Ion.Abstractions.csproj" />
+	</ItemGroup>
+
+</Project>

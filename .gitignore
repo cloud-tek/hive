@@ -1,4 +1,5 @@
 .husky/
+.vs/
 node_modules/
 
 [Bb]in/
@@ -9,5 +10,5 @@ node_modules/
 .idea/
 
 artifacts/
-test/results/
-test/coverage/
+tests/results/
+tests/coverage/

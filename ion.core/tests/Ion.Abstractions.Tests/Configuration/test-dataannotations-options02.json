@@ -1,0 +1,7 @@
+{
+  "TestOptions": {
+    "Setting1": "Value1",
+    "Setting3": "https://tinyurl.org",
+    "Setting4": "someone@domain.com"
+  }
+}
