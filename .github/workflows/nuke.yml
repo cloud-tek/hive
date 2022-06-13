@@ -137,7 +137,7 @@ jobs:
         run: |
           echo "{ \"tools\": { \"dotnet\": \"${{ inputs.NetCoreVersion }}\" } }" > global.json
       - id: nuke
-        uses: cloud-tek/actions/nuke@0.17
+        uses: cloud-tek/actions/nuke@0.18
         name: nuke
         with:
           directory: ${{ github.workspace }}
