@@ -1,0 +1,49 @@
+name: ci
+
+env:
+  NETCORE_VERSION: 6.0.100
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+  DOTNET_ROLL_FORWARD: Major
+
+on:
+  push:
+    branches:
+    - main
+    - feature/*
+    - release/*
+    paths:
+      - ".github/workflows/**"
+      - "build/**"
+      - "ion.core/**"
+      - "ion.microservices/**"
+      - "ion.logging/**"
+      - "GitVersion.yml"
+  pull_request:
+    types:
+    - closed
+    branches:
+    - main
+    paths:
+      - ".github/workflows/**"
+      - "build/**"
+      - "ion.core/**"
+      - "ion.microservices/**"
+      - "ion.logging/**"
+      - "GitVersion.yml"
+  workflow_dispatch:
+    inputs: {}
+
+jobs:
+  build:
+    uses: cloud-tek/actions/nuke/action.yml@0.15
+    name: build
+    with:
+      Directory: ${{ github.workspace }}
+      NetCoreVersion: 6.0.100
+      Compile:      true
+      UnitTests:    true
+      Pack:         true
+      Push:         true
+      NuGetApiUrl:  'https://nuget.pkg.github.com/cloud-tek/index.json'
+    secrets:
+      NuGetApiKey:  '${{ secrets.GH_PAT }}'
