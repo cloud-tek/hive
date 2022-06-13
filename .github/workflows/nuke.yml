@@ -16,6 +16,10 @@ on:
         description: "NuGet Password"
         required: false
     inputs:
+      NuGetApiUrl:
+        description: "Target NuGet Feed Url"
+        type: string
+        required: false
       Directory:
         description: "Project directory"
         type: string
@@ -142,7 +146,7 @@ jobs:
           IntegrationTests: true
           Pack:             true
           Push:             true
-          NuGetApiUrl:      '${{ secrets.NuGetFeedIonizd }}'
+          NuGetApiUrl:      '${{ inputs.NuGetApiUrl }}'
           NuGetApiKey:      '${{ secrets.NuGetPassword }}'
       # https://github.com/marketplace/actions/test-reporter
       - name: Test Report
