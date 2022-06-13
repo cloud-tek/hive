@@ -44,9 +44,8 @@ jobs:
       UnitTests:    true
       Pack:         true
       Push:         true
-      NuGetApiUrl:  'https://nuget.pkg.github.com/ionizd/index.json'
+      NuGetApiUrl:  '${{ secrets.NUGET_FEED_IONIZD }}'
     secrets:
-      NuGetApiKey:        '${{ secrets.GH_PAT }}'
       NuGetFeedCloudTek:  '${{ secrets.NUGET_FEED_CLOUDTEK }}'
       NuGetFeedIonizd:    '${{ secrets.NUGET_FEED_IONIZD }}'
       NuGetUsername:      '${{ secrets.NUGET_USERNAME }}'

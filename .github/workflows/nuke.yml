@@ -3,14 +3,11 @@ name: "nuke"
 on:
   workflow_call:
     secrets:
-      NuGetApiKey:
-        description: "NuGet API Key"
-        required: false
       NuGetFeedCloudTek:
-        description: "NuGet Feed Url (cloud-tek)"
+        description: "NuGet Feed (cloud-tek)"
         required: false
       NuGetFeedIonizd:
-        description: "NuGet Feed Url (ionizd)"
+        description: "NuGet Feed (ionizd)"
         required: false
       NuGetUsername:
         description: "NuGet Username"
@@ -71,10 +68,6 @@ on:
         type: boolean
         default: false
         required: false
-      NuGetApiUrl:
-        description: "NuGet Url"
-        type: string
-        required: false
 
 jobs:
   nuke:
@@ -85,7 +78,7 @@ jobs:
         with:
           fetch-depth: "0"
       - id: auto-release
-        uses: cloud-tek/actions/auto-release@0.16
+        uses: cloud-tek/actions/auto-release@0.17
         with:
           branch: main
       - name: setup gitversion
@@ -139,61 +132,18 @@ jobs:
         shell: bash
         run: |
           echo "{ \"tools\": { \"dotnet\": \"${{ inputs.NetCoreVersion }}\" } }" > global.json
-      - run: |
-          dotnet nuget list source
-          dotnet tool restore
-        name: dotnet tool restore
-        if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
-        working-directory: ${{ inputs.Directory }}
-        shell: bash
-      - name: dotnet nuke Compile
-        if: ${{ inputs.Compile && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
-        shell: bash
-        working-directory: ${{ inputs.Directory }}
-        run: |
-          dotnet nuke Compile
-      - name: dotnet nuke UnitTests
-        shell: bash
-        if: ${{ inputs.UnitTests && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
-        working-directory: ${{ inputs.Directory }}
-        run: |
-          dotnet nuke UnitTests
-      - name: dotnet nuke IntegrationTests
-        shell: bash
-        if: ${{ inputs.IntegrationTests && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
-        working-directory: ${{ inputs.Directory }}
-        run: |
-          dotnet nuke IntegrationTests
-      - name: dotnet nuke Publish
-        shell: bash
-        if: ${{ inputs.Publish && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
-        working-directory: ${{ inputs.Directory }}
-        run: |
-          dotnet nuke Publish
-      - name: dotnet nuke Pack
-        shell: bash
-        if: ${{ inputs.Pack && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
-        working-directory: ${{ inputs.Directory }}
-        run: |
-          dotnet nuke Pack
-      - name: dotnet nuke Push
-        shell: bash
-        if: ${{ inputs.Push && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
-        working-directory: ${{ inputs.Directory }}
-        run: |
-          dotnet nuke --target Push --nuget-api-url ${{ inputs.NuGetApiUrl }} --nuget-api-key ${{ secrets.NuGetApiKey }}
-      - name: dotnet nuke ModuleTests
-        shell: bash
-        if: ${{ inputs.ModuleTests && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
-        working-directory: ${{ inputs.Directory }}
-        run: |
-          dotnet nuke ModuleTests
-      - name: dotnet nuke SystemTests
-        shell: bash
-        if: ${{ inputs.SystemTests && !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
-        working-directory: ${{ inputs.Directory }}
-        run: |
-          dotnet nuke SystemTests
+      - id: nuke
+        uses: cloud-tek/actions/nuke@0.17
+        name: nuke
+        with:
+          directory: ${{ github.workspace }}
+          Compile:          true
+          UnitTests:        true
+          IntegrationTests: true
+          Pack:             true
+          Push:             true
+          NuGetApiUrl:      '${{ secrets.NuGetFeedIonizd }}'
+          NuGetApiKey:      '${{ secrets.NuGetPassword }}'
       # https://github.com/marketplace/actions/test-reporter
       - name: Test Report
         uses: dorny/test-reporter@v1
