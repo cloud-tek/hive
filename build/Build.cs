@@ -46,6 +46,15 @@ namespace _build
                       new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.GraphQL" },
                       new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.Grpc" },
                       new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.Job" },
+
+                      // Demos
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.Api" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.ApiControllers" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.Grpc" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.GrpcCodeFirst" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.GraphQL" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.Job" }
                     }
                 }
             }).SelectMany(module =>

@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="6.0.1" />
-    <PackageReference Include="CloudTek.Build" Version="0.10.0" />
+    <PackageReference Include="CloudTek.Build" Version="0.11.2" />
   </ItemGroup>
 
   <ItemGroup>
