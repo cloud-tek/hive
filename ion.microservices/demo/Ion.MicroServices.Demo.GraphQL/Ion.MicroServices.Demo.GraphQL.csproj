@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ion.Microservices.Demo\Ion.Microservices.Demo.csproj" />
     <ProjectReference Include="..\..\src\Ion.MicroServices.GraphQL\Ion.MicroServices.GraphQL.csproj" />
+    <ProjectReference Include="..\Ion.MicroServices.Demo\Ion.MicroServices.Demo.csproj" />
   </ItemGroup>
 
 </Project>
