@@ -12,3 +12,6 @@ node_modules/
 artifacts/
 tests/results/
 tests/coverage/
+
+Buffer*.json
+Buffer.bookmark

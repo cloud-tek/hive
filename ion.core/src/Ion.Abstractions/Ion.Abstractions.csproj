@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<RootNamespace>Ion</RootNamespace>
 		<RepositoryUrl>https://github.com/ionizd/ion</RepositoryUrl>
-    	<PackageIconUrl>https://avatars.githubusercontent.com/u/35167581</PackageIconUrl>
+    <PackageIconUrl>https://avatars.githubusercontent.com/u/35167581</PackageIconUrl>
 	</PropertyGroup>
 
 	<ItemGroup>

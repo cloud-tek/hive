@@ -14,7 +14,7 @@ namespace _build
     public class Build : SmartGitVersionBuild
     {
         public static int Main () => Execute<Build>(x => x.Compile);
-        
+
         public Build() : base(Repository)
         { }
 
@@ -22,12 +22,30 @@ namespace _build
         {
             Artifacts = (new Dictionary<string, Artifact[]>()
             {
-                { 
+                {
                     "ion.core", new[]
                     {
                         new Artifact() { Type = ArtifactType.Package, Project = "Ion.Abstractions" },
                         new Artifact() { Type = ArtifactType.Package, Project = "Ion.Analyzers" },
                         new Artifact() { Type = ArtifactType.Package, Project = "Ion.Testing" }
+                    }
+                },
+                {
+                    "ion.logging", new[]
+                    {
+                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Logging" },
+                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Logging.LogzIo" },
+                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Logging.AppInsights" }
+                    }
+                },
+                {
+                    "ion.microservices", new[]
+                    {
+                      new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices" },
+                      new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.Api" },
+                      new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.GraphQL" },
+                      new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.Grpc" },
+                      new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.Job" },
                     }
                 }
             }).SelectMany(module =>
