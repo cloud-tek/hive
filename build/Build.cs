@@ -29,6 +29,14 @@ namespace _build
                         new Artifact() { Type = ArtifactType.Package, Project = "Ion.Analyzers" },
                         new Artifact() { Type = ArtifactType.Package, Project = "Ion.Testing" }
                     }
+                },
+                {
+                    "ion.logging", new[]
+                    {
+                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Logging" },
+                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Logging.LogzIo" },
+                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Logging.AppInsights" }
+                    }
                 }
             }).SelectMany(module =>
             {
