@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ion-microservices-pkg\demo\Ion.Microservices.Demo\Ion.Microservices.Demo.csproj" />
+    <ProjectReference Include="..\Ion.Microservices.Demo\Ion.Microservices.Demo.csproj" />
     <ProjectReference Include="..\..\src\Ion.MicroServices.GraphQL\Ion.MicroServices.GraphQL.csproj" />
   </ItemGroup>
 

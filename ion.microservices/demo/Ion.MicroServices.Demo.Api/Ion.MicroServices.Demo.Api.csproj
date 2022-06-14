@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\ion.logging\ion-logging-logzio-pkg\src\Ion.Logging.LogzIo\Ion.Logging.LogzIo.csproj" />
-    <ProjectReference Include="..\..\..\..\ion.logging\ion-logging-pkg\src\Ion.Logging\Ion.Logging.csproj" />
+    <ProjectReference Include="..\..\..\ion.logging\src\Ion.Logging.LogzIo\Ion.Logging.LogzIo.csproj" />
+    <ProjectReference Include="..\..\..\ion.logging\src\Ion.Logging\Ion.Logging.csproj" />
     <ProjectReference Include="..\..\src\Ion.MicroServices.Api\Ion.MicroServices.Api.csproj" />
   </ItemGroup>
 

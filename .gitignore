@@ -6,6 +6,7 @@ node_modules/
 [Oo]bj/
 *.log
 *.DotSettings
+*.ncrunchproject
 
 .idea/
 
