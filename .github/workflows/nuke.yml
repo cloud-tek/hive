@@ -82,7 +82,7 @@ jobs:
         with:
           fetch-depth: "0"
       - id: auto-release
-        uses: cloud-tek/actions/auto-release@0.17
+        uses: cloud-tek/actions/auto-release@0.19
         with:
           branch: main
           configuration: .config/configuration.changelog.json
