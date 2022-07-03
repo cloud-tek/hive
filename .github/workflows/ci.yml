@@ -47,6 +47,6 @@ jobs:
       NuGetApiUrl:  'https://nuget.pkg.github.com/cloud-tek/index.json'
     secrets:
       NuGetFeedCloudTek:  ${{ secrets.NUGET_FEED_CLOUDTEK }}
-      NuGetFeedIonizd:    ${{ secrets.NUGET_FEED_IONIZD }}
+      NuGetApiKey:    ${{ secrets.NUGET_API_KEY }}
       NuGetUsername:      ${{ secrets.NUGET_USERNAME }}
       NuGetPassword:      ${{ secrets.NUGET_PASSWORD }}

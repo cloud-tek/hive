@@ -6,14 +6,14 @@ on:
       NuGetFeedCloudTek:
         description: "NuGet Feed (cloud-tek)"
         required: false
-      NuGetFeedIonizd:
-        description: "NuGet Feed (ionizd)"
-        required: false
       NuGetUsername:
         description: "NuGet Username"
         required: false
       NuGetPassword:
         description: "NuGet Password"
+        required: false
+      NuGetApiKey:
+        description: "NuGet Public Feed API Key"
         required: false
     inputs:
       NuGetApiUrl:
@@ -101,7 +101,6 @@ jobs:
             <packageSources>
               <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
               <add key="nuget.cloudtek.io" value="${{ secrets.NuGetFeedCloudTek }}" protocolVersion="3"/>
-              <add key="nuget.ionizd.io" value="${{ secrets.NuGetFeedIonizd }}" protocolVersion="3"/>
             </packageSources>
             <packageRestore>
               <add key="enabled" value="True" />
@@ -148,7 +147,7 @@ jobs:
           Pack:             true
           Push:             true
           NuGetApiUrl:      '${{ inputs.NuGetApiUrl }}'
-          NuGetApiKey:      '${{ secrets.NuGetPassword }}'
+          NuGetApiKey:      '${{ secrets.NuGetApiKey }}'
       # https://github.com/marketplace/actions/test-reporter
       - name: Test Report
         uses: dorny/test-reporter@v1
