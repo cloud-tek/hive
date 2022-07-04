@@ -46,7 +46,7 @@ jobs:
       Push:         true
       NuGetApiUrl:  'https://api.nuget.org/v3/index.json'
     secrets:
-      NuGetFeedCloudTek:  ${{ secrets.NUGET_FEED_CLOUDTEK }}
-      NuGetApiKey:        ${{ secrets.NUGET_API_KEY }}
+      NuGetFeedCloudTek:  ${{ secrets.NUGET_FEED }}
+      NuGetApiKey:        ${{ secrets.NUGET_API_KEY_HIVE }}
       NuGetUsername:      ${{ secrets.NUGET_USERNAME }}
       NuGetPassword:      ${{ secrets.NUGET_PASSWORD }}
