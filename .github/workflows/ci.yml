@@ -35,7 +35,7 @@ on:
 
 jobs:
   build:
-    uses: ionizd/hive/.github/workflows/nuke.yml@main
+    uses: cloud-tek/hive/.github/workflows/nuke.yml@main
     name: build
     with:
       Directory: ${{ github.workspace }}

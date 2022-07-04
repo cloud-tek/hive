@@ -4,7 +4,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<RootNamespace>Hive</RootNamespace>
-		<RepositoryUrl>https://github.com/ionizd/hive</RepositoryUrl>
+		<RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
     <PackageIconUrl>https://avatars.githubusercontent.com/u/35167581</PackageIconUrl>
 	</PropertyGroup>
 
