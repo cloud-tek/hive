@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+option csharp_namespace = "Hive.MicroServices.Demo.Grpc";
+
+package weather;
+
+// The greeting service definition.
+service WeatherForecasting {
+  // Sends a greeting
+  rpc GetWeatherForecast (WeatherForecastRequest) returns (WeatherForecastResponse);
+}
+
+message WeatherForecastRequest {}
+
+message WeatherForecastResponse {
+	repeated WeatherForecastItem item = 1;
+}
+
+// The response message containing the greetings.
+message WeatherForecastItem {
+  google.protobuf.Timestamp date = 1;
+  int32 temperatureC = 2;
+  int32 temperatureF = 3;
+  string summary = 4;
+}

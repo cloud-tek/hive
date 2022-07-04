@@ -1,0 +1,13 @@
+﻿{
+  "profiles": {
+    "Hive.MicroServices.Demo.Grpc": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5298;https://localhost:7298",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

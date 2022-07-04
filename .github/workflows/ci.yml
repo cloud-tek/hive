@@ -14,9 +14,9 @@ on:
     paths:
       - ".github/workflows/**"
       - "build/**"
-      - "ion.core/**"
-      - "ion.microservices/**"
-      - "ion.logging/**"
+      - "hive.core/**"
+      - "hive.microservices/**"
+      - "hive.logging/**"
       - "GitVersion.yml"
   pull_request:
     types:
@@ -26,16 +26,16 @@ on:
     paths:
       - ".github/workflows/**"
       - "build/**"
-      - "ion.core/**"
-      - "ion.microservices/**"
-      - "ion.logging/**"
+      - "hive.core/**"
+      - "hive.microservices/**"
+      - "hive.logging/**"
       - "GitVersion.yml"
   workflow_dispatch:
     inputs: {}
 
 jobs:
   build:
-    uses: ionizd/ion/.github/workflows/nuke.yml@main
+    uses: ionizd/hive/.github/workflows/nuke.yml@main
     name: build
     with:
       Directory: ${{ github.workspace }}

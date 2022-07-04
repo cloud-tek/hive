@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RepositoryUrl>https://github.com/ionizd/hive</RepositoryUrl>
+    <PackageIconUrl>https://avatars.githubusercontent.com/u/35167581</PackageIconUrl>
+  </PropertyGroup>
+
+   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\hive.core\src\Hive.Abstractions\Hive.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

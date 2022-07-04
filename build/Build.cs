@@ -23,38 +23,38 @@ namespace _build
             Artifacts = (new Dictionary<string, Artifact[]>()
             {
                 {
-                    "ion.core", new[]
+                    "hive.core", new[]
                     {
-                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Abstractions" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Analyzers" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Testing" }
+                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Abstractions" },
+                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Analyzers" },
+                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Testing" }
                     }
                 },
                 {
-                    "ion.logging", new[]
+                    "hive.logging", new[]
                     {
-                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Logging" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Logging.LogzIo" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Ion.Logging.AppInsights" }
+                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging" },
+                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.LogzIo" },
+                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.AppInsights" }
                     }
                 },
                 {
-                    "ion.microservices", new[]
+                    "hive.microservices", new[]
                     {
-                      new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices" },
-                      new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.Api" },
-                      new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.GraphQL" },
-                      new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.Grpc" },
-                      new Artifact() { Type = ArtifactType.Package, Project = "Ion.MicroServices.Job" },
+                      new Artifact() { Type = ArtifactType.Package, Project = "Hive.MicroServices" },
+                      new Artifact() { Type = ArtifactType.Package, Project = "Hive.MicroServices.Api" },
+                      new Artifact() { Type = ArtifactType.Package, Project = "Hive.MicroServices.GraphQL" },
+                      new Artifact() { Type = ArtifactType.Package, Project = "Hive.MicroServices.Grpc" },
+                      new Artifact() { Type = ArtifactType.Package, Project = "Hive.MicroServices.Job" },
 
                       // Demos
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.Api" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.ApiControllers" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.Grpc" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.GrpcCodeFirst" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.GraphQL" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Ion.MicroServices.Demo.Job" }
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.Api" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.ApiControllers" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.Grpc" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.GrpcCodeFirst" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.GraphQL" },
+                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.Job" }
                     }
                 }
             }).SelectMany(module =>

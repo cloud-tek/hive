@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hive.MicroServices.Grpc\Hive.MicroServices.Grpc.csproj" />
+    <ProjectReference Include="..\Hive.MicroServices.Demo\Hive.MicroServices.Demo.csproj" />
+  </ItemGroup>
+
+</Project>
