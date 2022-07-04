@@ -6,7 +6,7 @@
 		<RootNamespace>Hive</RootNamespace>
 
 		<RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
-    <PackageId>Hive.Abstractions<PackageId>
+    <PackageId>Hive.Abstractions</PackageId>
     <PackageIconUrl>https://avatars.githubusercontent.com/u/35167581</PackageIconUrl>
 	</PropertyGroup>
 
