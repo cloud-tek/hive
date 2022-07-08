@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging.AppInsights\Hive.Logging.AppInsights.csproj" />
+    <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging.LogzIo\Hive.Logging.LogzIo.csproj" />
+    <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging\Hive.Logging.csproj" />
+    <ProjectReference Include="..\..\src\Hive.MicroServices.Api\Hive.MicroServices.Api.csproj" />
+  </ItemGroup>
+
+</Project>

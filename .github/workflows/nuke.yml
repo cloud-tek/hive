@@ -118,10 +118,6 @@ jobs:
                 <add key="Username" value="${{ secrets.NuGetUsername }}"/>
                 <add key="ClearTextPassword" value="${{ secrets.NuGetPassword }}" />
               </nuget.cloudtek.io>
-              <nuget.ionizd.io>
-                <add key="Username" value="${{ secrets.NuGetUsername }}"/>
-                <add key="ClearTextPassword" value="${{ secrets.NuGetPassword }}" />
-              </nuget.ionizd.io>
             </packageSourceCredentials>
           </configuration>
           "@

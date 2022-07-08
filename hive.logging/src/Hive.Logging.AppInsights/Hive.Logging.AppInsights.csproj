@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+      <TargetFramework>net6.0</TargetFramework>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+      <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
+		  <PackageIconUrl>https://avatars.githubusercontent.com/u/35167581</PackageIconUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Hive.Logging\Hive.Logging.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.ApplicationInsights" Version="2.20.0" />
+      <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
+      <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="3.1.0" />
+      <PackageReference Include="StringToExpression" Version="1.1.1" />
+    </ItemGroup>
+
+</Project>

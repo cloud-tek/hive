@@ -14,9 +14,9 @@ on:
     paths:
       - ".github/workflows/**"
       - "build/**"
-      - "ion.core/**"
-      - "ion.microservices/**"
-      - "ion.logging/**"
+      - "hive.core/**"
+      - "hive.microservices/**"
+      - "hive.logging/**"
       - "GitVersion.yml"
   pull_request:
     types:
@@ -26,27 +26,27 @@ on:
     paths:
       - ".github/workflows/**"
       - "build/**"
-      - "ion.core/**"
-      - "ion.microservices/**"
-      - "ion.logging/**"
+      - "hive.core/**"
+      - "hive.microservices/**"
+      - "hive.logging/**"
       - "GitVersion.yml"
   workflow_dispatch:
     inputs: {}
 
 jobs:
   build:
-    uses: ionizd/ion/.github/workflows/nuke.yml@main
+    uses: cloud-tek/hive/.github/workflows/nuke.yml@main
     name: build
     with:
       Directory: ${{ github.workspace }}
-      NetCoreVersion: 6.0.100
+      NetCoreVersion: 6.0.301
       Compile:      true
       UnitTests:    true
       Pack:         true
       Push:         true
       NuGetApiUrl:  'https://api.nuget.org/v3/index.json'
     secrets:
-      NuGetFeedCloudTek:  ${{ secrets.NUGET_FEED_CLOUDTEK }}
-      NuGetApiKey:        ${{ secrets.NUGET_API_KEY }}
+      NuGetFeedCloudTek:  ${{ secrets.NUGET_FEED }}
+      NuGetApiKey:        ${{ secrets.NUGET_API_KEY_HIVE }}
       NuGetUsername:      ${{ secrets.NUGET_USERNAME }}
       NuGetPassword:      ${{ secrets.NUGET_PASSWORD }}

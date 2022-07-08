@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
+    <PackageIconUrl>https://avatars.githubusercontent.com/u/35167581</PackageIconUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HotChocolate.AspNetCore" Version="12.3.1" />
+    <PackageReference Include="HotChocolate.AspNetCore.Voyager" Version="10.5.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hive.MicroServices\Hive.MicroServices.csproj" />
+  </ItemGroup>
+
+</Project>

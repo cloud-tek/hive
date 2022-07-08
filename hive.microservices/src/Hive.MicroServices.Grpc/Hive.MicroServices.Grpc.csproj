@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
+    <PackageIconUrl>https://avatars.githubusercontent.com/u/35167581</PackageIconUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
+    <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.152" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hive.MicroServices\Hive.MicroServices.csproj" />
+  </ItemGroup>
+</Project>
