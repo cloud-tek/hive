@@ -8,6 +8,8 @@ public interface IMicroService
     CancellationTokenSource CancellationTokenSource { get; }
     IConfigurationRoot ConfigurationRoot { get; }
     string Environment { get; }
+
+    string[] Args { get; }
     IReadOnlyDictionary<string, string> EnvironmentVariables { get; }
     IList<MicroServiceExtension> Extensions { get; }
 

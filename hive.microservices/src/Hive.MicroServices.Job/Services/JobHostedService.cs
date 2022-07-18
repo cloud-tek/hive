@@ -26,24 +26,27 @@ internal class JobHostedService : IHostedService
 
             try
             {
-                if (svcs != null)
-                {
-                    logger.LogInformation($"Starting {svcs.Count()} IHostedJobService(s) ...");
-                    await Task.WhenAll(svcs.Select(s => s.StartAsync(cancellationToken)));
-                }
+              if (svcs != null)
+              {
+                logger.LogInformation($"Starting {svcs.Count()} IHostedJobService(s) ...");
+                await Task.WhenAll(svcs.Select(s => s.StartAsync(cancellationToken)));
+              }
 
-                await Task.Delay(1000);
+              await Task.Delay(1000);
 
-                logger.LogInformation($"Job has finished executing all async IHostedJobService(s). Shutting down.");
+              logger.LogInformation($"Job has finished executing all async IHostedJobService(s). Shutting down.");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to execute IHostedJobService");
+              logger.LogError(ex, "Failed to execute IHostedJobService");
+              throw;
             }
+            finally
+            {
+              await Task.Delay(1000);
 
-            await Task.Delay(1000);
-
-            lifetime.StopApplication();
+              lifetime.StopApplication();
+            }
         });
 
         return Task.CompletedTask;
