@@ -46,6 +46,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
     public IServiceProvider ServiceProvider => Host.Services;
 
     public IConfigurationRoot ConfigurationRoot { get; private set; }
+    public string[] Args { get; private set; } = default!;
 
     internal List<Action<IServiceCollection, IConfiguration>> ConfigureActions { get; } = new List<Action<IServiceCollection, IConfiguration>>();
 
@@ -92,6 +93,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
 
     private IHost CreateHostBuilder(IConfigurationRoot configuration = null, params string[] args)
     {
+      Args = args;
         var host = global::Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder(args)
             .UseContentRoot(Directory.GetCurrentDirectory())
             .UseConsoleLifetime()
