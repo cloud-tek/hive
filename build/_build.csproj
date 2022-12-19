@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <LanguageVersion>latest</LanguageVersion>
     <RootNamespace></RootNamespace>
     <NoWarn>CS0649;CS0169</NoWarn>
@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="6.0.1" />
-    <PackageReference Include="CloudTek.Build" Version="0.11.2" />
+    <PackageReference Include="CloudTek.Build" Version="0.11.*" />
   </ItemGroup>
 
   <ItemGroup>
