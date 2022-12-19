@@ -39,7 +39,7 @@ jobs:
     name: build
     with:
       Directory: ${{ github.workspace }}
-      NetCoreVersion: 6.0.301
+      NetCoreVersion: 7.0.101
       Compile:      true
       UnitTests:    true
       Pack:         true
