@@ -6,11 +6,11 @@ public class CompositeValidationResult : global::System.ComponentModel.DataAnnot
 
     public IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> Results => results;
 
-    public CompositeValidationResult(string? errorMessage) : base(errorMessage)
+    public CompositeValidationResult(string errorMessage) : base(errorMessage)
     {
     }
 
-    public CompositeValidationResult(string errorMessage, IEnumerable<string>? memberNames) : base(errorMessage, memberNames)
+    public CompositeValidationResult(string errorMessage, IEnumerable<string> memberNames) : base(errorMessage, memberNames)
     {
     }
 
