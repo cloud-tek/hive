@@ -71,7 +71,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
         return this;
     }
 
-    public async Task RunAsync(IConfigurationRoot configuration = null, params string[] args)
+    public async Task<int> RunAsync(IConfigurationRoot configuration = null, params string[] args)
     {
         await InitializeAsync(configuration, args).ConfigureAwait(false);
 
@@ -87,8 +87,10 @@ public partial class MicroService : MicroServiceBase, IMicroService
         catch (Exception ex)
         {
             Logger.LogCritical("Unhandled exception in {Service}: {@Exception}", Name, ex);
-            throw;
+            return -1;
         }
+
+        return 0;
     }
 
     private IHost CreateHostBuilder(IConfigurationRoot configuration = null, params string[] args)

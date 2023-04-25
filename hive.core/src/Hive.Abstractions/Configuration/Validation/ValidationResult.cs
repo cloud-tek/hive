@@ -2,7 +2,7 @@
 
 public class ValidationResult
 {
-    public string? ErrorMessage { get; set; }
+    public string ErrorMessage { get; set; }
 
     public string[] MemberNames { get; set; } = Array.Empty<string>();
 

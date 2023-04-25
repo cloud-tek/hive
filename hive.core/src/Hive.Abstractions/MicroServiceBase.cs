@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
@@ -34,7 +33,6 @@ public abstract class MicroServiceBase
         IsReady = false;
     }
 
-    public List<Action<IServiceCollection>> ConfigureActions { get; } = new List<Action<IServiceCollection>>();
     public ILogger<IMicroService> Logger { get; set; }
     public string Environment { get; } = global::System.Environment.GetEnvironmentVariable(Constants.EnvironmentVariables.DotNet.Environment)?.ToLower() ?? "dev";
     public IReadOnlyDictionary<string, string> EnvironmentVariables { get; private set; }
