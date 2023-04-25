@@ -1,4 +1,5 @@
-﻿namespace Hive.MicroServices;
+﻿// ReSharper disable MemberCanBePrivate.Global
+namespace Hive.MicroServices;
 
 internal class MicroServiceLifetime : IMicroServiceLifetime
 {
