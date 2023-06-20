@@ -21,7 +21,7 @@ internal sealed class Extension : MicroServiceExtension, IHaveRequestLoggingMidd
 
         this.ConfigureActions.Add((svc, configuration) =>
         {
-            var options = svc.ConfigureOptions<Options>(configuration, () => Options.SectionKey);
+            var options = svc.PreConfigureOptions<Options>(configuration, () => Options.SectionKey);
 
             var builder = new LoggingConfigurationBuilder(this);
             action(builder);
@@ -50,10 +50,10 @@ internal sealed class Extension : MicroServiceExtension, IHaveRequestLoggingMidd
             var microservice = (MicroServiceBase)service;
             microservice.Logger = loggerFactory.CreateLogger<IMicroService>();
         });
-        
-        
+
+
     }
-    
+
     public Action<IApplicationBuilder> ConfigureRequestLoggingMiddleware
     {
         get;

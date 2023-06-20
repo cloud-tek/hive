@@ -7,7 +7,8 @@ namespace Hive.MicroServices.Tests;
 
 internal static class TestData
 {
-    internal class Sec2DelayStartupService : IHostedStartupService
+  // ReSharper disable once ClassNeverInstantiated.Global
+  internal class Sec2DelayStartupService : IHostedStartupService
     {
         public bool Completed { get; set; } = false;
 
@@ -19,7 +20,8 @@ internal static class TestData
         }
     }
 
-    internal class FailingSec2DelayStartupService : IHostedStartupService
+  // ReSharper disable once ClassNeverInstantiated.Global
+  internal class FailingSec2DelayStartupService : IHostedStartupService
     {
         public bool Completed { get; set; } = false;
 

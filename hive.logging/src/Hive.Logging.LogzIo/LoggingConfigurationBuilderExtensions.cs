@@ -10,10 +10,10 @@ public static class LoggingConfigurationBuilderExtensions
     {
         builder.Sinks.Add((logger, services, microservice) =>
         {
-            var settings = services.ConfigureOptions<Options>(microservice.ConfigurationRoot, () => Options.SectionKey);
+            var options = services.PreConfigureOptions<Options>(microservice.ConfigurationRoot, () => Options.SectionKey);
             string subdomain = null;
 
-            switch (settings.Region)
+            switch (options.Value.Region)
             {
                 case "eu":
                     subdomain = "listener-eu";
@@ -22,11 +22,11 @@ public static class LoggingConfigurationBuilderExtensions
                     subdomain = "listener";
                     break;
                 default:
-                    throw new NotImplementedException($"Unsupported logz.io region: {settings.Region}");
+                    throw new NotImplementedException($"Unsupported logz.io region: {options.Value.Region}");
             }
 
             logger.WriteTo.LogzIoDurableHttp(
-                $"https://{subdomain}.logz.io:8071/?type=app&token={settings.Token}",
+                $"https://{subdomain}.logz.io:8071/?type=app&token={options.Value.Token}",
                 logzioTextFormatterOptions: new LogzioTextFormatterOptions
                 {
                     BoostProperties = true,

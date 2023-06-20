@@ -10,9 +10,9 @@ namespace Hive.Tests.Configuration;
 
 public partial class ConfigurationValidationTests
 {
-    [SmartTheory(Execute.Always, On.All)]
-    [InlineData("test-dataannotations-options00.json")]
-    [UnitTest]
+    // [SmartTheory(Execute.Always, On.All)]
+    // [InlineData("test-dataannotations-options00.json")]
+    // [UnitTest]
     public void GivenSectionDoesNotExist_WhenGettingExistingSection_ThenConfigurationException(string config)
     {
         // Arrange

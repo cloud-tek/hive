@@ -20,11 +20,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Configuration\test-dataannotations-options00.json" />
-		<EmbeddedResource Include="Configuration\test-dataannotations-options01.json" />
-		<EmbeddedResource Include="Configuration\test-dataannotations-options02.json" />
-		<EmbeddedResource Include="Configuration\test-dataannotations-options03.json" />
-		<EmbeddedResource Include="Configuration\test-dataannotations-options04.json" />
+		<EmbeddedResource Include="Configuration.Old\test-dataannotations-options00.json" />
+		<EmbeddedResource Include="Configuration.Old\test-dataannotations-options01.json" />
+		<EmbeddedResource Include="Configuration.Old\test-dataannotations-options02.json" />
+		<EmbeddedResource Include="Configuration.Old\test-dataannotations-options03.json" />
+		<EmbeddedResource Include="Configuration.Old\test-dataannotations-options04.json" />
+		<EmbeddedResource Include="Configuration.Old\test-validator-options01.json" />
+		<EmbeddedResource Include="Configuration.Old\test-validator-options02.json" />
+		<EmbeddedResource Include="Configuration.Old\test-validator-options03.json" />
+		<EmbeddedResource Include="Configuration.Old\test-validator-options04.json" />
+		<EmbeddedResource Include="Configuration\empty-options.json" />
+		<EmbeddedResource Include="Configuration\simple-options-01.json" />
+		<EmbeddedResource Include="Configuration\simple-options-02.json" />
+		<EmbeddedResource Include="Configuration\simple-options-03.json" />
 		<EmbeddedResource Include="Configuration\test-validator-options01.json" />
 		<EmbeddedResource Include="Configuration\test-validator-options02.json" />
 		<EmbeddedResource Include="Configuration\test-validator-options03.json" />

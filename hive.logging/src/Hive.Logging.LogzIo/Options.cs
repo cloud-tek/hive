@@ -7,10 +7,10 @@ public class Options
     /// <summary>
     /// LogzIo Token
     /// </summary>
-    public string Token { get; set; }
+    public string Token { get; set; } = default!;
 
     /// <summary>
     /// LogzIo Region : us | eu
     /// </summary>
-    public string Region { get; set; }
+    public string Region { get; set; } = default!;
 }

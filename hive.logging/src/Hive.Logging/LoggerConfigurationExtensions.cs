@@ -5,6 +5,7 @@ using Serilog.Core;
 using Serilog.Events;
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Hive.Logging;
 
@@ -12,13 +13,13 @@ internal static class LoggerConfigurationExtensions
 {
     internal static LoggerConfiguration ConfigureSerilog(
         this LoggerConfiguration loggerConfiguration,
-        IMicroService microservice, 
+        IMicroService microservice,
         IServiceCollection services,
-        Options options,LoggingConfigurationBuilder builder,
+        IOptions<Options> options,LoggingConfigurationBuilder builder,
 
         params IDestructuringPolicy[] destructuringPolicies)
     {
-        if (options.EnableSelfLog)
+        if (options.Value.EnableSelfLog)
         {
             Serilog.Debugging.SelfLog.Enable((msg) =>
             {
@@ -31,7 +32,7 @@ internal static class LoggerConfigurationExtensions
         return loggerConfiguration
             .ConfigureLogLevel(options)
             .ConfigureSinks(builder, services, microservice)
-            .ConfigureEnrichers(microservice, options)
+            .ConfigureEnrichers(microservice)
             .Destructure.With(destructuringPolicies);
     }
 
@@ -42,7 +43,7 @@ internal static class LoggerConfigurationExtensions
     /// <param name="loggerConfiguration"></param>
     /// <param name="settings">Fasit:Core:Logging config section</param>
     /// <returns></returns>
-    internal static LoggerConfiguration ConfigureEnrichers(this LoggerConfiguration loggerConfiguration, IMicroService microservice, Options options)
+    internal static LoggerConfiguration ConfigureEnrichers(this LoggerConfiguration loggerConfiguration, IMicroService microservice)
     {
         return loggerConfiguration
             .Enrich.WithProperty("Application", microservice.Name)
@@ -64,10 +65,10 @@ internal static class LoggerConfigurationExtensions
     /// <param name="settings">Fasit:Core:Logging config section</param>
     /// <returns></returns>
     internal static LoggerConfiguration ConfigureLogLevel(this LoggerConfiguration loggerConfiguration,
-        Options options)
+        IOptions<Options> options)
     {
         return loggerConfiguration
-            .MinimumLevel.Is(options.Level.ToSerilogLogLevel())
+            .MinimumLevel.Is(options.Value.Level.ToSerilogLogLevel())
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .MinimumLevel.Override("System", LogEventLevel.Warning);
     }
