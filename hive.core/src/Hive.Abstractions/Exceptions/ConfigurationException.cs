@@ -2,7 +2,7 @@ namespace Hive.Exceptions;
 
 public class ConfigurationException : Exception
 {
-    public string Key { get; private set; }
+    public string Key { get; protected init; }
 
     public ConfigurationException(string message)
         : base(message)
@@ -15,14 +15,17 @@ public class ConfigurationException : Exception
         Key = key;
     }
 
-    public ConfigurationException(string message, Exception innerException)
-        : base(message, innerException)
-    {
-    }
+    protected ConfigurationException()
+    {}
 
-    public ConfigurationException(string message, string key, Exception innerException)
-        : base(message, innerException)
-    {
-        Key = key;
-    }
+    // public ConfigurationException(string message, Exception innerException)
+    //     : base(message, innerException)
+    // {
+    // }
+    //
+    // public ConfigurationException(string message, string key, Exception innerException)
+    //     : base(message, innerException)
+    // {
+    //     Key = key;
+    // }
 }

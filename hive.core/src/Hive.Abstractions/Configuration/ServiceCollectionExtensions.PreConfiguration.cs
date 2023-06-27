@@ -1,8 +1,11 @@
-﻿using Hive.Exceptions;
+﻿using System.Text;
+using FluentValidation;
+using Hive.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using MiniValidation;
 
 namespace Hive.Configuration;
 
@@ -32,7 +35,7 @@ public static partial class ServiceCollectionExtensions
 
     public static IOptions<TOptions> PreConfigureValidatedOptions<TOptions>(this IServiceCollection services,
       IConfiguration configuration, Func<string> sectionKeyProvider)
-      where TOptions: class, new()
+    where TOptions: class, new()
     {
       _ = services ?? throw new ArgumentNullException(nameof(services));
       _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -44,19 +47,60 @@ public static partial class ServiceCollectionExtensions
       configuration.GetExistingSection(key)
         .Bind(options);
 
-      var validateOptions = new DataAnnotationValidateOptions<TOptions>(Options.DefaultName);
-      var result = validateOptions.Validate(Options.DefaultName, options);
-
-      if (result.Failed)
+      if(MiniValidator.TryValidate(options, true, out var errors ))
       {
-        throw new ConfigurationException(result.FailureMessage ?? "Validation failed");
+        var optionsInstance = Options.Create(options);
+        services.AddSingleton(optionsInstance);
+
+        return optionsInstance;
+      }
+      else
+      {
+        errors.GetType();
+
+        if (errors.Count == 1)
+        {
+          var error = errors.First();
+          throw new ConfigurationException(GetErrorMessage(error.Value), $"{key}:{error.Key}");
+        }
+
+        if (errors.Count > 1)
+        {
+          errors.GetType();
+          //throw new CompositeConfigurationException(result, key);
+        }
       }
 
-      var optionsInstance = Options.Create(options);
-      services.AddSingleton(optionsInstance);
-
-      return optionsInstance;
+      throw new NotImplementedException();
     }
+
+    // public static IOptions<TOptions> PreConfigureValidatedOptions<TOptions>(this IServiceCollection services,
+    //   IConfiguration configuration, Func<string> sectionKeyProvider)
+    //   where TOptions: class, new()
+    // {
+    //   _ = services ?? throw new ArgumentNullException(nameof(services));
+    //   _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
+    //   _ = sectionKeyProvider ?? throw new ArgumentNullException(nameof(sectionKeyProvider));
+    //
+    //   var options = new TOptions();
+    //   var key = sectionKeyProvider();
+    //
+    //   configuration.GetExistingSection(key)
+    //     .Bind(options);
+    //
+    //   var validateOptions = new DataAnnotationValidateOptions<TOptions>(Options.DefaultName);
+    //   var result = validateOptions.Validate(Options.DefaultName, options);
+    //
+    //   if (result.Failed)
+    //   {
+    //     throw new ConfigurationException(result.FailureMessage ?? "Validation failed");
+    //   }
+    //
+    //   var optionsInstance = Options.Create(options);
+    //   services.AddSingleton(optionsInstance);
+    //
+    //   return optionsInstance;
+    // }
 
     public static IOptions<TOptions> PreConfigureValidatedOptions<TOptions>(this IServiceCollection services,
       IConfiguration configuration, Func<string> sectionKeyProvider, Func<TOptions, bool> validate)
@@ -111,5 +155,56 @@ public static partial class ServiceCollectionExtensions
       services.AddSingleton(optionsInstance);
 
       return optionsInstance;
+    }
+
+    public static IOptions<TOptions> PreConfigureFluentlyValidateOptions<TOptions, TValidator>(this IServiceCollection services, IConfiguration configuration,
+      Func<string> sectionKeyProvider)
+      where TOptions: class, new()
+      where TValidator : class, IValidator<TOptions>, new()
+    {
+      _ = services ?? throw new ArgumentNullException(nameof(services));
+      _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
+      _ = sectionKeyProvider ?? throw new ArgumentNullException(nameof(sectionKeyProvider));
+
+      var options = new TOptions();
+      var key = sectionKeyProvider();
+
+      configuration.GetExistingSection(key)
+        .Bind(options);
+
+      var validator = new TValidator();
+      var result = validator.Validate(options);
+
+      if (result.IsValid)
+      {
+        var optionsInstance = Options.Create(options);
+        services.AddSingleton(optionsInstance);
+
+        return optionsInstance;
+      }
+
+      if (result.Errors.Count == 1)
+      {
+        throw new ConfigurationException(result.Errors[0].ErrorMessage, $"{key}:{result.Errors[0].PropertyName}");
+      }
+
+      if (result.Errors.Count > 1)
+      {
+        throw new CompositeConfigurationException(result, key);
+      }
+
+      throw new InvalidOperationException("Validation subsystem failure");
+    }
+
+    private static string GetErrorMessage(string[] messages)
+    {
+      var sb = new StringBuilder();
+
+      foreach (var message in messages)
+      {
+        sb.AppendLine(message);
+      }
+
+      return sb.ToString();
     }
 }

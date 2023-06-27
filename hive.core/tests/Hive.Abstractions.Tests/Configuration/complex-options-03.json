@@ -1,0 +1,10 @@
+{
+  "ComplexOptions": {
+    "Name": "Test",
+    "Children":[
+      {
+        "Name": "Child1"
+      }
+    ]
+  }
+}

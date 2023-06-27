@@ -29,6 +29,11 @@
 		<EmbeddedResource Include="Configuration.Old\test-validator-options02.json" />
 		<EmbeddedResource Include="Configuration.Old\test-validator-options03.json" />
 		<EmbeddedResource Include="Configuration.Old\test-validator-options04.json" />
+		<EmbeddedResource Include="Configuration\complex-options-01.json" />
+		<EmbeddedResource Include="Configuration\complex-options-02.json" />
+		<EmbeddedResource Include="Configuration\complex-options-03.json" />
+		<EmbeddedResource Include="Configuration\complex-options-04.json" />
+		<EmbeddedResource Include="Configuration\complex-options-05.json" />
 		<EmbeddedResource Include="Configuration\empty-options.json" />
 		<EmbeddedResource Include="Configuration\simple-options-01.json" />
 		<EmbeddedResource Include="Configuration\simple-options-02.json" />

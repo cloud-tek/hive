@@ -1,5 +1,6 @@
 {
   "SimpleOptions": {
-    "Name": "Test"
+    "Name": "Test",
+    "Address": "https://tinyrul.org"
   }
 }

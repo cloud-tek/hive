@@ -19,7 +19,7 @@ public partial class PostConfigurationTests
     [InlineData("simple-options-03.json", false, "Name", "minimum")]
     [UnitTest]
     public void
-      GivenOptions1SectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
+      GivenSimpleOptionsSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
         string config, bool shouldBeValid, string? key, string? error)
     {
       var cfg = GetConfigurationRoot(config);
@@ -33,6 +33,40 @@ public partial class PostConfigurationTests
       var action = () =>
       {
         var options = provider.GetRequiredService<IOptions<SimpleOptions>>().Value;
+        options.Should().NotBeNull();
+      };
+
+      if (shouldBeValid)
+      {
+        action.Should().NotThrow();
+      }
+      else
+      {
+        action.Should().Throw<OptionsValidationException>().And.Message.Should().ContainAll(new[] { key, error });
+      }
+    }
+
+    [SmartTheory(Execute.Always, On.All)]
+    [InlineData("complex-options-01.json", true, null, null)]
+    [InlineData("complex-options-02.json", false, "Children", "minimum")]
+    [InlineData("complex-options-03.json", false, "Children", "minimum")]
+    //[InlineData("complex-options-04.json", false, "Children", "minimum")]
+    [UnitTest]
+    public void
+      GivenComplexOptionsSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
+        string config, bool shouldBeValid, string? key, string? error)
+    {
+      var cfg = GetConfigurationRoot(config);
+
+      var provider = new ServiceCollection()
+        .AddSingleton<IConfiguration>(cfg)
+        .ConfigureValidatedOptions<ComplexOptions>(cfg, () => ComplexOptions.SectionKey)
+        .BuildServiceProvider();
+
+      // Act & Assert
+      var action = () =>
+      {
+        var options = provider.GetRequiredService<IOptions<ComplexOptions>>().Value;
         options.Should().NotBeNull();
       };
 
