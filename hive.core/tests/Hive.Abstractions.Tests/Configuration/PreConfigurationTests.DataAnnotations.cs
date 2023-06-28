@@ -39,7 +39,7 @@ public partial class PreConfigurationTests
       }
       else
       {
-        action.Should().Throw<ConfigurationException>().And.Message.Should().ContainAll(new[] { key, error });
+        action.Should().Throw<OptionsValidationException>().And.Message.Should().ContainAll(new[] { key, error });
       }
     }
 
@@ -71,8 +71,7 @@ public partial class PreConfigurationTests
       {
         var tokens = new List<string>();
         tokens.AddRange(errors);
-        var ex = action.Should().Throw<ConfigurationException>();
-        ex.And.Key.Should().Contain(key);
+        var ex = action.Should().Throw<OptionsValidationException>();
         ex.And.Message.Should().ContainAll(tokens.ToArray());
       }
     }

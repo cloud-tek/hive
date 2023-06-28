@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace Hive.Tests.Configuration;
 
-public class SimpleOptionsFluentValiator : AbstractValidator<SimpleOptions>
+public class SimpleOptionsFluentValidator : AbstractValidator<SimpleOptions>
 {
-  public SimpleOptionsFluentValiator()
+  public SimpleOptionsFluentValidator()
   {
     RuleFor(x => x.Name).NotEmpty().MinimumLength(3);
     RuleFor(x => x.Address)

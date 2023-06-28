@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FluentValidation;
 using Hive.Configuration;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
@@ -11,22 +12,23 @@ namespace Hive.Tests.Configuration;
 // ReSharper disable once ClassNeverInstantiated.Global
 public partial class PostConfigurationTests
 {
-  public class OptionsValidation
+  public class FluentValidation
   {
     [SmartTheory(Execute.Always, On.All)]
     [InlineData("simple-options-01.json", true, null, null)]
-    [InlineData("simple-options-02.json", false, "Name", "required")]
-    [InlineData("simple-options-03.json", false, "Name", "minimum")]
+    [InlineData("simple-options-02.json", false, "Name", "empty")]
+    [InlineData("simple-options-03.json", false, "Name", "at least")]
     [UnitTest]
     public void
-      GivenOptions1SectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
+      GivenSimpleOptionsSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
         string config, bool shouldBeValid, string? key, string? error)
     {
       var cfg = GetConfigurationRoot(config);
 
       var provider = new ServiceCollection()
         .AddSingleton<IConfiguration>(cfg)
-        .ConfigureValidatedOptions<SimpleOptions, SimpleOptionsValidator>(cfg, () => SimpleOptions.SectionKey)
+        .AddScoped<IValidator<SimpleOptions>, SimpleOptionsFluentValidator>()
+        .ConfigureValidatedOptions<SimpleOptions, SimpleOptionsFluentValidator>(cfg, () => SimpleOptions.SectionKey)
         .BuildServiceProvider();
 
       // Act & Assert

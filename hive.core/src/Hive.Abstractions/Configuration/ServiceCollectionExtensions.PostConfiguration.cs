@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FluentValidation;
+using Hive.Configuration.Validation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -68,14 +70,14 @@ public static partial class ServiceCollectionExtensions
   /// <param name="sectionKeyProvider"></param>
   /// <typeparam name="TOptions"></typeparam>
   /// <returns></returns>
-  public static IServiceCollection ConfigureValidatedOptions<TOptions, TOptionsValidator>(this IServiceCollection services, IConfiguration configuration, Func<string> sectionKeyProvider)
+  public static IServiceCollection ConfigureValidatedOptions<TOptions, TValidator>(this IServiceCollection services, IConfiguration configuration, Func<string> sectionKeyProvider)
         where TOptions : class, new()
-        where TOptionsValidator : class, IValidateOptions<TOptions>
+        where TValidator : class, IValidator<TOptions>
     {
         var section = configuration.GetExistingSection(sectionKeyProvider());
 
         services
-            .AddSingleton<IValidateOptions<TOptions>, TOptionsValidator>()
+            .AddSingleton<IValidateOptions<TOptions>, FluentOptionsValidator<TOptions>>()
             .Configure<TOptions>(section);
 
         return services;
@@ -86,9 +88,9 @@ public static partial class ServiceCollectionExtensions
         _ = section ?? throw new ArgumentNullException(nameof(section));
 
         services
+          .AddSingleton<IValidateOptions<TOptions>, MiniOptionsValidator<TOptions>>()
           .AddOptions<TOptions>()
-          .Bind(section, DefaultBinderOptions)
-          .ValidateDataAnnotations();
+          .Bind(section, DefaultBinderOptions);
 
         return services;
     }

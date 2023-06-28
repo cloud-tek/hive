@@ -4,6 +4,7 @@ using Hive.Configuration;
 using Hive.Exceptions;
 using Hive.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Hive.Tests.Configuration;
@@ -28,7 +29,7 @@ public partial class PreConfigurationTests
       var action = () =>
       {
         var options = new ServiceCollection()
-          .PreConfigureFluentlyValidateOptions<SimpleOptions, SimpleOptionsFluentValiator>(cfg,  () => SimpleOptions.SectionKey);
+          .PreConfigureValidatedOptions<SimpleOptions, SimpleOptionsFluentValidator>(cfg,  () => SimpleOptions.SectionKey);
       };
 
       if (shouldBeValid)
@@ -40,7 +41,7 @@ public partial class PreConfigurationTests
         var tokens = new List<string>();
         tokens.Add(key);
         tokens.AddRange(errors);
-        action.Should().Throw<ConfigurationException>().And.Message.Should().ContainAll(tokens.ToArray());
+        action.Should().Throw<OptionsValidationException>().And.Message.Should().ContainAll(tokens.ToArray());
       }
     }
   }

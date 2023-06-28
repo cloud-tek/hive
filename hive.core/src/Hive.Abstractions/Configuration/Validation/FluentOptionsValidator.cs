@@ -9,20 +9,19 @@ public class FluentOptionsValidator<TOptions> : IValidateOptions<TOptions> where
   private readonly IServiceProvider _serviceProvider;
   private readonly string? _name;
 
-  public FluentOptionsValidator(string? name, IServiceProvider serviceProvider)
+  public FluentOptionsValidator(IServiceProvider serviceProvider)
   {
     _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-    _name = name;
   }
 
   public ValidateOptionsResult Validate(string? name, TOptions options)
   {
     // Null name is used to configure all named options.
-    if (_name != null && _name != name)
-    {
-      // Ignored if not validating this instance.
-      return ValidateOptionsResult.Skip;
-    }
+    // if (_name != null && _name != name)
+    // {
+    //   // Ignored if not validating this instance.
+    //   return ValidateOptionsResult.Skip;
+    // }
 
     _ = options ?? throw new ArgumentNullException(nameof(options));
 
@@ -39,7 +38,7 @@ public class FluentOptionsValidator<TOptions> : IValidateOptions<TOptions> where
     var errors = new List<string>();
     foreach (var result in results.Errors)
     {
-      errors.Add($"Validation failed for '{typeName}.{result.PropertyName}' with the error: '{result.ErrorMessage}'.");
+      errors.Add($"{typeName}.{result.PropertyName} : {result.ErrorMessage}");
     }
 
     return ValidateOptionsResult.Fail(errors);

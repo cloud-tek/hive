@@ -20,15 +20,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Configuration.Old\test-dataannotations-options00.json" />
-		<EmbeddedResource Include="Configuration.Old\test-dataannotations-options01.json" />
-		<EmbeddedResource Include="Configuration.Old\test-dataannotations-options02.json" />
-		<EmbeddedResource Include="Configuration.Old\test-dataannotations-options03.json" />
-		<EmbeddedResource Include="Configuration.Old\test-dataannotations-options04.json" />
-		<EmbeddedResource Include="Configuration.Old\test-validator-options01.json" />
-		<EmbeddedResource Include="Configuration.Old\test-validator-options02.json" />
-		<EmbeddedResource Include="Configuration.Old\test-validator-options03.json" />
-		<EmbeddedResource Include="Configuration.Old\test-validator-options04.json" />
 		<EmbeddedResource Include="Configuration\complex-options-01.json" />
 		<EmbeddedResource Include="Configuration\complex-options-02.json" />
 		<EmbeddedResource Include="Configuration\complex-options-03.json" />

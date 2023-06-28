@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FluentAssertions;
 using Hive.Configuration;
 using Hive.Testing;
@@ -20,7 +21,7 @@ public partial class PostConfigurationTests
     [UnitTest]
     public void
       GivenSimpleOptionsSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
-        string config, bool shouldBeValid, string? key, string? error)
+        string config, bool shouldBeValid, string? key, params string[] errors)
     {
       var cfg = GetConfigurationRoot(config);
 
@@ -42,7 +43,12 @@ public partial class PostConfigurationTests
       }
       else
       {
-        action.Should().Throw<OptionsValidationException>().And.Message.Should().ContainAll(new[] { key, error });
+        var tokens = new List<string>();
+        tokens.AddRange(errors);
+        var ex = action.Should().Throw<OptionsValidationException>();
+        ex.And.Message.Should().Contain(key);
+        ex.And.Message.Should().ContainAll(tokens.ToArray());
+        //action.Should().Throw<OptionsValidationException>().And.Message.Should().ContainAll(new[] { key, error });
       }
     }
 
@@ -50,7 +56,8 @@ public partial class PostConfigurationTests
     [InlineData("complex-options-01.json", true, null, null)]
     [InlineData("complex-options-02.json", false, "Children", "minimum")]
     [InlineData("complex-options-03.json", false, "Children", "minimum")]
-    //[InlineData("complex-options-04.json", false, "Children", "minimum")]
+    [InlineData("complex-options-04.json", false, "Children[0].Name", "required")]
+    [InlineData("complex-options-05.json", false, "Children[1].Name", "minimum")]
     [UnitTest]
     public void
       GivenComplexOptionsSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(

@@ -41,7 +41,7 @@ public partial class PreConfigurationTests
       }
       else
       {
-        action.Should().Throw<ConfigurationException>().And.Message.Should().Be("Validation failed");
+        action.Should().Throw<OptionsValidationException>().And.Message.Should().Be("Options validation failed");
       }
     }
   }
