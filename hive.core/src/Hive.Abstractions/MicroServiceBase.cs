@@ -40,7 +40,7 @@ public abstract class MicroServiceBase
     /// <summary>
     /// Flag indicating whether the IMicroservice's logger is provided externally
     /// </summary>
-    public bool ExternalLogger { get; protected set; } = false;
+    public bool ExternalLogger { get; protected init; } = false;
     public MicroServiceHostingMode HostingMode { get; init; }
 
     public string HostName { get; } = global::System.Environment.GetEnvironmentVariable(Constants.EnvironmentVariables.Hostname) ?? "localhost";
