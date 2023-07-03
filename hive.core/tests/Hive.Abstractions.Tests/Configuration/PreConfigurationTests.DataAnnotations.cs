@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Hive.Configuration;
@@ -67,12 +68,16 @@ public partial class PreConfigurationTests
       {
         action.Should().NotThrow();
       }
-      else
+      else if(key != null)
       {
         var tokens = new List<string>();
         tokens.AddRange(errors);
         var ex = action.Should().Throw<OptionsValidationException>();
         ex.And.Message.Should().ContainAll(tokens.ToArray());
+      }
+      else
+      {
+        throw new NotImplementedException("Unhandled test case");
       }
     }
   }

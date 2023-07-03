@@ -1,3 +1,4 @@
+using System;
 using FluentAssertions;
 using Hive.Configuration;
 using Hive.Testing;
@@ -14,13 +15,13 @@ public partial class PostConfigurationTests
   public class Delegate
   {
     [SmartTheory(Execute.Always, On.All)]
-    [InlineData("simple-options-01.json", true, null, null)]
-    [InlineData("simple-options-02.json", false, "Name", "required")]
-    [InlineData("simple-options-03.json", false, "Name", "minimum")]
+    [InlineData("simple-options-01.json", true, null)]
+    [InlineData("simple-options-02.json", false, "Name")]
+    [InlineData("simple-options-03.json", false, "Name")]
     [UnitTest]
     public void
       GivenOptions1SectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
-        string config, bool shouldBeValid, string? key, string? error)
+        string config, bool shouldBeValid, string? key)
     {
       var cfg = GetConfigurationRoot(config);
 
@@ -40,9 +41,13 @@ public partial class PostConfigurationTests
       {
         action.Should().NotThrow();
       }
-      else
+      else if(key != null)
       {
         action.Should().Throw<OptionsValidationException>().And.Message.Should().Be("A validation error has occurred.");
+      }
+      else
+      {
+        throw new NotImplementedException("Unhandled test case");
       }
     }
   }

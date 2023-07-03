@@ -5,6 +5,7 @@
 		<RootNamespace>Hive.Tests</RootNamespace>
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>

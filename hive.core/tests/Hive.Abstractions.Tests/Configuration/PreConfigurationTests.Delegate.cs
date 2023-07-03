@@ -1,3 +1,4 @@
+using System;
 using FluentAssertions;
 using Hive.Configuration;
 using Hive.Exceptions;
@@ -15,13 +16,13 @@ public partial class PreConfigurationTests
   public class Delegate
   {
     [SmartTheory(Execute.Always, On.All)]
-    [InlineData("simple-options-01.json", true, null, null)]
-    [InlineData("simple-options-02.json", false, "Name", "required")]
-    [InlineData("simple-options-03.json", false, "Name", "minimum")]
+    [InlineData("simple-options-01.json", true, null)]
+    [InlineData("simple-options-02.json", false, "Name")]
+    [InlineData("simple-options-03.json", false, "Name")]
     [UnitTest]
     public void
       GivenSimpleOptionsSectionExists_WhenPreConfigureValidatedOptions_ThenOptionsAreImmediatelyAvailableAndPropertiesAreBound(
-        string config, bool shouldBeValid, string? key, string? error)
+        string config, bool shouldBeValid, string? key)
     {
       var cfg = GetConfigurationRoot(config);
 
@@ -39,9 +40,13 @@ public partial class PreConfigurationTests
       {
         action.Should().NotThrow();
       }
-      else
+      else if(key != null)
       {
         action.Should().Throw<OptionsValidationException>().And.Message.Should().Be("Options validation failed");
+      }
+      else
+      {
+        throw new NotImplementedException("Unhandled test case");
       }
     }
   }

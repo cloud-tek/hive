@@ -18,7 +18,7 @@ namespace _build
         public Build() : base(Repository)
         { }
 
-        static new readonly Repository Repository = new ()
+        new static readonly Repository Repository = new ()
         {
             Artifacts = (new Dictionary<string, Artifact[]>()
             {
@@ -35,7 +35,8 @@ namespace _build
                     {
                         new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging" },
                         new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.LogzIo" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.AppInsights" }
+                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.AppInsights" },
+                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.Xunit" }
                     }
                 },
                 {
