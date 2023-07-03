@@ -4,7 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <IsPackable>true</IsPackable>
      <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
-     <PackageIconUrl>https://avatars.githubusercontent.com/u/35167581</PackageIconUrl>
+     <PackageIcon>https://avatars.githubusercontent.com/u/35167581</PackageIcon>
      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
