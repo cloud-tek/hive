@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
 		<RootNamespace>Hive</RootNamespace>
 		<RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
     <PackageId>Hive.Abstractions</PackageId>

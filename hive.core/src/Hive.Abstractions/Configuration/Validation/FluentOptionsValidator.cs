@@ -7,7 +7,6 @@ namespace Hive.Configuration.Validation;
 public class FluentOptionsValidator<TOptions> : IValidateOptions<TOptions> where TOptions : class
 {
   private readonly IServiceProvider _serviceProvider;
-  private readonly string? _name;
 
   public FluentOptionsValidator(IServiceProvider serviceProvider)
   {
@@ -16,13 +15,6 @@ public class FluentOptionsValidator<TOptions> : IValidateOptions<TOptions> where
 
   public ValidateOptionsResult Validate(string? name, TOptions options)
   {
-    // Null name is used to configure all named options.
-    // if (_name != null && _name != name)
-    // {
-    //   // Ignored if not validating this instance.
-    //   return ValidateOptionsResult.Skip;
-    // }
-
     _ = options ?? throw new ArgumentNullException(nameof(options));
 
 

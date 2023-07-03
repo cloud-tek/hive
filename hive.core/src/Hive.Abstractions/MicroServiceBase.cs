@@ -14,7 +14,7 @@ public abstract class MicroServiceBase
         EnvironmentVariables = new ReadOnlyDictionary<string, string>(
            global::System.Environment.GetEnvironmentVariables()
                .OfType<DictionaryEntry>()
-               .ToDictionary(entry => (string)entry.Key, entry => (string)entry.Value));
+               .ToDictionary(entry => (string)entry.Key, entry => (string)entry.Value!));
 
         if (EnvironmentVariables.Any(variable => variable.Key.StartsWith(Constants.EnvironmentVariables.Kubernetes.KubernetesVariablePrefix)))
         {
@@ -33,7 +33,7 @@ public abstract class MicroServiceBase
         IsReady = false;
     }
 
-    public ILogger<IMicroService> Logger { get; set; }
+    public ILogger<IMicroService> Logger { get; set; } = default!;
     public string Environment { get; } = global::System.Environment.GetEnvironmentVariable(Constants.EnvironmentVariables.DotNet.Environment)?.ToLower() ?? "dev";
     public IReadOnlyDictionary<string, string> EnvironmentVariables { get; private set; }
 

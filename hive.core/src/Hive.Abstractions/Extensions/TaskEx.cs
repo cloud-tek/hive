@@ -10,7 +10,7 @@ public static class TaskEx
     /// <param name="timeout">Timeout in milliseconds.</param>
     /// <exception cref="TimeoutException"></exception>
     /// <returns></returns>
-    public static async Task<bool> TryWaitWhile(Func<bool> condition, TimeSpan frequency, TimeSpan timeout, Action onSuccess = null)
+    public static async Task<bool> TryWaitWhile(Func<bool> condition, TimeSpan frequency, TimeSpan timeout, Action onSuccess = default!)
     {
         var waitTask = Task.Run(async () =>
         {
@@ -34,7 +34,7 @@ public static class TaskEx
     /// <param name="frequency">The frequency at which the condition will be checked.</param>
     /// <param name="timeout">The timeout in milliseconds.</param>
     /// <returns></returns>
-    public static async Task<bool> TryWaitUntil(Func<bool> condition, TimeSpan frequency, TimeSpan timeout, Action onFailure = null)
+    public static async Task<bool> TryWaitUntil(Func<bool> condition, TimeSpan frequency, TimeSpan timeout, Action onFailure = default!)
     {
         var waitTask = Task.Run(async () =>
         {

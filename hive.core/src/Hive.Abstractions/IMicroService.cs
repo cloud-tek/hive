@@ -23,5 +23,5 @@ public interface IMicroService
     MicroServicePipelineMode PipelineMode { get; }
 
     IMicroService RegisterExtension<TExtension>() where TExtension : MicroServiceExtension, new();
-    Task<int> RunAsync(IConfigurationRoot configuration = null, params string[] args);
+    Task<int> RunAsync(IConfigurationRoot configuration = default!, params string[] args);
 }
