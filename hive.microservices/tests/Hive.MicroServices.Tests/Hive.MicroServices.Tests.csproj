@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -22,7 +22,24 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\hive.core\src\Hive.Testing\Hive.Testing.csproj" />
+    <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging.Xunit\Hive.Logging.Xunit.csproj" />
     <ProjectReference Include="..\..\..\hive.microservices\src\Hive.MicroServices\Hive.MicroServices.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="cors-config-01.json.cs" />
+    <EmbeddedResource Include="cors-config-01.json" />
+    <EmbeddedResource Include="cors-config-02.json" />
+    <EmbeddedResource Include="cors-config-03.json" />
+    <EmbeddedResource Include="cors-config-04.json" />
+    <EmbeddedResource Include="cors-config-05.json" />
+    <EmbeddedResource Include="cors-config-06.json" />
+    <EmbeddedResource Include="cors-config-07.json" />
+    <EmbeddedResource Include="cors-config-08.json" />
+    <EmbeddedResource Include="cors-config-09.json" />
+    <EmbeddedResource Include="cors-config-10.json" />
+    <EmbeddedResource Include="cors-config-11.json" />
+    <EmbeddedResource Include="shared-logging-config.json" />
   </ItemGroup>
 
 </Project>

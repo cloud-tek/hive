@@ -1,0 +1,8 @@
+{
+  "Hive": {
+    "CORS": {
+      "AllowAny": "false",
+      "Policies": []
+    }
+  }
+}

@@ -112,6 +112,19 @@ public static partial class ServiceCollectionExtensions
     where TValidator : class, IValidator<TOptions>, new()
   {
     _ = services ?? throw new ArgumentNullException(nameof(services));
+
+    var validator = new TValidator();
+
+    return services.PreConfigureValidatedOptions<TOptions, TValidator>(configuration, validator, sectionKeyProvider);
+  }
+
+  public static IOptions<TOptions> PreConfigureValidatedOptions<TOptions, TValidator>(
+    this IServiceCollection services, IConfiguration configuration, TValidator validator,
+    Func<string> sectionKeyProvider)
+    where TOptions : class, new()
+    where TValidator : class, IValidator<TOptions>
+  {
+    _ = services ?? throw new ArgumentNullException(nameof(services));
     _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
     _ = sectionKeyProvider ?? throw new ArgumentNullException(nameof(sectionKeyProvider));
 
@@ -121,7 +134,6 @@ public static partial class ServiceCollectionExtensions
     configuration.GetExistingSection(key)
       .Bind(options);
 
-    var validator = new TValidator();
     var result = validator.Validate(options);
 
     if (result.IsValid)

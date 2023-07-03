@@ -1,0 +1,7 @@
+{
+  "Hive": {
+    "Logging": {
+      "LogLevel": "Debug"
+    }
+  }
+}

@@ -36,4 +36,9 @@ public static class EnumerableExtensions
 
         return current;
     }
+
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T> @enumerable)
+    {
+      return (enumerable == null) || !enumerable.Any();
+    }
 }

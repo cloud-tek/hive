@@ -1,6 +1,6 @@
 namespace Hive.MicroServices.CORS;
 
-public class Options
+public partial class Options
 {
   public const string SectionKey = "Hive:CORS";
 
@@ -12,12 +12,6 @@ public class Options
   public bool AllowAny { get; set; } = false;
 
   public CORSPolicy[] Policies { get; set; } = default!;
-
-  public class CORSPolicy
-  {
-    public string[] AllowedOrigins { get; set; } = default!;
-    public string[] AllowedHeaders { get; set; } = default!;
-  }
 }
 
 
