@@ -5,6 +5,7 @@
     <IsPackable>true</IsPackable>
      <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
      <PackageIconUrl>https://raw.githubusercontent.com/cloud-tek/public/main/images/cloud-tek.png</PackageIconUrl>
+     <NoWarn>NU5048</NoWarn>
      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
