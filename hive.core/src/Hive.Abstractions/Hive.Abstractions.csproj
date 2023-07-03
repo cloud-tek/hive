@@ -9,7 +9,7 @@
     <PackageId>Hive.Abstractions</PackageId>
     <PackageDescription>Base abstractions for Hive</PackageDescription>
     <Authors>cloud-tek</Authors>
-    <PackageIcon>../../../images/cloud-tek.png</PackageIcon>
+    <PackageIcon>https://raw.githubusercontent.com/cloud-tek/public/main/images/cloud-tek.png</PackageIcon>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 

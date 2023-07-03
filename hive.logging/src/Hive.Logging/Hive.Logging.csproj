@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
-		<PackageIcon>../../../images/cloud-tek.png</PackageIcon>
+		<PackageIcon>https://raw.githubusercontent.com/cloud-tek/public/main/images/cloud-tek.png</PackageIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
