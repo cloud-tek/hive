@@ -4,6 +4,7 @@ using CloudTek.Build.Versioning;
 using Nuke.Common.Execution;
 using Nuke.Common.Tools.GitVersion;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Nuke.Common.Utilities.Collections;
 
@@ -11,6 +12,7 @@ using Nuke.Common.Utilities.Collections;
 namespace _build
 {
     [CheckBuildProjectConfigurations]
+    [ExcludeFromCodeCoverage]
     public class Build : SmartGitVersionBuild
     {
         public static int Main () => Execute<Build>(x => x.Compile);
@@ -18,7 +20,7 @@ namespace _build
         public Build() : base(Repository)
         { }
 
-        static new readonly Repository Repository = new ()
+        new static readonly Repository Repository = new ()
         {
             Artifacts = (new Dictionary<string, Artifact[]>()
             {
@@ -35,7 +37,8 @@ namespace _build
                     {
                         new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging" },
                         new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.LogzIo" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.AppInsights" }
+                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.AppInsights" },
+                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.Xunit" }
                     }
                 },
                 {

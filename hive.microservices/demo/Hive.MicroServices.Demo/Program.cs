@@ -8,6 +8,7 @@ var service = new MicroService("hive-microservices-demo")
     {
         log.ToConsole();
     })
+    .WithCors()
     .ConfigureServices((services, configuration) =>
     {
         services.AddSingleton<IWeatherForecastService, WeatherForecastService>();

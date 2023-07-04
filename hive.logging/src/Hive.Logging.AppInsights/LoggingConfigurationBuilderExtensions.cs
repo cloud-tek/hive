@@ -12,10 +12,10 @@ public static class LoggingConfigurationBuilderExtensions
     {
         builder.Sinks.Add((logger, services, microservice) =>
         {
-            var options = services.ConfigureOptions<Options>(microservice.ConfigurationRoot, () => Options.SectionKey);
+            var options = services.PreConfigureOptions<Options>(microservice.ConfigurationRoot, () => Options.SectionKey);
             services.AddSingleton<RequestLoggingMiddleware>();
 
-            var client = new TelemetryClient(options.ToTelemetryConfiguration());
+            var client = new TelemetryClient(options.Value.ToTelemetryConfiguration());
 
             logger.WriteTo.ApplicationInsights(client, TelemetryConverter.Traces);
         });

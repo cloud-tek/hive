@@ -1,10 +1,8 @@
-﻿using FluentAssertions;
+﻿using System.Threading.Tasks;
+using FluentAssertions;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using System;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Hive.MicroServices.Tests;
 

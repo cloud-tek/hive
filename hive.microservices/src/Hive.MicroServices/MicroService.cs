@@ -118,10 +118,6 @@ public partial class MicroService : MicroServiceBase, IMicroService
 
                 ConfigurationRoot = cfg.Build();
             })
-            // .ConfigureLogging((logging) =>
-            // {
-            //     logging.AddConsole();
-            // })
             .ConfigureWebHostDefaults(app =>
             {
                 // (!) Important, .UseSettings MUST be called AFTER Configure

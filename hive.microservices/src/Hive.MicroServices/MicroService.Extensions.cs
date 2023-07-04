@@ -1,20 +1,13 @@
-﻿using Hive.Extensions;
+using Hive.MicroServices.CORS;
 
 namespace Hive.MicroServices;
 
-public partial class MicroService
+public static class MicroServiceExtensions
 {
-    public IList<MicroServiceExtension> Extensions { get; init; } = new List<MicroServiceExtension>();
+  public static IMicroService WithCors(this IMicroService service,params string[] urls)
+  {
+    service.Extensions.Add(new Extension(service));
 
-    internal MicroService ConfigureExtensions()
-    {
-        this.Extensions.ForEach(extension =>
-        {
-            ConfigureActions.Add((services, configuration) => extension.ConfigureServices(services, this));
-            ConfigurePipelineActions.Add((app) => extension.Configure(app, this));
-            ConfigurePipelineActions.GetType();
-        });
-
-        return this;
-    }
+    return service;
+  }
 }

@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Hive.Extensions;
 
 public static class StringExtensions
@@ -31,6 +33,20 @@ public static class StringExtensions
     public static bool IsProduction(this string @str)
     {
         return Environments.Production.Any(env => @str.Equals(env, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    public static string ToMultilineString(this string[] strings)
+    {
+      {
+        var sb = new StringBuilder();
+
+        foreach (var str in strings)
+        {
+          sb.AppendLine(str);
+        }
+
+        return sb.ToString();
+      }
     }
 
     private static class Environments

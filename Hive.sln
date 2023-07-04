@@ -69,6 +69,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.MicroServices.Demo.Grp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.MicroServices.Demo.Job", "hive.microservices\demo\Hive.MicroServices.Demo.Job\Hive.MicroServices.Demo.Job.csproj", "{4DB81313-A78D-47DA-BE04-01E367D576E5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.Logging.Xunit", "hive.logging\src\Hive.Logging.Xunit\Hive.Logging.Xunit.csproj", "{F3648C80-C6B3-4970-A066-81B0FF1C3FF2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -170,6 +172,10 @@ Global
 		{4DB81313-A78D-47DA-BE04-01E367D576E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DB81313-A78D-47DA-BE04-01E367D576E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DB81313-A78D-47DA-BE04-01E367D576E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3648C80-C6B3-4970-A066-81B0FF1C3FF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3648C80-C6B3-4970-A066-81B0FF1C3FF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3648C80-C6B3-4970-A066-81B0FF1C3FF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3648C80-C6B3-4970-A066-81B0FF1C3FF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DF8CC8C9-89BB-450D-A06D-5DE35890FAEA} = {650A1B8E-7D2A-4C89-A4A4-ED849B4F421F}
@@ -201,5 +207,6 @@ Global
 		{09377264-AE58-4A8C-8E17-01559E5136EE} = {91B02555-8919-4F8E-A3ED-9B73FA898067}
 		{4E30E795-E337-4DAE-9717-7E0EB16E8A39} = {91B02555-8919-4F8E-A3ED-9B73FA898067}
 		{4DB81313-A78D-47DA-BE04-01E367D576E5} = {91B02555-8919-4F8E-A3ED-9B73FA898067}
+		{F3648C80-C6B3-4970-A066-81B0FF1C3FF2} = {014ED996-C2E2-45FE-89F4-029C41B45514}
 	EndGlobalSection
 EndGlobal

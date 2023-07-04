@@ -1,0 +1,35 @@
+{
+  "Hive": {
+    "CORS": {
+      "AllowAny": "false",
+      "Policies": [
+        {
+          "Name": "",
+          "AllowedOrigins": [
+            "https://test01.org"
+          ],
+          "AllowedMethods": [
+            "GET",
+            "POST"
+          ],
+          "AllowedHeaders": [
+            "X-Custom-Header"
+          ]
+        },
+        {
+          "Name": "allow_test02url.org",
+          "AllowedOrigins": [
+            "https://test02.org"
+          ],
+          "AllowedMethods": [
+            "GET",
+            "POST"
+          ],
+          "AllowedHeaders": [
+            "X-Custom-Header"
+          ]
+        }
+      ]
+    }
+  }
+}

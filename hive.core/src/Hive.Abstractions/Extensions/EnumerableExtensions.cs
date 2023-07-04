@@ -13,7 +13,7 @@ public static class EnumerableExtensions
         }
     }
 
-    public static T Random<T>(this IEnumerable<T> @enumerable, Random rand)
+    public static T? Random<T>(this IEnumerable<T> @enumerable, Random rand)
     {
         if (enumerable == null) throw new ArgumentNullException(nameof(enumerable));
 
@@ -35,5 +35,10 @@ public static class EnumerableExtensions
         }
 
         return current;
+    }
+
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T> @enumerable)
+    {
+      return (enumerable == null) || !enumerable.Any();
     }
 }

@@ -1,0 +1,15 @@
+{
+  "Hive": {
+    "CORS": {
+      "AllowAny": "false",
+      "Policies": [
+        {
+          "Name": "allow_test01.org",
+          "AllowedOrigins": [
+            "abcdefg"
+          ]
+        }
+      ]
+    }
+  }
+}
