@@ -56,8 +56,8 @@ internal sealed class Extension : MicroServiceExtension, IHaveRequestLoggingMidd
 
     public Action<IApplicationBuilder> ConfigureRequestLoggingMiddleware
     {
-        get;
-        internal set;
-    }
+      get;
+      internal set;
+    } = default!;
 
 }

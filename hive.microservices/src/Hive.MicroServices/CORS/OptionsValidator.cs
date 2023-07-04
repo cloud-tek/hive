@@ -7,8 +7,6 @@ namespace Hive.MicroServices.CORS;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class OptionsValidator : AbstractValidator<Options>
 {
-  private readonly IMicroService _service;
-
   public OptionsValidator(IMicroService service)
   {
     _ = service ?? throw new ArgumentNullException(nameof(service));

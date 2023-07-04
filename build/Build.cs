@@ -4,6 +4,7 @@ using CloudTek.Build.Versioning;
 using Nuke.Common.Execution;
 using Nuke.Common.Tools.GitVersion;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Nuke.Common.Utilities.Collections;
 
@@ -11,6 +12,7 @@ using Nuke.Common.Utilities.Collections;
 namespace _build
 {
     [CheckBuildProjectConfigurations]
+    [ExcludeFromCodeCoverage]
     public class Build : SmartGitVersionBuild
     {
         public static int Main () => Execute<Build>(x => x.Compile);

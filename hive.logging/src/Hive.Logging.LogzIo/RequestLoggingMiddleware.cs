@@ -29,12 +29,12 @@ internal sealed class RequestLoggingMiddleware
             if (statusCode < 500)
             {
                 logger.LogInformation("HTTP {Method} {Path} responded with {StatusCode} in {Elapsed:0.0000} [ms]",
-                    context.Request.Method, context.Request.Path, context.Response.StatusCode, elapsedMs);
+                    context.Request.Method, context.Request.Path, context.Response!.StatusCode, elapsedMs);
             }
             else
             {
                 logger.LogError("HTTP {Method} {Path} responded with {StatusCode} in {Elapsed:0.0000} [ms]",
-                    context.Request.Method, context.Request.Path, context.Response.StatusCode, elapsedMs);
+                    context.Request.Method, context.Request.Path, context.Response!.StatusCode, elapsedMs);
             }
         }
         catch (Exception ex) when (LogException(context, GetElapsedMilliseconds(start, Stopwatch.GetTimestamp()), ex))

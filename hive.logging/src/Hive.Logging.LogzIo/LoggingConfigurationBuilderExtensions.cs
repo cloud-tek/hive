@@ -11,7 +11,7 @@ public static class LoggingConfigurationBuilderExtensions
         builder.Sinks.Add((logger, services, microservice) =>
         {
             var options = services.PreConfigureOptions<Options>(microservice.ConfigurationRoot, () => Options.SectionKey);
-            string subdomain = null;
+            string? subdomain = null;
 
             switch (options.Value.Region)
             {

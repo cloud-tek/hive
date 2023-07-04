@@ -15,12 +15,6 @@ public abstract class MicroServiceExtension
 
     public IList<Action<IServiceCollection, IConfiguration>> ConfigureActions { get; } = new List<Action<IServiceCollection, IConfiguration>>();
 
-    protected IConfigurationRoot Configuration
-    {
-      get;
-      init;
-    } = default!;
-
     protected IMicroService Service { get; init; }
     public virtual IApplicationBuilder Configure(IApplicationBuilder app, IMicroService microservice)
     {
