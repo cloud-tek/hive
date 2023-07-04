@@ -7,10 +7,6 @@ namespace Hive.Configuration.Validation;
 public class MiniOptionsValidator<TOptions>
   : IValidateOptions<TOptions> where TOptions : class
 {
-  public MiniOptionsValidator()
-  {
-  }
-
   public string? Name { get; }
 
   public ValidateOptionsResult Validate(string? name, TOptions options)
