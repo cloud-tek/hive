@@ -13,7 +13,7 @@ public static class ConfigurationExtensions
         {
             throw configuration switch
             {
-                IConfigurationRoot configurationIsRoot => new ConfigurationException($"Section with key '{key}' does not exist. Existing values are: {configurationIsRoot.GetDebugView()}", key),
+                IConfigurationRoot configurationIsRoot => new ConfigurationException($"Section with key '{key}' does not exist", key),
                 IConfigurationSection configurationIsSection => new ConfigurationException($"Section with key '{key}' does not exist at '{configurationIsSection.Path}'. Expected configuration path is '{configurationSection.Path}'", key),
                 _ => new ConfigurationException($"Failed to find configuration at '{configurationSection.Path}'", key)
             };
