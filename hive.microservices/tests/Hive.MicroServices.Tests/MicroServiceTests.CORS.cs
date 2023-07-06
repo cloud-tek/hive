@@ -38,7 +38,7 @@ public partial class MicroServiceTests
       var service = (MicroService)new MicroService(ServiceName)
         .InTestClass<MicroServiceTests>()
         .WithLogging(log => log.ToXunit(_output))
-        .WithCors()
+        .WithCORS()
         .ConfigureDefaultServicePipeline();
 
       // Act
@@ -71,7 +71,7 @@ public partial class MicroServiceTests
       var service = (MicroService)new MicroService(ServiceName)
         .InTestClass<MicroServiceTests>()
         .WithLogging(log => log.ToXunit(_output))
-        .WithCors()
+        .WithCORS()
         .ConfigureDefaultServicePipeline();
 
       // Act
@@ -107,7 +107,7 @@ public partial class MicroServiceTests
       var service = (MicroService)new MicroService(ServiceName)
         .InTestClass<MicroServiceTests>()
         .WithLogging(log => log.ToXunit(_output))
-        .WithCors()
+        .WithCORS()
         .ConfigureDefaultServicePipeline();
 
       // Act
