@@ -60,6 +60,7 @@ namespace Hive.MicroServices.Api
                 .ConfigurePipelineActions.Add(app =>
                 {
                     app.UseRouting();
+                    app.UseCors();
                     app.UseAuthorization();
                     app.UseEndpoints(endpointBuilder);
                 });

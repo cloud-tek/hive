@@ -9,11 +9,12 @@ var summaries = new[]
 };
 
 var service = new MicroService("hive-microservices-api-demo")
+    .WithCORS()
     .WithLogging(log =>
     {
         log
-            .ToConsole()
-            .ToLogzIo();
+            .ToConsole();
+            //.ToLogzIo();
     })
     .ConfigureServices((services, _) => { })
     .ConfigureApiPipeline(app =>

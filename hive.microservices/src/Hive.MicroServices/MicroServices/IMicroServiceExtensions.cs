@@ -116,6 +116,7 @@ public static class IMicroServiceExtensions
             .ConfigurePipelineActions.Add(app =>
             {
                 app.UseRouting();
+                app.UseCors();
                 app.UseAuthorization();
                 app.UseEndpoints(endpoints =>
                 {

@@ -26,6 +26,7 @@ namespace Hive.MicroServices.Job
                 .ConfigurePipelineActions.Add(app =>
                 {
                     app.UseRouting();
+                    app.UseCors();
                     app.UseAuthorization();
                     app.UseEndpoints(endpoints =>
                     {
