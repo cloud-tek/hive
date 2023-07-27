@@ -41,7 +41,10 @@ namespace Hive.MicroServices.Grpc
                 .ConfigurePipelineActions.Add(app =>
                 {
                     app.UseRouting();
-                    app.UseCors();
+                    app.When(() => microservice.Extensions.Any(x => x.Is<CORS.Extension>()), (a) =>
+                    {
+                      a.UseCors();
+                    });
                     app.UseAuthorization();
                     app.UseEndpoints(endpoints =>
                     {
