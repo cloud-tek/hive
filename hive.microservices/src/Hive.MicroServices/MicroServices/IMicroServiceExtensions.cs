@@ -120,7 +120,6 @@ public static class IMicroServiceExtensions
                 {
                   a.UseCors();
                 });
-                app.UseCors();
                 app.UseAuthorization();
                 app.UseEndpoints(endpoints =>
                 {
