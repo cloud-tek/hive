@@ -41,3 +41,12 @@ public abstract class MicroServiceExtension
         return services;
     }
 }
+
+public static class MicroServiceExtensionExtensions
+{
+  public static bool Is<TExtension>(this MicroServiceExtension extension)
+    where TExtension : MicroServiceExtension
+  {
+    return extension.GetType() == typeof(TExtension);
+  }
+}

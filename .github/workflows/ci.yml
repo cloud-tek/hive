@@ -11,6 +11,7 @@ on:
     - main
     - feature/*
     - release/*
+    - bug/*
     paths:
       - ".github/workflows/**"
       - "build/**"

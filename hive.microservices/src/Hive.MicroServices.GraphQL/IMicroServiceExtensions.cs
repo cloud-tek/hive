@@ -37,6 +37,10 @@ public static class IMicroServiceExtensions
             .ConfigurePipelineActions.Add(app =>
         {
             app.UseRouting();
+            app.When(() => microservice.Extensions.Any(x => x.Is<CORS.Extension>()), (a) =>
+            {
+              a.UseCors();
+            });
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
