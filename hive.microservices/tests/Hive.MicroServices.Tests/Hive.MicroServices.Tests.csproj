@@ -24,6 +24,10 @@
     <ProjectReference Include="..\..\..\hive.core\src\Hive.Testing\Hive.Testing.csproj" />
     <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging.Xunit\Hive.Logging.Xunit.csproj" />
     <ProjectReference Include="..\..\..\hive.microservices\src\Hive.MicroServices\Hive.MicroServices.csproj" />
+    <ProjectReference Include="..\..\src\Hive.MicroServices.Api\Hive.MicroServices.Api.csproj" />
+    <ProjectReference Include="..\..\src\Hive.MicroServices.GraphQL\Hive.MicroServices.GraphQL.csproj" />
+    <ProjectReference Include="..\..\src\Hive.MicroServices.Grpc\Hive.MicroServices.Grpc.csproj" />
+    <ProjectReference Include="..\..\src\Hive.MicroServices.Job\Hive.MicroServices.Job.csproj" />
   </ItemGroup>
 
   <ItemGroup>
