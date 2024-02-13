@@ -1,0 +1,8 @@
+{
+  "sdk": {
+    "version": "8.0.100"
+  },
+  "msbuild-sdks": {
+    "CloudTek.Sdk": "0.9.1"
+  }
+}

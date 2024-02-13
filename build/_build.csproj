@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <LanguageVersion>latest</LanguageVersion>
     <RootNamespace></RootNamespace>
     <NoWarn>CS0649;CS0169</NoWarn>
@@ -10,11 +10,12 @@
     <NukeScriptDirectory>..</NukeScriptDirectory>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- https://github.com/nuke-build/nuke/issues/1282 -->
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="6.0.1" />
-    <PackageReference Include="CloudTek.Build" Version="0.11.*" />
+    <PackageReference Include="CloudTek.Build" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>

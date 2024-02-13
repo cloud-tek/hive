@@ -1,3 +1,4 @@
+using System;
 using CloudTek.Build;
 using CloudTek.Build.Primitives;
 using CloudTek.Build.Versioning;
@@ -6,65 +7,61 @@ using Nuke.Common.Tools.GitVersion;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CloudTek.Build.Packaging;
 using Nuke.Common.Utilities.Collections;
 
 // ReSharper disable once CheckNamespace
 namespace _build
 {
-    [CheckBuildProjectConfigurations]
-    [ExcludeFromCodeCoverage]
-    public class Build : SmartGitVersionBuild
-    {
-        public static int Main () => Execute<Build>(x => x.Compile);
+  [ExcludeFromCodeCoverage]
+  public class Build : SmartBuild<PackageManager.NuGet, VersioningStrategy.GitVersion>
+  {
+    public static int Main() => Execute<Build>(x => x.Compile);
 
-        public Build() : base(Repository)
-        { }
+    /// <summary>
+    /// GitVersion information for SmartBuild
+    /// </summary>
+    [GitVersion(Framework = "net8.0", NoFetch = true)]
+    public GitVersion GitVersion { get; set; } = default!;
 
-        new static readonly Repository Repository = new ()
+    public Build() : base(Repository)
+    { }
+
+    static IDictionary<string, ArtifactType> HiveCore = new Dictionary<string, ArtifactType>()
         {
-            Artifacts = (new Dictionary<string, Artifact[]>()
-            {
-                {
-                    "hive.core", new[]
-                    {
-                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Abstractions" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Analyzers" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Testing" }
-                    }
-                },
-                {
-                    "hive.logging", new[]
-                    {
-                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.LogzIo" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.AppInsights" },
-                        new Artifact() { Type = ArtifactType.Package, Project = "Hive.Logging.Xunit" }
-                    }
-                },
-                {
-                    "hive.microservices", new[]
-                    {
-                      new Artifact() { Type = ArtifactType.Package, Project = "Hive.MicroServices" },
-                      new Artifact() { Type = ArtifactType.Package, Project = "Hive.MicroServices.Api" },
-                      new Artifact() { Type = ArtifactType.Package, Project = "Hive.MicroServices.GraphQL" },
-                      new Artifact() { Type = ArtifactType.Package, Project = "Hive.MicroServices.Grpc" },
-                      new Artifact() { Type = ArtifactType.Package, Project = "Hive.MicroServices.Job" },
-
-                      // Demos
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.Api" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.ApiControllers" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.Grpc" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.GrpcCodeFirst" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.GraphQL" },
-                      new Artifact() { Type = ArtifactType.Demo, Project = "Hive.MicroServices.Demo.Job" }
-                    }
-                }
-            }).SelectMany(module =>
-            {
-                module.Value.ForEach(artifact => artifact.Module = module.Key);
-                return module.Value;
-            }).ToArray()
+          { "Hive.Abstractions", ArtifactType.Package }
         };
-    }
+
+    static IDictionary<string, ArtifactType> HiveLogging = new Dictionary<string, ArtifactType>()
+        {
+          { "Hive.Logging", ArtifactType.Package },
+          { "Hive.Logging.LogzIo", ArtifactType.Package },
+          { "Hive.Logging.AppInsights", ArtifactType.Package },
+          { "Hive.Logging.Xunit", ArtifactType.Package }
+        };
+
+    static IDictionary<string, ArtifactType> HiveMicroServices = new Dictionary<string, ArtifactType>()
+        {
+          { "Hive.MicroServices", ArtifactType.Package },
+          { "Hive.MicroServices.Api", ArtifactType.Package },
+          { "Hive.MicroServices.GraphQL", ArtifactType.Package },
+          { "Hive.MicroServices.Grpc", ArtifactType.Package },
+          { "Hive.MicroServices.Job", ArtifactType.Package },
+          { "Hive.MicroServices.Demo", ArtifactType.Demo },
+          { "Hive.MicroServices.Demo.Api", ArtifactType.Demo },
+          { "Hive.MicroServices.Demo.ApiControllers", ArtifactType.Demo },
+          { "Hive.MicroServices.Demo.GraphQL", ArtifactType.Demo },
+          { "Hive.MicroServices.Demo.Grpc", ArtifactType.Demo },
+          { "Hive.MicroServices.Demo.GrpcCodeFirst", ArtifactType.Demo },
+          { "Hive.MicroServices.Demo.Job", ArtifactType.Demo },
+        };
+
+    new static readonly Repository Repository = new()
+    {
+      Artifacts = RootDirectory.GetArtifacts(
+        ("hive.core", HiveCore),
+        ("hive.logging", HiveLogging),
+        ("hive.microservices", HiveMicroServices))
+    };
+  }
 }
