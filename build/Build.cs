@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CloudTek.Build.Packaging;
 using Nuke.Common.Utilities.Collections;
+using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
 namespace _build
@@ -23,6 +24,8 @@ namespace _build
     /// </summary>
     [GitVersion(Framework = "net8.0", NoFetch = true)]
     public GitVersion GitVersion { get; set; } = default!;
+
+    public override Regex PackageChecksRegex { get; init; } = new Regex("^CloudTek", RegexOptions.Compiled);
 
     public Build() : base(Repository)
     { }
