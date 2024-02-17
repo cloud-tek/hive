@@ -1,7 +1,12 @@
-﻿namespace Hive.Testing
+﻿namespace Hive.Testing;
+
+/// <summary>
+/// A helper anmchor class for the assembly
+/// </summary>
+public static class AssemblyInfo
 {
-    public static class AssemblyInfo
-    {
-        public const string Name = "Hive.Testing";
-    }
+  /// <summary>
+  /// The name of the assembly
+  /// </summary>
+  public const string Name = "Hive.Testing";
 }

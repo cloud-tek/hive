@@ -1,16 +1,25 @@
-﻿using System.Collections.Generic;
-using Xunit.Abstractions;
+﻿using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Hive.Testing
-{
-    public class ModuleTestDiscoverer : ITraitDiscoverer
-    {
-        public const string TypeName = AssemblyInfo.Name + "." + nameof(ModuleTestDiscoverer);
+namespace Hive.Testing;
 
-        public IEnumerable<KeyValuePair<string, string>> GetTraits(IAttributeInfo traitAttribute)
-        {
-            yield return new KeyValuePair<string, string>("Category", ModuleTestAttribute.Category);
-        }
-    }
+/// <summary>
+/// Discovers the <see cref="ModuleTestAttribute"/> trait
+/// </summary>
+public class ModuleTestDiscoverer : ITraitDiscoverer
+{
+  /// <summary>
+  /// The name of the discoverer's tests' type
+  /// </summary>
+  public const string TypeName = AssemblyInfo.Name + "." + nameof(ModuleTestDiscoverer);
+
+  /// <summary>
+  /// Gets the traits of the provided attribute
+  /// </summary>
+  /// <param name="traitAttribute"></param>
+  /// <returns>An KeyValuePair containing "Category" as the key and the test's target category as the value</returns>
+  public IEnumerable<KeyValuePair<string, string>> GetTraits(IAttributeInfo traitAttribute)
+  {
+    yield return new KeyValuePair<string, string>(Constants.Category, ModuleTestAttribute.Category);
+  }
 }

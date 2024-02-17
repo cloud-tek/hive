@@ -1,12 +1,16 @@
-﻿using System;
-using Xunit.Sdk;
+﻿using Xunit.Sdk;
 
-namespace Hive.Testing
+namespace Hive.Testing;
+
+/// <summary>
+/// Flags the test as a test with Category equal to "IntegrationTests"
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
+[TraitDiscoverer(IntegrationTestDiscoverer.TypeName, AssemblyInfo.Name)]
+public class IntegrationTestAttribute : Attribute, ITraitAttribute
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
-    [TraitDiscoverer(IntegrationTestDiscoverer.TypeName, AssemblyInfo.Name)]
-    public class IntegrationTestAttribute : Attribute, ITraitAttribute
-    {
-        public const string Category = "IntegrationTests";
-    }
+  /// <summary>
+  /// The test trait
+  /// </summary>
+  public const string Category = "IntegrationTests";
 }
