@@ -5,6 +5,9 @@ namespace Hive.Exceptions;
 /// </summary>
 public class ConfigurationException : Exception
 {
+  /// <summary>
+  /// The key of the configuration that caused the exception
+  /// </summary>
   public string? Key { get; protected init; } = default!;
 
   /// <summary>
