@@ -1,10 +1,6 @@
-﻿using System.Text;
 using FluentValidation;
-using Hive.Exceptions;
-using Hive.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using MiniValidation;
 
@@ -16,10 +12,22 @@ namespace Hive.Configuration;
 /// </summary>
 public static partial class ServiceCollectionExtensions
 {
-  public static IOptions<TOptions> PreConfigureOptions<TOptions>(this IServiceCollection services,
+  private static readonly string[] DefaultOptionsValidationErrors = new[] { "Options validation failed" };
+
+  /// <summary>
+  /// Pre-configures TOptions
+  /// </summary>
+  /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
+  /// <param name="services"></param>
+  /// <param name="configuration"></param>
+  /// <param name="sectionKeyProvider"></param>
+  /// <returns><see cref="IOptions{TOptions}"/></returns>
+  /// <exception cref="ArgumentNullException">When any of the provided arguments are null</exception>
+  public static IOptions<TOptions> PreConfigureOptions<TOptions>(
+    this IServiceCollection services,
     IConfiguration configuration,
     Func<string> sectionKeyProvider)
-    where TOptions : class, new()
+      where TOptions : class, new()
   {
     _ = services ?? throw new ArgumentNullException(nameof(services));
     _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -34,9 +42,20 @@ public static partial class ServiceCollectionExtensions
     return optionsInstance;
   }
 
-  public static IOptions<TOptions> PreConfigureValidatedOptions<TOptions>(this IServiceCollection services,
-    IConfiguration configuration, Func<string> sectionKeyProvider)
-    where TOptions : class, new()
+  /// <summary>
+  /// Pre-configures validated TOptions
+  /// </summary>
+  /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
+  /// <param name="services"></param>
+  /// <param name="configuration"></param>
+  /// <param name="sectionKeyProvider"></param>
+  /// <returns><see cref="IOptions{TOptions}"/></returns>
+  /// <exception cref="ArgumentNullException">When any of the provided arguments are null</exception>
+  public static IOptions<TOptions> PreConfigureValidatedOptions<TOptions>(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    Func<string> sectionKeyProvider)
+      where TOptions : class, new()
   {
     _ = services ?? throw new ArgumentNullException(nameof(services));
     _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -59,13 +78,14 @@ public static partial class ServiceCollectionExtensions
     switch (errors.Count)
     {
       case 1:
-      {
-        var error = errors.First();
-        throw new OptionsValidationException(
-          key,
-          typeof(TOptions),
-          error.Value);
-      }
+        {
+          var error = errors.First();
+          throw new OptionsValidationException(
+            key,
+            typeof(TOptions),
+            error.Value);
+        }
+
       case > 1:
         throw new OptionsValidationException(
           key,
@@ -76,9 +96,22 @@ public static partial class ServiceCollectionExtensions
     }
   }
 
-  public static IOptions<TOptions> PreConfigureValidatedOptions<TOptions>(this IServiceCollection services,
-    IConfiguration configuration, Func<string> sectionKeyProvider, Func<TOptions, bool> validate)
-    where TOptions : class, new()
+  /// <summary>
+  /// Pre-configures validated TOptions
+  /// </summary>
+  /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
+  /// <param name="services"></param>
+  /// <param name="configuration"></param>
+  /// <param name="sectionKeyProvider"></param>
+  /// <param name="validate"></param>
+  /// <returns><see cref="IOptions{TOptions}"/></returns>
+  /// <exception cref="ArgumentNullException">When any of the provided arguments are null</exception>
+  public static IOptions<TOptions> PreConfigureValidatedOptions<TOptions>(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    Func<string> sectionKeyProvider,
+    Func<TOptions, bool> validate)
+      where TOptions : class, new()
   {
     _ = services ?? throw new ArgumentNullException(nameof(services));
     _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -96,7 +129,7 @@ public static partial class ServiceCollectionExtensions
       throw new OptionsValidationException(
         key,
         typeof(TOptions),
-        new[] { "Options validation failed" });
+        DefaultOptionsValidationErrors);
     }
 
     var optionsInstance = Options.Create(options);
@@ -105,11 +138,22 @@ public static partial class ServiceCollectionExtensions
     return optionsInstance;
   }
 
+  /// <summary>
+  /// Pre-configures validated TOptions
+  /// </summary>
+  /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
+  /// <typeparam name="TValidator">Type of validator used to validate the options</typeparam>
+  /// <param name="services"></param>
+  /// <param name="configuration"></param>
+  /// <param name="sectionKeyProvider"></param>
+  /// <returns><see cref="IOptions{TOptions}"/></returns>
+  /// <exception cref="ArgumentNullException">When any of the provided arguments are null</exception>
   public static IOptions<TOptions> PreConfigureValidatedOptions<TOptions, TValidator>(
-    this IServiceCollection services, IConfiguration configuration,
+    this IServiceCollection services,
+    IConfiguration configuration,
     Func<string> sectionKeyProvider)
-    where TOptions : class, new()
-    where TValidator : class, IValidator<TOptions>, new()
+      where TOptions : class, new()
+      where TValidator : class, IValidator<TOptions>, new()
   {
     _ = services ?? throw new ArgumentNullException(nameof(services));
 
@@ -118,11 +162,24 @@ public static partial class ServiceCollectionExtensions
     return services.PreConfigureValidatedOptions<TOptions, TValidator>(configuration, validator, sectionKeyProvider);
   }
 
+  /// <summary>
+  /// Pre-configures validated TOptions
+  /// </summary>
+  /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
+  /// <typeparam name="TValidator">Type of validator used to validate the options</typeparam>
+  /// <param name="services"></param>
+  /// <param name="configuration"></param>
+  /// <param name="validator"></param>
+  /// <param name="sectionKeyProvider"></param>
+  /// <returns><see cref="IOptions{TOptions}"/></returns>
+  /// <exception cref="ArgumentNullException">When any of the provided arguments are null</exception>
   public static IOptions<TOptions> PreConfigureValidatedOptions<TOptions, TValidator>(
-    this IServiceCollection services, IConfiguration configuration, TValidator validator,
+    this IServiceCollection services,
+    IConfiguration configuration,
+    TValidator validator,
     Func<string> sectionKeyProvider)
-    where TOptions : class, new()
-    where TValidator : class, IValidator<TOptions>
+      where TOptions : class, new()
+      where TValidator : class, IValidator<TOptions>
   {
     _ = services ?? throw new ArgumentNullException(nameof(services));
     _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -147,13 +204,14 @@ public static partial class ServiceCollectionExtensions
     switch (result.Errors.Count)
     {
       case 1:
-      {
-        var error = result.Errors.First();
-        throw new OptionsValidationException(
-          key,
-          typeof(TOptions),
-          new[] { error.ErrorMessage });
-      }
+        {
+          var error = result.Errors.First();
+          throw new OptionsValidationException(
+            key,
+            typeof(TOptions),
+            new[] { error.ErrorMessage });
+        }
+
       case > 1:
         throw new OptionsValidationException(
           key,
