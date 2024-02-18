@@ -34,7 +34,7 @@ public class MiniOptionsValidator<TOptions>
     // Ensure options are provided to validate against
     ArgumentNullException.ThrowIfNull(options);
 
-    // 👇 MiniValidation validation 🎉
+    // MiniValidation validation
     if (MiniValidator.TryValidate(options, out var validationErrors))
     {
       return ValidateOptionsResult.Success;
