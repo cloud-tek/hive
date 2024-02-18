@@ -1,16 +1,23 @@
 using Hive.Logging.AppInsights.Telemetry;
 using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.Extensions.Logging;
 
 namespace Hive.Logging.AppInsights;
 
+/// <summary>
+/// Options for Application Insights.
+/// </summary>
 public static class OptionsExtensions
 {
-    public static TelemetryConfiguration ToTelemetryConfiguration(this Options options)
+  /// <summary>
+  /// Configures the sampling for Application Insights.
+  /// </summary>
+  /// <param name="options"></param>
+  /// <returns><see cref="TelemetryConfiguration"/></returns>
+  public static TelemetryConfiguration ToTelemetryConfiguration(this Options options)
+  {
+    return new TelemetryConfiguration()
     {
-        return new TelemetryConfiguration()
-        {
-            InstrumentationKey = options.InstrumentationKey
-        }.ConfigureSampling(options);
-    }
+      InstrumentationKey = options.InstrumentationKey
+    }.ConfigureSampling(options);
+  }
 }
