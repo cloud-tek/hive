@@ -1,3 +1,4 @@
+using System.Reflection;
 using FluentAssertions;
 using Hive.Configuration;
 using Hive.Testing;
@@ -10,14 +11,14 @@ namespace Hive.Tests.Configuration;
 
 public class ConfigureValidatedOptionsTests : ConfigurationFixture
 {
+  // todo: fix the test
   // [SmartTheory(Execute.Always, On.All)]
-  // [InlineData("options1-01.json", true, null, null)]
-  // [InlineData("options1-02.json", false, "Name", "min")]
-  // [InlineData("options1-03.json", false, "Name", "required")]
+  [Theory]
+  [InlineData("simple-options-01.json", true, null, null)]
+  [InlineData("simple-options-02.json", false, "Name", "required")]
+  [InlineData("simple-options-03.json", false, "Name", "minimum")]
   // [InlineData("test-validator-options02.json", false, "Children", "minimum length")]
   // [InlineData("test-validator-options03.json", false, "Children", "minimum length")]
-
-  //[UnitTest]
   public void
     GivenSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreValidatedWhenResolvingFromContainerUsingDataAnnotations(
       string config, bool shouldBeValid, string? key, string? error)
@@ -29,7 +30,6 @@ public class ConfigureValidatedOptionsTests : ConfigurationFixture
       .AddSingleton<IConfigurationRoot>(cfg)
       .AddSingleton<IConfiguration>(cfg)
       .ConfigureValidatedOptions<SimpleOptions>(cfg, () => SimpleOptions.SectionKey)
-      //.ConfigureValidatedOptions<ConfigurationValidationTests.Options, ConfigurationValidationTests.OptionsValidator>(cfg, () => ConfigurationValidationTests.Options.SectionKey)
       .BuildServiceProvider();
 
     // Act

@@ -30,14 +30,14 @@ public partial class PreConfigurationTests
       var action = () =>
       {
         var options = new ServiceCollection()
-          .PreConfigureValidatedOptions<SimpleOptions, SimpleOptionsFluentValidator>(cfg,  () => SimpleOptions.SectionKey);
+          .PreConfigureValidatedOptions<SimpleOptions, SimpleOptionsFluentValidator>(cfg, () => SimpleOptions.SectionKey);
       };
 
       if (shouldBeValid)
       {
         action.Should().NotThrow();
       }
-      else if(key != null)
+      else if (key != null)
       {
         var tokens = new List<string>();
         tokens.Add(key);
@@ -46,7 +46,7 @@ public partial class PreConfigurationTests
       }
       else
       {
-        throw new NotImplementedException("Unhandled test case");
+        throw new NotSupportedException("Unhandled test case");
       }
     }
   }

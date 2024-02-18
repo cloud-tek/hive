@@ -48,7 +48,6 @@ public partial class PostConfigurationTests
         var ex = action.Should().Throw<OptionsValidationException>();
         ex.And.Message.Should().Contain(key);
         ex.And.Message.Should().ContainAll(tokens.ToArray());
-        //action.Should().Throw<OptionsValidationException>().And.Message.Should().ContainAll(new[] { key, error });
       }
     }
 
