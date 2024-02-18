@@ -1,7 +1,7 @@
 using System;
 using FluentValidation;
 
-namespace Hive.Tests.Configuration;
+namespace Hive.Abstractions.Tests.Configuration;
 
 public class SimpleOptionsFluentValidator : AbstractValidator<SimpleOptions>
 {

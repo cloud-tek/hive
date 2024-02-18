@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Hive.Tests.Configuration;
+namespace Hive.Abstractions.Tests.Configuration;
 
 public class SimpleOptions
 {

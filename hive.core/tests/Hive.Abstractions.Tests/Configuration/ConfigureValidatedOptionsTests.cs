@@ -7,18 +7,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Hive.Tests.Configuration;
+namespace Hive.Abstractions.Tests.Configuration;
 
 public class ConfigureValidatedOptionsTests : ConfigurationFixture
 {
-  // todo: fix the test
-  // [SmartTheory(Execute.Always, On.All)]
-  [Theory]
+  [SmartTheory(Execute.Always, On.All)]
   [InlineData("simple-options-01.json", true, null, null)]
   [InlineData("simple-options-02.json", false, "Name", "required")]
   [InlineData("simple-options-03.json", false, "Name", "minimum")]
-  // [InlineData("test-validator-options02.json", false, "Children", "minimum length")]
-  // [InlineData("test-validator-options03.json", false, "Children", "minimum length")]
   public void
     GivenSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreValidatedWhenResolvingFromContainerUsingDataAnnotations(
       string config, bool shouldBeValid, string? key, string? error)

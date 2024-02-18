@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace Hive.Tests.Configuration;
+namespace Hive.Abstractions.Tests.Configuration;
 
 public class SimpleOptionsValidator : IValidateOptions<SimpleOptions>
 {

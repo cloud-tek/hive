@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 
-namespace Hive.Tests.Configuration;
+namespace Hive.Abstractions.Tests.Configuration;
 
 public class ConfigurationFixture
 {
