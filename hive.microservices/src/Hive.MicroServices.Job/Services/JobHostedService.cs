@@ -1,16 +1,19 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿#pragma warning disable AsyncFixer03
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Hive.MicroServices.Job.Services;
 
-internal class JobHostedService : IHostedService
+internal sealed class JobHostedService : IHostedService
 {
   private readonly IMicroService microservice;
   private readonly IHostApplicationLifetime lifetime;
   private readonly ILogger<JobHostedService> logger;
 
-  public JobHostedService(IMicroService microservice, IHostApplicationLifetime lifetime,
+  public JobHostedService(
+    IMicroService microservice,
+    IHostApplicationLifetime lifetime,
     ILogger<JobHostedService> logger)
   {
     this.microservice = microservice ?? throw new ArgumentNullException(nameof(microservice));
@@ -67,3 +70,4 @@ internal class JobHostedService : IHostedService
     return Task.CompletedTask;
   }
 }
+#pragma warning restore AsyncFixer03

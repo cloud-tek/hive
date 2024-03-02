@@ -89,13 +89,13 @@ public partial class MicroServiceTests
     }
 
     [SmartTheory(Execute.Always, On.All)]
-    [InlineData(true, CORSPolicyValidator.Errors.NameRequired,"shared-logging-config.json", "cors-config-05.json")]
-    [InlineData(false, null,"shared-logging-config.json", "cors-config-06.json")]
-    [InlineData(false, null,"shared-logging-config.json", "cors-config-07.json")]
-    [InlineData(false, null,"shared-logging-config.json", "cors-config-08.json")]
-    [InlineData(true, CORSPolicyValidator.Errors.PolicyEmpty,"shared-logging-config.json", "cors-config-09.json")]
-    [InlineData(true, CORSPolicyValidator.Errors.AllowedOriginsInvalidFormat,"shared-logging-config.json", "cors-config-10.json")]
-    [InlineData(true, CORSPolicyValidator.Errors.AllowedMethodsInvalidValue,"shared-logging-config.json", "cors-config-11.json")]
+    [InlineData(true, CORSPolicyValidator.Errors.NameRequired, "shared-logging-config.json", "cors-config-05.json")]
+    [InlineData(false, null, "shared-logging-config.json", "cors-config-06.json")]
+    [InlineData(false, null, "shared-logging-config.json", "cors-config-07.json")]
+    [InlineData(false, null, "shared-logging-config.json", "cors-config-08.json")]
+    [InlineData(true, CORSPolicyValidator.Errors.PolicyEmpty, "shared-logging-config.json", "cors-config-09.json")]
+    [InlineData(true, CORSPolicyValidator.Errors.AllowedOriginsInvalidFormat, "shared-logging-config.json", "cors-config-10.json")]
+    [InlineData(true, CORSPolicyValidator.Errors.AllowedMethodsInvalidValue, "shared-logging-config.json", "cors-config-11.json")]
     [UnitTest]
     public void GivenOptionsWithPolicies_WhenInitializing_ThenPoliciesAreValidated(bool shouldFail, string expectedError, params string[] files)
     {
@@ -125,4 +125,3 @@ public partial class MicroServiceTests
     }
   }
 }
-
