@@ -112,12 +112,12 @@ jobs:
           "@
           $nuget | Out-File -FilePath ${{ github.workspace }}/nuget.config
       - uses: actions/setup-dotnet@v1
-        if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        # if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
         name: dotnet installer
         with:
           dotnet-version: ${{ inputs.NetCoreVersion }}
       - name: global.json
-        if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        # if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
         shell: bash
         run: |
           echo "{ \"tools\": { \"dotnet\": \"${{ inputs.NetCoreVersion }}\" } }" > global.json
