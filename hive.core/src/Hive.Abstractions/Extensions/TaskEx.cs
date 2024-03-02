@@ -3,7 +3,9 @@ namespace Hive.Extensions;
 /// <summary>
 /// Extensions for <see cref="Task"/>
 /// </summary>
-public static class TaskExtensions
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+public static class TaskEx
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
   /// <summary>
   /// Blocks while condition is true or timeout occurs.
