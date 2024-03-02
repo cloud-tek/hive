@@ -1,4 +1,4 @@
-﻿namespace Hive.MicroServices.Job;
+namespace Hive.MicroServices.Job;
 
 /// <summary>
 /// An interface used to decorate IHostedServices which are required as service's startup

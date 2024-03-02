@@ -1,4 +1,3 @@
-﻿#pragma warning disable CS1591, CA1848
 using Hive.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -32,4 +31,3 @@ public class JobService1 : IHostedJobService
     return Task.CompletedTask;
   }
 }
-#pragma warning restore CS1591, CA1848

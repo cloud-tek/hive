@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Hive.Extensions;
 using Hive.Logging.Enrichers;
 using Microsoft.Extensions.DependencyInjection;

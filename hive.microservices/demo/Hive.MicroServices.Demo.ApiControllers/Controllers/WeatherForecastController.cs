@@ -1,4 +1,3 @@
-#pragma warning disable CS1591, CA1848, CA2254
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -34,4 +33,3 @@ namespace Hive.MicroServices.ApiControllers.Demo.Controllers
     }
   }
 }
-#pragma warning restore CS1591, CA1848, CA2254

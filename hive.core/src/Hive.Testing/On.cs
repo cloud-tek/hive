@@ -1,4 +1,4 @@
-﻿namespace Hive.Testing;
+namespace Hive.Testing;
 
 /// <summary>
 /// Represents the operating system on which the test should be executed

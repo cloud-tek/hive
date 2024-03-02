@@ -1,4 +1,4 @@
-﻿#pragma warning disable AsyncFixer03
+#pragma warning disable AsyncFixer03
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

@@ -1,4 +1,4 @@
-﻿namespace Hive.Testing;
+namespace Hive.Testing;
 
 /// <summary>
 /// Temporarily sets an environment variable to a value and resets it when disposed.

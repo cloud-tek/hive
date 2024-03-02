@@ -25,7 +25,7 @@ internal static class ArtifactsExtensions
   {
     return artifacts
       .Select(x => new Artifact
-        { Type = x.Value, Path = rootDirectory / module / "src" / x.Key / "*.*sproj" })
+      { Type = x.Value, Path = rootDirectory / module / "src" / x.Key / "*.*sproj" })
       .ToArray();
   }
 }

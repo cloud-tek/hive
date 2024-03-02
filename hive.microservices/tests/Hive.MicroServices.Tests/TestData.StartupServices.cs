@@ -1,4 +1,4 @@
-﻿using FluentAssertions.Extensions;
+using FluentAssertions.Extensions;
 using Hive.MicroServices.Lifecycle;
 
 namespace Hive.MicroServices.Tests;

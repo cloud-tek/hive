@@ -1,4 +1,4 @@
-﻿using Hive.MicroServices.Job.Services;
+using Hive.MicroServices.Job.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;

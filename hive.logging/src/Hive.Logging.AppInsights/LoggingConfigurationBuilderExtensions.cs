@@ -1,4 +1,4 @@
-﻿using Hive.Configuration;
+using Hive.Configuration;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,4 @@
-﻿namespace Hive.Logging.LogzIo;
+namespace Hive.Logging.LogzIo;
 
 /// <summary>
 /// Options for LogzIo.

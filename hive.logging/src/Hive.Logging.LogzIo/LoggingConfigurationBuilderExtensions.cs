@@ -1,4 +1,4 @@
-﻿using Hive.Configuration;
+using Hive.Configuration;
 using Serilog;
 using Serilog.Sinks.Logz.Io;
 

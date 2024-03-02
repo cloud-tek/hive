@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging.Abstractions;
 var service = new MicroService("hive-microservices-graphql-demo", new NullLogger<IMicroService>())
     .ConfigureServices((services, configuration) =>
     {
-        services.AddSingleton<IWeatherForecastService, WeatherForecastService>();
+      services.AddSingleton<IWeatherForecastService, WeatherForecastService>();
     })
     .ConfigureGraphQLPipeline(schema =>
     {
-        schema
-              .AddQueryType<QueryType>();
+      schema
+        .AddQueryType<QueryType>();
     });
 
 await service.RunAsync();

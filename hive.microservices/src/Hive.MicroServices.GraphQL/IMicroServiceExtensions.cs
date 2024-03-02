@@ -1,4 +1,4 @@
-﻿using Hive.Extensions;
+using Hive.Extensions;
 using HotChocolate.AspNetCore.Voyager;
 using HotChocolate.Execution.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +11,12 @@ namespace Hive.MicroServices.GraphQL;
 /// </summary>
 public static class IMicroServiceExtensions
 {
+  /// <summary>
+  /// Configures the default GraphQL pipeline for the microservice
+  /// </summary>
+  /// <param name="microservice"></param>
+  /// <param name="schemaBuilder"></param>
+  /// <returns><see cref="IMicroService"/></returns>
   public static IMicroService ConfigureGraphQLPipeline(this IMicroService microservice, Action<IRequestExecutorBuilder> schemaBuilder)
   {
     var service = (MicroService)microservice;

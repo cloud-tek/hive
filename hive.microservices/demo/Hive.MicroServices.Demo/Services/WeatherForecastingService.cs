@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS1591, CA1848, CA2254
+#pragma warning disable CS1591, CA1848, CA2254
 using Hive.Extensions;
 using Hive.MicroServices.Demo.WeatherForecasting;
 using Microsoft.Extensions.Logging;

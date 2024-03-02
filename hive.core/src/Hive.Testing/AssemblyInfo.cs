@@ -1,4 +1,4 @@
-﻿namespace Hive.Testing;
+namespace Hive.Testing;
 
 /// <summary>
 /// A helper anmchor class for the assembly

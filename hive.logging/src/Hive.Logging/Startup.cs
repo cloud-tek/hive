@@ -1,4 +1,4 @@
-﻿namespace Hive.Logging;
+namespace Hive.Logging;
 
 /// <summary>
 /// Extension methods for the logging service.

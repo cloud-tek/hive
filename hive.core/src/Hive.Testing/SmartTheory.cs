@@ -1,4 +1,4 @@
-﻿namespace Hive.Testing;
+namespace Hive.Testing;
 
 /// <summary>
 /// Extends the XUnit TheoryAttribute to support conditional execution

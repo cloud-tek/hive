@@ -10,6 +10,9 @@ namespace Hive.MicroServices.Lifecycle;
 public abstract class HostedStartupService<T> : IHostedStartupService
         where T : class, IHostedStartupService
 {
+  /// <summary>
+  /// The <see cref="IHostedStartupService"/> logger
+  /// </summary>
   protected readonly ILogger<IHostedStartupService> Logger = default!;
 
   /// <summary>

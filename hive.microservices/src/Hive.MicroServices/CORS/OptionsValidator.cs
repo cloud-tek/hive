@@ -30,9 +30,19 @@ public class OptionsValidator : AbstractValidator<Options>
     RuleForEach(x => x.Policies).SetValidator(new CORSPolicyValidator());
   }
 
+  /// <summary>
+  /// Static class containing error messages
+  /// </summary>
   public static class Errors
   {
+    /// <summary>
+    /// A CORS policy that allows ANY should not be permitted outside of the DEV environment
+    /// </summary>
     public const string AllowAnyNotAllowed = "Hive:CORS:AllowAny == 'true' is only permitted in 'Development' environment";
+
+    /// <summary>
+    /// An error indicating that no CORS policies have been defined
+    /// </summary>
     public const string NoPolicies = "At least 1 Hive:CORS:Policies needs to be defined when Hive:CORS:AllowAny == 'false'";
   }
 }
