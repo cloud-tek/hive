@@ -1,5 +1,3 @@
-using Hive.Logging;
-using Hive.MicroServices;
 using Hive.Microservices.Demo.Services;
 using Hive.MicroServices.Demo.WeatherForecasting;
 

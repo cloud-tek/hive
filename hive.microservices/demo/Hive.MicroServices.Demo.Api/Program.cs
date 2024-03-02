@@ -1,5 +1,4 @@
 using Hive.Logging;
-using Hive.Logging.LogzIo;
 using Hive.MicroServices;
 using Hive.MicroServices.Api;
 

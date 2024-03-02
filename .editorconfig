@@ -23,5 +23,7 @@ trim_trailing_whitespace = true
 
 csharp_style_namespace_declarations = file_scoped
 
-[*.{cs,vb}]
-dotnet_diagnostic.CA1016.severity = none
+# [*.{cs,vb}]
+# dotnet_diagnostic.CA1016.severity = none
+dotnet_separate_import_directive_groups = false
+dotnet_sort_system_directives_first = true

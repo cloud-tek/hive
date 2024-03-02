@@ -1,15 +1,11 @@
-using System;
-using CloudTek.Build;
-using CloudTek.Build.Primitives;
-using CloudTek.Build.Versioning;
-using Nuke.Common.Execution;
-using Nuke.Common.Tools.GitVersion;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using CloudTek.Build.Packaging;
-using Nuke.Common.Utilities.Collections;
 using System.Text.RegularExpressions;
+using CloudTek.Build;
+using CloudTek.Build.Packaging;
+using CloudTek.Build.Primitives;
+using CloudTek.Build.Versioning;
+using Nuke.Common.Tools.GitVersion;
 
 // ReSharper disable once CheckNamespace
 namespace _build
