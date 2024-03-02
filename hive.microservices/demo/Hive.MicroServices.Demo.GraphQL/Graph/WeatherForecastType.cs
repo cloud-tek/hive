@@ -1,5 +1,3 @@
-
-#pragma warning disable CS1591
 using Hive.MicroServices.Demo.WeatherForecasting;
 using HotChocolate.Types;
 
@@ -26,4 +24,3 @@ public class WeatherForecastType : ObjectType<WeatherForecast>
         .Type<IntType>();
   }
 }
-#pragma warning restore CS1591
