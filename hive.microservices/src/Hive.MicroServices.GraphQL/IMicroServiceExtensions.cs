@@ -48,7 +48,7 @@ public static class IMicroServiceExtensions
             });
         });
 
-        service.PipelineMode = MicroServicePipelineMode.Api;
+        service.PipelineMode = MicroServicePipelineMode.GraphQL;
 
         return microservice;
     }
