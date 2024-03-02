@@ -1,12 +1,18 @@
 using FluentValidation;
 using Hive.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace Hive.MicroServices.CORS;
 
+/// <summary>
+/// CORS OptionsValidator based on FluentValidation
+/// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
 public class OptionsValidator : AbstractValidator<Options>
 {
+  /// <summary>
+  /// Initializes a new instance of the <see cref="OptionsValidator"/> class.
+  /// </summary>
+  /// <param name="service"></param>
   public OptionsValidator(IMicroService service)
   {
     _ = service ?? throw new ArgumentNullException(nameof(service));

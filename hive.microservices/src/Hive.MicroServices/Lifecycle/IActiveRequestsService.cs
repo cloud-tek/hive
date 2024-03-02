@@ -1,12 +1,12 @@
-﻿namespace Hive.MicroServices.Lifecycle;
+namespace Hive.MicroServices.Lifecycle;
 
 public interface IActiveRequestsService
 {
-    long Counter { get; }
+  long Counter { get; }
 
-    bool HasActiveRequests { get; }
+  bool HasActiveRequests { get; }
 
-    void Decrement();
+  void Decrement();
 
-    void Increment();
+  void Increment();
 }
