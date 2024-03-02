@@ -30,12 +30,12 @@ internal sealed class JobHostedService : IHostedService
 
       try
       {
-        if (svcs == null)
+        if (svcs == null || svcs.Any() == false)
         {
           throw new InvalidOperationException("At least one IHostedJobService needs to be registered");
         }
 
-        logger.LogInformation($"Starting {svcs.Count()} IHostedJobService(s) ...");
+        logger.LogInformationJobHostedServiceStarted(svcs.Count());
 
         var tasks = svcs.Select(s => s.StartAsync(cancellationToken));
 
@@ -47,11 +47,21 @@ internal sealed class JobHostedService : IHostedService
           throw new JobException("Job has finished executing all async IHostedJobService(s). At least 1 job failed to complete");
         }
 
-        logger.LogInformation($"Job has finished executing all async IHostedJobService(s). Shutting down.");
+        logger.LogInformationJobHostedServiceStopping();
+      }
+      catch (InvalidOperationException ioex)
+      {
+        logger.LogCriticalJobHostedServiceStartupFailure(ioex);
+        throw;
+      }
+      catch (JobException jex)
+      {
+        logger.LogErrorJobHostedServiceError(jex);
+        throw;
       }
       catch (Exception ex)
       {
-        logger.LogError(ex, "Failed to execute IHostedJobService");
+        logger.LogCriticalJobHostedServiceUnhandledException(ex);
         throw;
       }
       finally
@@ -71,3 +81,21 @@ internal sealed class JobHostedService : IHostedService
   }
 }
 #pragma warning restore AsyncFixer03
+
+internal static partial class JobHostedServiceLogMessages
+{
+  [LoggerMessage((int)MicroServiceLogEventId.JobHostedServiceStarted, LogLevel.Information, "Starting {count} IHostedJobService(s) ...")]
+  internal static partial void LogInformationJobHostedServiceStarted(this ILogger logger, int count);
+
+  [LoggerMessage((int)MicroServiceLogEventId.JobHostedServiceStopping, LogLevel.Information, "IHostedJobService has finished executing all async IHostedJobService(s). Shutting down.")]
+  internal static partial void LogInformationJobHostedServiceStopping(this ILogger logger);
+
+  [LoggerMessage((int)MicroServiceLogEventId.JobHostedServiceCriticalFailure, LogLevel.Critical, "IHostedJobService failed to start")]
+  internal static partial void LogCriticalJobHostedServiceStartupFailure(this ILogger logger, Exception exception);
+
+  [LoggerMessage((int)MicroServiceLogEventId.UnhandledException, LogLevel.Critical, "IHostedJobService failed due to an unhandled exception")]
+  internal static partial void LogCriticalJobHostedServiceUnhandledException(this ILogger logger, Exception exception);
+
+  [LoggerMessage((int)MicroServiceLogEventId.JobHostedServiceErrorFailed, LogLevel.Error, "IHostedJobService failed to complete")]
+  internal static partial void LogErrorJobHostedServiceError(this ILogger logger, Exception exception);
+}

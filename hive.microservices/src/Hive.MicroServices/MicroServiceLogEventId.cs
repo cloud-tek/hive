@@ -47,6 +47,26 @@ public enum MicroServiceLogEventId
   /// </summary>
   HostedStartupServiceCompleted = 120,
 
+  /// <summary>
+  /// A hosted startup service has started
+  /// </summary>
+  JobHostedServiceStarted = 200,
+
+  /// <summary>
+  /// A hosted job is stopping
+  /// </summary>
+  JobHostedServiceStopping = 201,
+
+  /// <summary>
+  /// A hosted job failed to complete at least 1 of the jobs
+  /// </summary>
+  JobHostedServiceErrorFailed = 202,
+
+  /// <summary>
+  /// A hosted job failed to start
+  /// </summary>
+  JobHostedServiceCriticalFailure = 210,
+
   /* Service Extension Events */
 
   /// <summary>
