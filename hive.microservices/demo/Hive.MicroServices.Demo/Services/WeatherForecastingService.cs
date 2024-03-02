@@ -3,6 +3,9 @@ using Hive.MicroServices.Demo.WeatherForecasting;
 
 namespace Hive.Microservices.Demo.Services;
 
+/// <summary>
+/// A background service which forecasts the weather
+/// </summary>
 public class WeatherForecastingService : BackgroundService
 {
     private readonly ILogger<WeatherForecastingService> logger;
