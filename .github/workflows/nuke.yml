@@ -77,6 +77,8 @@ jobs:
   nuke:
     name: nuke
     runs-on: ubuntu-latest
+    env:
+      DOTNET_ROLL_FORWARD: Major
     steps:
       - uses: actions/checkout@v2
         with:
