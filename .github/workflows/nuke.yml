@@ -119,8 +119,7 @@ jobs:
       - name: dotnet nuget add source
         shell: bash
         run: |
-          dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
-          dotnet nuget add source ${{ secrets.NuGetFeedCloudTek }} -n nuget.cloudtek.io -u ${{ secrets.NuGetUsername }} -p ${{ secrets.NuGetPassword }}
+          dotnet nuget add source ${{ secrets.NuGetFeedCloudTek }} -n nuget.cloudtek.io -u ${{ secrets.NuGetUsername }} -p ${{ secrets.NuGetPassword }} --protocol-version 3
       # - name: global.json
       #   # if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
       #   shell: bash
@@ -158,7 +157,6 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          dotnet nuget remove source nuget.org
           dotnet nuget remove source nuget.cloudtek.io
       - name: Test Report
         uses: dorny/test-reporter@v1
