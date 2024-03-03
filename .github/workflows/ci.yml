@@ -26,6 +26,7 @@ on:
     - main
     paths:
       - ".github/workflows/**"
+      - "./config/dotnet-tools.json"
       - "build/**"
       - "hive.core/**"
       - "hive.microservices/**"
