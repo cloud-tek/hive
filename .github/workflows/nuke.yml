@@ -119,7 +119,13 @@ jobs:
       - name: dotnet nuget add source
         shell: bash
         run: |
-          dotnet nuget add source ${{ secrets.NuGetFeedCloudTek }} -n nuget.cloudtek.io -u ${{ secrets.NuGetUsername }} -p ${{ secrets.NuGetPassword }} --protocol-version 3
+          dotnet nuget add source ${{ secrets.NuGetFeedCloudTek }} \
+          -n nuget.cloudtek.io \
+          -u ${{ secrets.NuGetUsername }} \
+          -p ${{ secrets.NuGetPassword }} \
+          --protocol-version 3 \
+          --store-password-in-clear-text
+
       # - name: global.json
       #   # if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
       #   shell: bash
