@@ -97,16 +97,6 @@ jobs:
           -p ${{ secrets.NuGetPassword }} \
           --protocol-version 3 \
           --store-password-in-clear-text
-      - name: diag printenv
-        shell: bash
-        run: |
-          printenv
-
-      # - name: global.json
-      #   # if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
-      #   shell: bash
-      #   run: |
-      #     echo "{ \"tools\": { \"dotnet\": \"${{ inputs.NetCoreVersion }}\" } }" > global.json
       # - id: auto-release
       #   uses: cloud-tek/actions/auto-release@0.19
       #   with:
