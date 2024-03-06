@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Hive.Tests.Configuration;
+namespace Hive.Abstractions.Tests.Configuration;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public partial class PostConfigurationTests
@@ -48,7 +48,6 @@ public partial class PostConfigurationTests
         var ex = action.Should().Throw<OptionsValidationException>();
         ex.And.Message.Should().Contain(key);
         ex.And.Message.Should().ContainAll(tokens.ToArray());
-        //action.Should().Throw<OptionsValidationException>().And.Message.Should().ContainAll(new[] { key, error });
       }
     }
 

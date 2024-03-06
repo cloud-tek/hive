@@ -1,27 +1,94 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace Hive;
 
+/// <summary>
+/// The base IMicroService interface. All Hive microservices implement this interface.
+/// </summary>
 public interface IMicroService
 {
-    CancellationTokenSource CancellationTokenSource { get; }
-    IConfigurationRoot ConfigurationRoot { get; }
-    string Environment { get; }
+  /// <summary>
+  /// The cancellation token source for the microservice
+  /// </summary>
+  CancellationTokenSource CancellationTokenSource { get; }
 
-    string[] Args { get; }
-    IReadOnlyDictionary<string, string> EnvironmentVariables { get; }
-    IList<MicroServiceExtension> Extensions { get; }
+  /// <summary>
+  /// The configuration root for the microservice
+  /// </summary>
+  IConfigurationRoot ConfigurationRoot { get; }
 
-    bool ExternalLogger { get; }
-    MicroServiceHostingMode HostingMode { get; }
-    string Id { get; }
-    bool IsReady { get; }
-    bool IsStarted { get; }
-    IMicroServiceLifetime Lifetime { get; }
-    string Name { get; }
-    MicroServicePipelineMode PipelineMode { get; }
+  /// <summary>
+  /// The environment for the microservice
+  /// </summary>
+  string Environment { get; }
 
-    IMicroService RegisterExtension<TExtension>() where TExtension : MicroServiceExtension, new();
-    Task<int> RunAsync(IConfigurationRoot configuration = default!, params string[] args);
+  /// <summary>
+  /// The command line arguments for the microservice
+  /// </summary>
+  string[] Args { get; }
+
+  /// <summary>
+  /// The environment variables for the microservice
+  /// </summary>
+  IReadOnlyDictionary<string, string> EnvironmentVariables { get; }
+
+  /// <summary>
+  /// The extensions for the microservice
+  /// </summary>
+  IList<MicroServiceExtension> Extensions { get; }
+
+  /// <summary>
+  /// Flag indicating if an externally provided logger is used
+  /// </summary>
+  bool ExternalLogger { get; }
+
+  /// <summary>
+  /// Enum indicating the hosting mode of the microservice
+  /// </summary>
+  MicroServiceHostingMode HostingMode { get; }
+
+  /// <summary>
+  /// The Id of the microservice instance
+  /// </summary>
+  string Id { get; }
+
+  /// <summary>
+  /// Flag indicating if the microservice is ready to receive traffic. Used for k8s readiness probe(s)
+  /// </summary>
+  bool IsReady { get; }
+
+  /// <summary>
+  /// Flag indicating if the microservice has completed it's startup cycle. Used for k8s startup probe(s)
+  /// </summary>
+  bool IsStarted { get; }
+
+  /// <summary>
+  /// The microservice's lifetime configuration
+  /// </summary>
+  IMicroServiceLifetime Lifetime { get; }
+
+  /// <summary>
+  /// The name of the microsevice
+  /// </summary>
+  string Name { get; }
+
+  /// <summary>
+  /// The pre-configured pipeline mode for the microservice
+  /// </summary>
+  MicroServicePipelineMode PipelineMode { get; }
+
+  /// <summary>
+  /// Method to register additional MicroServiceExtensions
+  /// </summary>
+  /// <typeparam name="TExtension">Type of the MicroServiceExtension</typeparam>
+  /// <returns>The IMicroService instance</returns>
+  IMicroService RegisterExtension<TExtension>() where TExtension : MicroServiceExtension, new();
+
+  /// <summary>
+  /// Method to asynchonoously initialize and start the microservice.
+  /// </summary>
+  /// <param name="configuration"></param>
+  /// <param name="args"></param>
+  /// <returns>Exit code</returns>
+  Task<int> RunAsync(IConfigurationRoot configuration = default!, params string[] args);
 }

@@ -1,32 +1,45 @@
-using System.Text;
-using Microsoft.Extensions.DependencyInjection;
 using Hive.Configuration;
 using Hive.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Hive.MicroServices.CORS;
 
+/// <summary>
+/// CORS extension for the microservice
+/// </summary>
 public class Extension : MicroServiceExtension
 {
+  /// <summary>
+  /// Create a new instance of the extension
+  /// </summary>
+  /// <param name="service"></param>
   public Extension(IMicroService service) : base(service)
   {
   }
 
+  /// <summary>
+  /// Configure the service
+  /// </summary>
+  /// <param name="services"></param>
+  /// <param name="microservice"></param>
+  /// <returns><see cref="IServiceCollection"/></returns>
   public override IServiceCollection ConfigureServices(IServiceCollection services, IMicroService microservice)
   {
-    this.ConfigureActions.Add((svc, configuration) =>
+    ConfigureActions.Add((svc, configuration) =>
     {
       var validator = new OptionsValidator(microservice);
       try
       {
         var options =
-          svc.PreConfigureValidatedOptions<Options, OptionsValidator>(configuration, validator,
+          svc.PreConfigureValidatedOptions<Options, OptionsValidator>(
+            configuration,
+            validator,
             () => Options.SectionKey);
 
         svc.AddCors(cors =>
         {
-          var sb = new StringBuilder("Configuring Hive:CORS policies...");
           if (options.Value.AllowAny)
           {
             const string name = "Allow Any";
@@ -37,26 +50,34 @@ public class Extension : MicroServiceExtension
               policy.AllowAnyMethod();
               policy.AllowAnyOrigin();
             });
-            sb.AppendLine(name);
+            ((MicroService)Service).Logger.LogInformationPolicyConfigured(name);
           }
           else
           {
             options.Value.Policies.ForEach(policy =>
             {
               cors.AddPolicy(policy.Name, x => policy.ToCORSPolicyBuilderAction());
-              sb.AppendLine(policy.Name);
+              ((MicroService)Service).Logger.LogInformationPolicyConfigured(policy.Name);
             });
           }
-          ((MicroService)Service).Logger.LogInformation(sb.ToString());
         });
       }
       catch (OptionsValidationException oex)
       {
-        ((MicroService)Service).Logger.LogCritical(oex, "Hive:CORS validation failed");
+        ((MicroService)Service).Logger.LogCriticalValidationFailed(oex);
         throw;
       }
     });
 
     return services;
   }
+}
+
+internal static partial class ExtensionLogMessages
+{
+  [LoggerMessage((int)MicroServiceLogEventId.ServiceExtensionConfigurationApplied, LogLevel.Information, "Hive:CORS policy {name} configured")]
+  internal static partial void LogInformationPolicyConfigured(this ILogger logger, string name);
+
+  [LoggerMessage((int)MicroServiceLogEventId.ServiceExtensionCriticalFailure, LogLevel.Critical, "Hive:CORS validation failed")]
+  internal static partial void LogCriticalValidationFailed(this ILogger logger, OptionsValidationException exception);
 }

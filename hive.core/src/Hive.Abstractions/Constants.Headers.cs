@@ -1,10 +1,20 @@
-﻿namespace Hive;
+namespace Hive;
 
 public static partial class Constants
 {
-    public static class Headers
-    {
-        public const string RequestId = "Request-Id";
-        public const string TraceParentId = "traceparent";
-    }
+  /// <summary>
+  /// Constants related to HTTP Headers
+  /// </summary>
+  public static class Headers
+  {
+    /// <summary>
+    /// The Request-Id header
+    /// </summary>
+    public const string RequestId = "Request-Id";
+
+    /// <summary>
+    /// The TraceParentId header for OpenTelemetry
+    /// </summary>
+    public const string TraceParentId = "traceparent";
+  }
 }

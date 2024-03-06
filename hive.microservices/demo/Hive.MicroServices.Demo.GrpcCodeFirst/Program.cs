@@ -8,11 +8,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 var service = new MicroService("hive-microservices-grpc-code1st-demo", new NullLogger<IMicroService>())
     .ConfigureServices((services, configuration) =>
     {
-        services.AddSingleton<IWeatherForecastService, WeatherForecastService>();
+      services.AddSingleton<IWeatherForecastService, WeatherForecastService>();
     })
     .ConfigureCodeFirstGrpcPipeline(endpoints =>
     {
-        endpoints.MapGrpcService<WeatherForecastingService>();
+      endpoints.MapGrpcService<WeatherForecastingService>();
     });
 
 await service.RunAsync();

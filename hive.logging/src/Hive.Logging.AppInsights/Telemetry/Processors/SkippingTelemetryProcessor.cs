@@ -5,46 +5,58 @@ using Microsoft.AspNetCore.Http;
 
 namespace Hive.Logging.AppInsights.Telemetry.Processors;
 
+/// <summary>
+/// A telemetry processor that skips telemetry based on the request path.
+/// </summary>
 public class SkippingTelemetryProcessor : ITelemetryProcessor
 {
-    private readonly ITelemetryProcessor next;
-    private readonly IList<PathString> pathsToSkip;
+  private readonly ITelemetryProcessor next;
+  private readonly IList<PathString> pathsToSkip;
 
-    public SkippingTelemetryProcessor(ITelemetryProcessor next, IEnumerable<string> pathsToSkip)
+  /// <summary>
+  /// Initializes a new instance of the <see cref="SkippingTelemetryProcessor"/> class.
+  /// </summary>
+  /// <param name="next"></param>
+  /// <param name="pathsToSkip"></param>
+  public SkippingTelemetryProcessor(ITelemetryProcessor next, IEnumerable<string> pathsToSkip)
+  {
+    this.next = next;
+    this.pathsToSkip = pathsToSkip.Select(x => new PathString(x)).ToList();
+  }
+
+  /// <summary>
+  /// Processes the telemetry.
+  /// </summary>
+  /// <param name="item"></param>
+  public void Process(ITelemetry item)
+  {
+    switch (item)
     {
-        this.next = next;
-        this.pathsToSkip = pathsToSkip.Select(x => new PathString(x)).ToList();
+      case RequestTelemetry request when ShouldSkipRequest(request): return;
+      case DependencyTelemetry dependency when ShouldSkipDependency(dependency): return;
+      default:
+        next.Process(item);
+        return;
     }
-    
-    public void Process(ITelemetry item)
+  }
+
+  private bool ShouldSkipRequest(RequestTelemetry telemetry)
+  {
+    if (telemetry.Url != null)
     {
-        switch (item)
-        {
-            case RequestTelemetry request when ShouldSkipRequest(request): return;
-            case DependencyTelemetry dependency when ShouldSkipDependency(dependency): return;
-            default:
-                next.Process(item);
-                return;
-        }
+      var path = new PathString(telemetry.Url.AbsolutePath);
+      return pathsToSkip.Any(x => path.StartsWithSegments(x));
     }
 
-    private bool ShouldSkipRequest(RequestTelemetry telemetry)
-    {
-        if (telemetry.Url != null)
-        {
-            var path = new PathString(telemetry.Url.AbsolutePath);
-            return pathsToSkip.Any(x => path.StartsWithSegments(x));
-        }
+    return telemetry.Name == "Process";
+  }
 
-        return telemetry.Name == "Process";
-    }
-    
-    private bool ShouldSkipDependency(DependencyTelemetry telemetry)
+  private static bool ShouldSkipDependency(DependencyTelemetry telemetry)
+  {
+    switch (telemetry.Type)
     {
-        switch (telemetry.Type)
-        {
-            default:
-                return false;
-        }
+      default:
+        return false;
     }
+  }
 }

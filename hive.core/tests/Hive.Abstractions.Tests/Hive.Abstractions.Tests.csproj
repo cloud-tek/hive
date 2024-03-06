@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
-		<RootNamespace>Hive.Tests</RootNamespace>
+		<RootNamespace>Hive.Abstractions.Tests</RootNamespace>
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -30,10 +30,6 @@
 		<EmbeddedResource Include="Configuration\simple-options-01.json" />
 		<EmbeddedResource Include="Configuration\simple-options-02.json" />
 		<EmbeddedResource Include="Configuration\simple-options-03.json" />
-		<EmbeddedResource Include="Configuration\test-validator-options01.json" />
-		<EmbeddedResource Include="Configuration\test-validator-options02.json" />
-		<EmbeddedResource Include="Configuration\test-validator-options03.json" />
-		<EmbeddedResource Include="Configuration\test-validator-options04.json" />
 	</ItemGroup>
 
 	<ItemGroup>

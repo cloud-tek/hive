@@ -1,74 +1,91 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
 namespace Hive.MicroServices.Api
 {
-    public static class IMicroServiceExtensions
+  /// <summary>
+  /// Extension methods for <see cref="IMicroService"/>
+  /// </summary>
+  public static class IMicroServiceExtensions
+  {
+    /// <summary>
+    /// Configures the default minimal API pipeline for the microservice
+    /// </summary>
+    /// <param name="microservice"></param>
+    /// <param name="action"></param>
+    /// <returns><see cref="IMicroService"/></returns>
+    public static IMicroService ConfigureApiPipeline(this IMicroService microservice, Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> action)
     {
-        public static IMicroService ConfigureApiPipeline(this IMicroService microservice, Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> action)
-        {
-            var service = (MicroService)microservice;
+      var service = (MicroService)microservice;
 
-            microservice.ConfigureApiPipelineInternal(action);
+      microservice.ConfigureApiPipelineInternal(action);
 
-            service.PipelineMode = MicroServicePipelineMode.Api;
+      service.PipelineMode = MicroServicePipelineMode.Api;
 
-            return microservice;
-        }
-
-        public static IMicroService ConfigureApiControllerPipeline(this IMicroService microservice)
-        {
-            var service = (MicroService)microservice;
-
-            microservice.ConfigureApiPipelineInternal((endpoints) =>
-            {
-                endpoints.MapControllers();
-            });
-
-            service.PipelineMode = MicroServicePipelineMode.ApiControllers;
-
-            return microservice;
-        }
-
-        private static IMicroService ConfigureApiPipelineInternal(this IMicroService microservice, Action<IEndpointRouteBuilder> endpointBuilder)
-        {
-            var service = (MicroService)microservice;
-
-            service.ValidatePipelineModeNotSet();
-
-            service.ConfigureActions.Add(MicroService.ServiceCollection.LifecycleServices);
-            service.ConfigureActions.Add((svc, configuration) =>
-            {
-                svc.AddControllers();
-                svc.AddEndpointsApiExplorer();
-                svc.AddSwaggerGen(c =>
-                {
-                    c.SwaggerDoc("v1", new OpenApiInfo { Title = microservice.Name, Version = "v1" });
-                });
-            });
-
-            service.UseCoreMicroServicePipeline(developmentOnlyPipeline: app =>
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            });
-
-            service
-                .ConfigureExtensions()
-                .ConfigurePipelineActions.Add(app =>
-                {
-                    app.UseRouting();
-                    app.When(() => microservice.Extensions.Any(x => x.Is<CORS.Extension>()), (a) =>
-                    {
-                      a.UseCors();
-                    });
-                    app.UseAuthorization();
-                    app.UseEndpoints(endpointBuilder);
-                });
-
-            return microservice;
-        }
+      return microservice;
     }
+
+    /// <summary>
+    /// Configures the default API pipeline, which uses Controllers, for the microservice
+    /// </summary>
+    /// <param name="microservice"></param>
+    /// <returns><see cref="IMicroService"/></returns>
+    public static IMicroService ConfigureApiControllerPipeline(this IMicroService microservice)
+    {
+      var service = (MicroService)microservice;
+
+      microservice.ConfigureApiPipelineInternal((endpoints) =>
+      {
+        endpoints.MapControllers();
+      });
+
+      service.PipelineMode = MicroServicePipelineMode.ApiControllers;
+
+      return microservice;
+    }
+
+    private static IMicroService ConfigureApiPipelineInternal(this IMicroService microservice, Action<IEndpointRouteBuilder> endpointBuilder)
+    {
+      var service = (MicroService)microservice;
+
+      service.ValidatePipelineModeNotSet();
+
+      service.ConfigureActions.Add(MicroService.Services.LifecycleServices);
+      service.ConfigureActions.Add((svc, configuration) =>
+      {
+        svc.AddControllers();
+        svc.AddEndpointsApiExplorer();
+        svc.AddSwaggerGen(
+          c =>
+          {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = microservice.Name, Version = "v1" });
+          });
+      });
+
+      service.UseCoreMicroServicePipeline(developmentOnlyPipeline: app =>
+      {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+      });
+
+      service
+          .ConfigureExtensions()
+          .ConfigurePipelineActions.Add(app =>
+          {
+            app.UseRouting();
+            app.When(
+              () => microservice.Extensions.Any(x => x.Is<CORS.Extension>()),
+              (a) =>
+                {
+                  a.UseCors();
+                });
+            app.UseAuthorization();
+            app.UseEndpoints(endpointBuilder);
+          });
+
+      return microservice;
+    }
+  }
 }

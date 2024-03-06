@@ -8,12 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Hive.Tests.Configuration;
+namespace Hive.Abstractions.Tests.Configuration;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public partial class PreConfigurationTests
 {
-  public class Delegate
+  public class DelegateValidation
   {
     [SmartTheory(Execute.Always, On.All)]
     [InlineData("simple-options-01.json", true, null)]
@@ -30,7 +30,7 @@ public partial class PreConfigurationTests
       var action = () =>
       {
         var options = new ServiceCollection()
-          .PreConfigureValidatedOptions<SimpleOptions>(cfg,  () => SimpleOptions.SectionKey, (o) => !string.IsNullOrEmpty(o.Name) && o.Name.Length >= 3);
+          .PreConfigureValidatedOptions<SimpleOptions>(cfg, () => SimpleOptions.SectionKey, (o) => !string.IsNullOrEmpty(o.Name) && o.Name.Length >= 3);
 
         options.Value.Should().NotBeNull();
         options.Value.Name.Should().NotBeNullOrEmpty();
@@ -40,13 +40,13 @@ public partial class PreConfigurationTests
       {
         action.Should().NotThrow();
       }
-      else if(key != null)
+      else if (key != null)
       {
         action.Should().Throw<OptionsValidationException>().And.Message.Should().Be("Options validation failed");
       }
       else
       {
-        throw new NotImplementedException("Unhandled test case");
+        throw new NotSupportedException("Unhandled test case");
       }
     }
   }

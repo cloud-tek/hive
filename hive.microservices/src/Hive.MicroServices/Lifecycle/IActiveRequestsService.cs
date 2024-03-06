@@ -1,12 +1,27 @@
-﻿namespace Hive.MicroServices.Lifecycle;
+namespace Hive.MicroServices.Lifecycle;
 
+/// <summary>
+/// An interface used to decorate an IHostedService which is used to keep track of active requests
+/// </summary>
 public interface IActiveRequestsService
 {
-    long Counter { get; }
+  /// <summary>
+  /// The current count of active requests
+  /// </summary>
+  long Counter { get; }
 
-    bool HasActiveRequests { get; }
+  /// <summary>
+  /// Indicates if there are any active requests
+  /// </summary>
+  bool HasActiveRequests { get; }
 
-    void Decrement();
+  /// <summary>
+  /// Decrements the active request count
+  /// </summary>
+  void Decrement();
 
-    void Increment();
+  /// <summary>
+  /// Increments the active request count
+  /// </summary>
+  void Increment();
 }

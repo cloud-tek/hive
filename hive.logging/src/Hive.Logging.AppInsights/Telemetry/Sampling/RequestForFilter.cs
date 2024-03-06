@@ -2,27 +2,53 @@ using Microsoft.ApplicationInsights.DataContracts;
 
 namespace Hive.Logging.AppInsights.Telemetry.Sampling;
 
+/// <summary>
+/// A struct that represents a request telemetry for filtering.
+/// </summary>
 [Serializable]
 internal struct RequestForFilter
 {
-    public string CloudRoleName { get; }
-    public string Name { get; }
-    public double Duration { get; }
-    public bool? Success { get; }
-    public string ResponseCode { get; set; }
-    public string Url { get; }
+  /// <summary>
+  /// Gets the cloud role name.
+  /// </summary>
+  public string CloudRoleName { get; }
 
-    public RequestForFilter(RequestTelemetry requestTelemetry)
-    {
-        Name = requestTelemetry.Name ?? "";
-        Duration = requestTelemetry.Duration.TotalMilliseconds;
-        Success = requestTelemetry.Success;
-        CloudRoleName = requestTelemetry.Context?.Cloud?.RoleName ?? "";
-        ResponseCode = requestTelemetry.ResponseCode ?? "";
-        Url = requestTelemetry.Url?.ToString() ?? "";
-        
-        // Custom = requestTelemetry.Metrics.ContainsKey("Custom")
-        //     ? requestTelemetry.Metrics["Custom"]
-        //     : (double?) null;
-    }
+  /// <summary>
+  /// Gets the name of the request.
+  /// </summary>
+  public string Name { get; }
+
+  /// <summary>
+  /// Gets the duration of the request.
+  /// </summary>
+  public double Duration { get; }
+
+  /// <summary>
+  /// Gets a value indicating whether the request was successful.
+  /// </summary>
+  public bool? Success { get; }
+
+  /// <summary>
+  /// Gets the response code of the request.
+  /// </summary>
+  public string ResponseCode { get; set; }
+
+  /// <summary>
+  /// Gets the URL of the request.
+  /// </summary>
+  public string Url { get; }
+
+  /// <summary>
+  /// Initializes a new instance of the <see cref="RequestForFilter"/> struct.
+  /// </summary>
+  /// <param name="requestTelemetry"></param>
+  public RequestForFilter(RequestTelemetry requestTelemetry)
+  {
+    Name = requestTelemetry.Name ?? "";
+    Duration = requestTelemetry.Duration.TotalMilliseconds;
+    Success = requestTelemetry.Success;
+    CloudRoleName = requestTelemetry.Context?.Cloud?.RoleName ?? "";
+    ResponseCode = requestTelemetry.ResponseCode ?? "";
+    Url = requestTelemetry.Url?.ToString() ?? "";
+  }
 }

@@ -1,36 +1,24 @@
-﻿namespace Hive.MicroServices.Lifecycle;
+namespace Hive.MicroServices.Lifecycle;
 
 internal class ActiveRequestsService : IActiveRequestsService
 {
-    private long counter = 0L;
+  private long counter;
 
-    public long Counter
-    {
-        get
-        {
-            return Interlocked.Read(ref counter);
-        }
-    }
+  public long Counter => Interlocked.Read(ref counter);
 
-    public ActiveRequestsService()
-    {
-    }
+  public ActiveRequestsService()
+  {
+  }
 
-    public bool HasActiveRequests
-    {
-        get
-        {
-            return Counter > 0;
-        }
-    }
+  public bool HasActiveRequests => Counter > 0;
 
-    public void Decrement()
-    {
-        Interlocked.Decrement(ref counter);
-    }
+  public void Decrement()
+  {
+    Interlocked.Decrement(ref counter);
+  }
 
-    public void Increment()
-    {
-        Interlocked.Increment(ref counter);
-    }
+  public void Increment()
+  {
+    Interlocked.Increment(ref counter);
+  }
 }

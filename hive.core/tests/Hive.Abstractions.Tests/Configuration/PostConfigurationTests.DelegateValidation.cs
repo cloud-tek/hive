@@ -7,12 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Hive.Tests.Configuration;
+namespace Hive.Abstractions.Tests.Configuration;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public partial class PostConfigurationTests
 {
-  public class Delegate
+  public class DelegateValidation
   {
     [SmartTheory(Execute.Always, On.All)]
     [InlineData("simple-options-01.json", true, null)]
@@ -41,13 +41,13 @@ public partial class PostConfigurationTests
       {
         action.Should().NotThrow();
       }
-      else if(key != null)
+      else if (key != null)
       {
         action.Should().Throw<OptionsValidationException>().And.Message.Should().Be("A validation error has occurred.");
       }
       else
       {
-        throw new NotImplementedException("Unhandled test case");
+        throw new NotSupportedException("Unhandled test case");
       }
     }
   }

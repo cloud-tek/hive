@@ -7,10 +7,10 @@ using Hive.MicroServices.Api;
 var service = new MicroService("hive-microservices-apicontrollers-demo")
         .WithLogging(log =>
         {
-            log
-                .ToConsole()
-                .ToLogzIo()
-                .ToAppInsights();
+          log
+            .ToConsole()
+            .ToLogzIo()
+            .ToAppInsights();
         })
     .ConfigureServices((services, configuration) => { })
     .ConfigureApiControllerPipeline()

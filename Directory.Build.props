@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="Sdk.props" Sdk="CloudTek.Sdk" />
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <!-- other project-specific properties -->
+</Project>
