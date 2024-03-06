@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CloudTek.Build" Version="1.0.3" />
+    <PackageReference Include="CloudTek.Build" Version="1.0.5" />
   </ItemGroup>
 
   <ItemGroup>
