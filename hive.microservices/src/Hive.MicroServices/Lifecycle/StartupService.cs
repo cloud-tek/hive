@@ -74,7 +74,7 @@ public class StartupService : IHostedService
     catch (Exception ex)
     {
       logger.LogCriticalServiceFailedToStart(ex);
-      ((MicroServiceLifetime)svc.Lifetime).StartupFailedTokenSource.Cancel();
+      await ((MicroServiceLifetime)svc.Lifetime).StartupFailedTokenSource.CancelAsync();
 
       Environment.ExitCode = -1;
       lifetime.StopApplication();

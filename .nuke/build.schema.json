@@ -91,6 +91,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "All",
               "BuildDependencyTree",
               "Clean",
               "CommitLintCheck",
@@ -99,7 +100,6 @@
               "FormatAnalyzersCheck",
               "FormatCheck",
               "HuskyInstall",
-              "Initialize",
               "IntegrationTests",
               "Pack",
               "PackagesBetaCheck",
@@ -113,22 +113,7 @@
             ]
           }
         },
-        "SkipBetaCheck": {
-          "type": "boolean"
-        },
-        "SkipCommitCheck": {
-          "type": "boolean"
-        },
-        "SkipFormatAnalyzersCheck": {
-          "type": "boolean"
-        },
-        "SkipFormatCheck": {
-          "type": "boolean"
-        },
         "SkipIntegrationTests": {
-          "type": "boolean"
-        },
-        "SkipOutdatedCheck": {
           "type": "boolean"
         },
         "SkipUnitTests": {
@@ -144,6 +129,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "All",
               "BuildDependencyTree",
               "Clean",
               "CommitLintCheck",
@@ -152,7 +138,6 @@
               "FormatAnalyzersCheck",
               "FormatCheck",
               "HuskyInstall",
-              "Initialize",
               "IntegrationTests",
               "Pack",
               "PackagesBetaCheck",
