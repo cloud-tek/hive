@@ -18,25 +18,30 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <!--Todo: Microsoft.Extensions.DiagnosticAdapter is this obsolete? -->
+    <!--Todo: Microsoft.Extensions.DiagnosticAdapter: is this obsolete? -->
     <PackageVersion Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="MiniValidation" Version="0.8.0" />
     <PackageVersion Include="Scrutor" Version="4.2.2" />
-    <PackageVersion Include="Serilog" Version="2.12.0" />
-    <PackageVersion Include="Serilog.AspNetCore" Version="4.1.0" />
-    <PackageVersion Include="Serilog.Sinks.ApplicationInsights" Version="3.1.0" />
-    <PackageVersion Include="Serilog.Enrichers.Context" Version="4.2.0" />
+    <PackageVersion Include="Serilog" Version="3.1.1" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageVersion Include="Serilog.Enrichers.Context" Version="4.6.5" />
     <PackageVersion Include="Serilog.Enrichers.Process" Version="2.0.2" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageVersion Include="Serilog.Extensions.Logging" Version="3.1.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageVersion Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0" />
+    <!--Todo: Serilog.Sinks.Async: is this obsolete? -->
     <PackageVersion Include="Serilog.Sinks.Async" Version="1.5.0" />
-    <PackageVersion Include="Serilog.Sinks.Console" Version="4.0.1" />
-    <PackageVersion Include="Serilog.Sinks.Http.LogzIo" Version="2.0.0" />
+    <!--Todo: Serilog.Sinks.Console: is this obsolete? -->
+    <PackageVersion Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <!--Todo: Serilog.Sinks.Http.Logz.Io: is this obsolete? -->
+    <!--Todo: Serilog.Sinks.Logz.Io 7.2.0 exists -->
+    <PackageVersion Include="Serilog.Sinks.Http.LogzIo" Version="3.0.0" />
+    <!--Todo: Serilog.Sinks.XUnit: is this obsolete? -->
     <PackageVersion Include="Serilog.Sinks.XUnit" Version="3.0.5" />
-    <PackageVersion Include="StringToExpression" Version="1.1.1" />
+    <PackageVersion Include="StringToExpression" Version="2.1.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageVersion Include="xunit" Version="2.4.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.3" />
