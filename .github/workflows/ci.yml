@@ -47,7 +47,7 @@ jobs:
       Compile:      true
       UnitTests:    true
       IntegrationTests: true
-      Pack: true
+      Pack:         true
       Push:         false
       NuGetApiUrl:  'https://api.nuget.org/v3/index.json'
     secrets:

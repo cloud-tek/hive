@@ -30,6 +30,11 @@ on:
         type: boolean
         default: false
         required: false
+      Pack:
+        description: "Flag indicating if Pack task is to be run"
+        type: boolean
+        default: false
+        required: false
       Push:
         description: "Flag indicating if Push task is to be run after the Pack task"
         type: boolean
@@ -81,6 +86,7 @@ jobs:
       NUKE_SKIP_PACKAGESOUTDATEDCHECK: ${{ !inputs.PackagesOutdatedCheck }}
       NUKE_SKIP_PACKAGESBETACHECK: ${{ !inputs.PackagesBetaCheck }}
       NUKE_SKIP_RUNCHECKS: ${{ !inputs.RunChecks }}
+      NUKE_SKIP_PACK: ${{ !inputs.Pack }}
       NUKE_SKIP_PUSH: ${{ !inputs.Push }}
       NUKE_SKIP_PUBLISH: ${{ !inputs.Publish }}
     steps:
