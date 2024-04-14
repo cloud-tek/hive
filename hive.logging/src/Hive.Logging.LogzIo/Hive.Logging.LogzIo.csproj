@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Serilog.Sinks.Http.LogzIo" Version="2.0.0" />
+    <PackageReference Include="Serilog.Sinks.Http.LogzIo" />
   </ItemGroup>
 
   <ItemGroup>

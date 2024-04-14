@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Serilog.Sinks.XUnit" Version="3.0.5" />
+      <PackageReference Include="Serilog.Sinks.XUnit" />
     </ItemGroup>
 
 </Project>

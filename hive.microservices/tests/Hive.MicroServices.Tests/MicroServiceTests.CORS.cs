@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Hive.Logging;
 using Hive.Logging.Xunit;
@@ -28,7 +26,7 @@ public partial class MicroServiceTests
     [InlineData("Production", true, "shared-logging-config.json", "cors-config-01.json")]
     [UnitTest]
 
-    public void GivenOptionsWithAllowAny_WhenInitializing_ThenValidationShouldBeEnvironmentDependent(string environment, bool shouldFail, params string[] files)
+    public async Task GivenOptionsWithAllowAny_WhenInitializing_ThenValidationShouldBeEnvironmentDependent(string environment, bool shouldFail, params string[] files)
     {
       using var scope = EnvironmentVariableScope.Create(Constants.EnvironmentVariables.DotNet.Environment, environment);
       var config = new ConfigurationBuilder()
@@ -47,11 +45,11 @@ public partial class MicroServiceTests
       // Assert
       if (shouldFail)
       {
-        action.Should().Throw<OptionsValidationException>().And.Message.Should().Be(OptionsValidator.Errors.AllowAnyNotAllowed);
+        (await action.Should().ThrowAsync<OptionsValidationException>()).And.Message.Should().Be(OptionsValidator.Errors.AllowAnyNotAllowed);
       }
       else
       {
-        action.Should().NotThrow();
+        await action.Should().NotThrowAsync();
       }
     }
 
@@ -61,7 +59,7 @@ public partial class MicroServiceTests
     [InlineData(false, "shared-logging-config.json", "cors-config-04.json")]
     [UnitTest]
 
-    public void GivenOptionsWithoutAllowAny_WhenInitializing_ThenAtLeastOnePolicyMustBeDefined(bool shouldFail, params string[] files)
+    public async Task GivenOptionsWithoutAllowAny_WhenInitializing_ThenAtLeastOnePolicyMustBeDefined(bool shouldFail, params string[] files)
     {
       using var scope = EnvironmentVariableScope.Create(Constants.EnvironmentVariables.DotNet.Environment, "Development");
       var config = new ConfigurationBuilder()
@@ -80,11 +78,11 @@ public partial class MicroServiceTests
       // Assert
       if (shouldFail)
       {
-        action.Should().Throw<OptionsValidationException>().And.Message.Should().Be(OptionsValidator.Errors.NoPolicies);
+        (await action.Should().ThrowAsync<OptionsValidationException>()).And.Message.Should().Be(OptionsValidator.Errors.NoPolicies);
       }
       else
       {
-        action.Should().NotThrow();
+        await action.Should().NotThrowAsync();
       }
     }
 
@@ -97,7 +95,7 @@ public partial class MicroServiceTests
     [InlineData(true, CORSPolicyValidator.Errors.AllowedOriginsInvalidFormat, "shared-logging-config.json", "cors-config-10.json")]
     [InlineData(true, CORSPolicyValidator.Errors.AllowedMethodsInvalidValue, "shared-logging-config.json", "cors-config-11.json")]
     [UnitTest]
-    public void GivenOptionsWithPolicies_WhenInitializing_ThenPoliciesAreValidated(bool shouldFail, string expectedError, params string[] files)
+    public async Task GivenOptionsWithPolicies_WhenInitializing_ThenPoliciesAreValidated(bool shouldFail, string expectedError, params string[] files)
     {
       using var scope = EnvironmentVariableScope.Create(Constants.EnvironmentVariables.DotNet.Environment, "Development");
       var config = new ConfigurationBuilder()
@@ -116,11 +114,11 @@ public partial class MicroServiceTests
       // Assert
       if (shouldFail)
       {
-        action.Should().Throw<OptionsValidationException>().And.Message.Should().Be(expectedError);
+        (await action.Should().ThrowAsync<OptionsValidationException>()).And.Message.Should().Be(expectedError);
       }
       else
       {
-        action.Should().NotThrow();
+        await action.Should().NotThrowAsync();
       }
     }
   }
