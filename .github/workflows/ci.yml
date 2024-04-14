@@ -43,13 +43,17 @@ jobs:
     with:
       Directory: ${{ github.workspace }}
       NetCoreVersion: 8.0.201
+      GitVersion:   true
       Compile:      true
       UnitTests:    true
-      Pack:         true
-      Push:         true
+      IntegrationTests: true
+      Pack: true
+      Push:         false
       NuGetApiUrl:  'https://api.nuget.org/v3/index.json'
     secrets:
-      NuGetFeedCloudTek:  ${{ secrets.NUGET_FEED }}
-      NuGetApiKey:        ${{ secrets.NUGET_API_KEY_HIVE }}
-      NuGetUsername:      ${{ secrets.NUGET_USERNAME }}
-      NuGetPassword:      ${{ secrets.NUGET_PASSWORD }}
+      GH_TOKEN:       '${{ secrets.CLOUDTEK_AUTOMATION_TOKEN }}'
+      NUGET_API_KEY:  '${{ secrets.NUGET_API_KEY }}'
+      # NuGetFeedCloudTek:  ${{ secrets.NUGET_FEED }}
+      # NuGetApiKey:        ${{ secrets.NUGET_API_KEY_HIVE }}
+      # NuGetUsername:      ${{ secrets.NUGET_USERNAME }}
+      # NuGetPassword:      ${{ secrets.NUGET_PASSWORD }}

@@ -1,0 +1,145 @@
+name: "nuke"
+
+on:
+  workflow_call:
+    secrets:
+      NuGetFeedCloudTek:
+        description: "NuGet Feed (cloud-tek)"
+        required: false
+      NuGetUsername:
+        description: "NuGet Username"
+        required: false
+      NuGetPassword:
+        description: "NuGet Password"
+        required: false
+      NuGetApiKey:
+        description: "NuGet Public Feed API Key"
+        required: false
+    inputs:
+      NuGetApiUrl:
+        description: "Target NuGet Feed Url"
+        type: string
+        required: false
+      Directory:
+        description: "Project directory"
+        type: string
+        required: true
+      NetCoreVersion:
+        type: string
+        required: true
+      Compile:
+        description: "Flag indicating if Compile task is to be run"
+        type: boolean
+        default: false
+        required: false
+      Publish:
+        description: "Flag indicating if Publish task is to be run after the Unit&Integration tests"
+        type: boolean
+        default: false
+        required: false
+      Pack:
+        description: "Flag indicating if Pack task is to be run after the Unit&Integration tests"
+        type: boolean
+        default: false
+        required: false
+      Push:
+        description: "Flag indicating if Push task is to be run after the Pack task"
+        type: boolean
+        default: false
+        required: false
+      UnitTests:
+        description: "Flag indicating if UnitTests task is to be run"
+        type: boolean
+        default: false
+        required: false
+      IntegrationTests:
+        description: "Flag indicating if IntegrationTests task is to be run"
+        type: boolean
+        default: false
+        required: false
+      ModuleTests:
+        description: "Flag indicating if ModuleTests task is to be run"
+        type: boolean
+        default: false
+        required: false
+      SystemTests:
+        description: "Flag indicating if SystemTests task is to be run"
+        type: boolean
+        default: false
+        required: false
+      SmokeTests:
+        description: "Flag indicating if SmokeTests task is to be run"
+        type: boolean
+        default: false
+        required: false
+
+jobs:
+  nuke:
+    name: nuke
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_ROLL_FORWARD: Major
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: "0"
+      - uses: actions/setup-dotnet@v1
+        # if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+        name: dotnet installer
+        with:
+          dotnet-version: ${{ inputs.NetCoreVersion }}
+      - name: dotnet nuget add source
+        shell: bash
+        run: |
+          dotnet nuget add source ${{ secrets.NuGetFeedCloudTek }} \
+          -n nuget.cloudtek.io \
+          -u ${{ secrets.NuGetUsername }} \
+          -p ${{ secrets.NuGetPassword }} \
+          --protocol-version 3 \
+          --store-password-in-clear-text
+      # - id: auto-release
+      #   uses: cloud-tek/actions/auto-release@0.19
+      #   with:
+      #     branch: main
+      #     configuration: .config/configuration.changelog.json
+      - id: dotnet-tool-restore
+        shell: bash
+        run: |
+          dotnet tool restore
+      - name: setup gitversion
+        uses: gittools/actions/gitversion/setup@v0.9.7
+        with:
+          versionSpec: '5.x'
+      - name: run giversion
+        uses: gittools/actions/gitversion/execute@v0.9.7
+      - id: nuke
+        uses: cloud-tek/actions/nuke@0.18
+        name: nuke
+        with:
+          directory: ${{ github.workspace }}
+          Compile:          true
+          UnitTests:        true
+          IntegrationTests: true
+          Pack:             true
+          Push:             true
+          NuGetApiUrl:      '${{ inputs.NuGetApiUrl }}'
+          NuGetApiKey:      '${{ secrets.NuGetApiKey }}'
+      # https://github.com/marketplace/actions/test-reporter
+      - name: dotnet nuget remove source
+        if: always()
+        continue-on-error: true
+        run: |
+          dotnet nuget remove source nuget.cloudtek.io
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: XUnit Tests # Name of the check run which will be created
+          path: results/tests/*.trx
+          reporter: dotnet-trx # Format of test results
+    # https://github.com/marketplace/actions/cobertura-report
+    # - uses: 5monkeys/cobertura-action@master
+    #   with:
+    #     path: test/results/*.trx
+    #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+    #     minimum_coverage: 1

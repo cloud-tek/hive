@@ -1,36 +1,25 @@
 mode: Mainline
 merge-message-formats:
-  ghmerge: ^Merge pull-request \#(?<PullRequestNumber>\d+)\ from (?<SourceBranch>.+) to (?<TargetBranch>.+)
+  ghmerge: ^Merge pull request \#(?<PullRequestNumber>\d+) from (?<SourceBranch>.+)
+  #ghmerge: ^Merge pull-request \#(?<PullRequestNumber>\d+)\ from (?<SourceBranch>.+) to (?<TargetBranch>.+)
 branches:
   master:
     regex: (^main$)
     tag: ""
     increment: Patch
     is-release-branch: true
-  release:
-    regex: ^release[/-]
-    mode: ContinuousDeployment
-    tag: pre
-    source-branches:
-    - main
-    increment: None
-    prevent-increment-of-merged-branch-version: true
-    track-merge-target: false
-    tracks-release-branches: false
-    is-release-branch: true
-    is-mainline: false
-    pre-release-weight: 30000
   feature:
-    regex: ^feature?[/-]
-    tag: useBranchName
+    regex: ^(?:feature)?[/-]
+    tag: alpha-{BranchName}
     increment: Minor
-  bug:
-    regex: ^bug[/-]
+    prevent-increment-of-merged-branch-version: false
+  bugfix:
+    regex: ^(?:bugfix)?[/-]
     tag: useBranchName
     increment: Patch
     source-branches: ["main"]
   chore:
-    regex: ^chore[/-]
+    regex: ^(?:chore)?[/-]
     tag: useBranchName
     increment: None
     prevent-increment-of-merged-branch-version: true
