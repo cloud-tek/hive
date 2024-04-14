@@ -17,7 +17,8 @@ public static class OptionsExtensions
   {
     return new TelemetryConfiguration()
     {
-      InstrumentationKey = options.InstrumentationKey
+      //todo: net8 update this to use the new configuration
+      ConnectionString = $"InstrumentationKey={options.InstrumentationKey}"
     }.ConfigureSampling(options);
   }
 }
