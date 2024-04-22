@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <IsPackable>true</IsPackable>
-     <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
-     <PackageIconUrl>https://raw.githubusercontent.com/cloud-tek/public/main/images/cloud-tek.png</PackageIconUrl>
-     <NoWarn>NU5048</NoWarn>
-     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/cloud-tek/public/main/images/cloud-tek.png</PackageIconUrl>
+    <NoWarn>NU5048</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="5.10.3" />
-    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="xunit" />
   </ItemGroup>
 
   <ItemGroup>

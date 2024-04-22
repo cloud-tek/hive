@@ -1,25 +1,14 @@
 name: "nuke"
-
 on:
   workflow_call:
     secrets:
-      NuGetFeedCloudTek:
-        description: "NuGet Feed (cloud-tek)"
+      NUGET_API_KEY:
+        description: "NuGet API Key"
         required: false
-      NuGetUsername:
-        description: "NuGet Username"
-        required: false
-      NuGetPassword:
-        description: "NuGet Password"
-        required: false
-      NuGetApiKey:
-        description: "NuGet Public Feed API Key"
+      GH_TOKEN:
+        description: "GitHub Token"
         required: false
     inputs:
-      NuGetApiUrl:
-        description: "Target NuGet Feed Url"
-        type: string
-        required: false
       Directory:
         description: "Project directory"
         type: string
@@ -27,10 +16,14 @@ on:
       NetCoreVersion:
         type: string
         required: true
+      GitVersion:
+        description: "Flag indicating whether gitversion is to be used"
+        type: boolean
+        required: true
       Compile:
         description: "Flag indicating if Compile task is to be run"
         type: boolean
-        default: false
+        default: true
         required: false
       Publish:
         description: "Flag indicating if Publish task is to be run after the Unit&Integration tests"
@@ -38,7 +31,7 @@ on:
         default: false
         required: false
       Pack:
-        description: "Flag indicating if Pack task is to be run after the Unit&Integration tests"
+        description: "Flag indicating if Pack task is to be run"
         type: boolean
         default: false
         required: false
@@ -57,104 +50,171 @@ on:
         type: boolean
         default: false
         required: false
-      ModuleTests:
-        description: "Flag indicating if ModuleTests task is to be run"
+      FormatCheck:
+        description: "Flag indicating if FormatCheck task is to be run"
         type: boolean
-        default: false
+        default: true
         required: false
-      SystemTests:
-        description: "Flag indicating if SystemTests task is to be run"
+      PackagesOutdatedCheck:
+        description: "Flag indicating if PackagesOutdatedCheck task is to be run"
         type: boolean
-        default: false
+        default: true
         required: false
-      SmokeTests:
-        description: "Flag indicating if SmokeTests task is to be run"
+      PackagesBetaCheck:
+        description: "Flag indicating if PackagesBetaCheck task is to be run"
         type: boolean
-        default: false
+        default: true
+        required: false
+      RunChecks:
+        description: "Flag indicating if RunChecks task is to be run"
+        type: boolean
+        default: true
+        required: false
+      NuGetApiUrl:
+        description: "NuGet Url"
+        type: string
         required: false
 
 jobs:
   nuke:
     name: nuke
     runs-on: ubuntu-latest
+    env:
+      NUKE_SKIP_UNITTESTS: ${{ !inputs.UnitTests }}
+      NUKE_SKIP_INTEGRATIONTESTS: ${{ !inputs.IntegrationTests }}
+      NUKE_SKIP_FORMATCHECK: ${{ !inputs.FormatCheck }}
+      NUKE_SKIP_PACKAGESOUTDATEDCHECK: ${{ !inputs.PackagesOutdatedCheck }}
+      NUKE_SKIP_PACKAGESBETACHECK: ${{ !inputs.PackagesBetaCheck }}
+      NUKE_SKIP_RUNCHECKS: ${{ !inputs.RunChecks }}
+      NUKE_SKIP_PACK: ${{ !inputs.Pack }}
+      NUKE_SKIP_PUSH: ${{ !inputs.Push }}
+      NUKE_SKIP_PUBLISH: ${{ !inputs.Publish }}
     steps:
-      - uses: actions/checkout@v2
+
+      - uses: actions/checkout@v3
         with:
           fetch-depth: "0"
-      - id: auto-release
-        uses: cloud-tek/actions/auto-release@0.19
-        with:
-          branch: main
-          configuration: .config/configuration.changelog.json
-      - name: setup gitversion
-        uses: gittools/actions/gitversion/setup@v0.9.7
-        with:
-          versionSpec: '5.x'
-      - name: run giversion
-        uses: gittools/actions/gitversion/execute@v0.9.7
-      - name: nuget.config (pwsh)
-        shell: pwsh
+          token: ${{ secrets.GH_TOKEN }}
+
+      - shell: bash
+        name: git config
+        if: |
+          github.ref == 'refs/heads/main' &&
+          github.event_name == 'pull_request' &&
+          github.event.action == 'closed' &&
+          github.event.pull_request.merged == true
         run: |
-          $nuget = @"
-          <?xml version="1.0" encoding="utf-8"?>
-          <configuration>
-            <packageSources>
-              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
-              <add key="nuget.cloudtek.io" value="${{ secrets.NuGetFeedCloudTek }}" protocolVersion="3"/>
-            </packageSources>
-            <packageRestore>
-              <add key="enabled" value="True" />
-              <add key="automatic" value="True" />
-            </packageRestore>
-            <bindingRedirects>
-              <add key="skip" value="False" />
-            </bindingRedirects>
-            <packageManagement>
-              <add key="format" value="0" />
-              <add key="disabled" value="False" />
-            </packageManagement>
-            <packageSourceCredentials>
-              <nuget.cloudtek.io>
-                <add key="Username" value="${{ secrets.NuGetUsername }}"/>
-                <add key="ClearTextPassword" value="${{ secrets.NuGetPassword }}" />
-              </nuget.cloudtek.io>
-            </packageSourceCredentials>
-          </configuration>
-          "@
-          $nuget | Out-File -FilePath ${{ github.workspace }}/nuget.config
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
       - uses: actions/setup-dotnet@v1
-        if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
         name: dotnet installer
         with:
           dotnet-version: ${{ inputs.NetCoreVersion }}
-      - name: global.json
-        if: ${{ !(github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged && github.ref == inputs.branch) }}
+
+      - name: dotnet tool restore
         shell: bash
+        working-directory: ${{ inputs.Directory }}
         run: |
-          echo "{ \"tools\": { \"dotnet\": \"${{ inputs.NetCoreVersion }}\" } }" > global.json
-      - id: nuke
-        uses: cloud-tek/actions/nuke@0.18
-        name: nuke
+          dotnet nuget list source
+          dotnet tool restore
+
+      # - name: global.json
+      #   shell: bash
+      #   run: |
+      #     if [ -f "${{ github.workspace }}/global.json" ]; then
+      #       echo "global.json exists"
+      #     else
+      #       echo "{ \"tools\": { \"dotnet\": \"${{ inputs.NetCoreVersion }}\" } }" > ${{ github.workspace }}/global.json
+      #     fi
+
+      - name: setup gitversion
+        uses: gittools/actions/gitversion/setup@v0.12.1
         with:
-          directory: ${{ github.workspace }}
-          Compile:          true
-          UnitTests:        true
-          IntegrationTests: true
-          Pack:             true
-          Push:             true
-          NuGetApiUrl:      '${{ inputs.NuGetApiUrl }}'
-          NuGetApiKey:      '${{ secrets.NuGetApiKey }}'
-      # https://github.com/marketplace/actions/test-reporter
+          versionSpec: '5.x'
+
+      - name: run giversion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.12.1
+
+      - uses: cloud-tek/poc-gitversion-action/smart-tag@0.2
+        id: smart-tag
+        with:
+          semVer: ${{ steps.gitversion.outputs.semVer }}
+
+      - name: dotnet nuke --target All
+        id: nuke-all
+        shell: bash
+        working-directory: ${{ inputs.Directory }}
+        run: |
+          dotnet nuke --target All
+      - name: dotnet nuke --target Push
+        id: nuke-push
+        if: ${{ inputs.Push }}
+        shell: bash
+        working-directory: ${{ inputs.Directory }}
+        run: |
+          dotnet nuke --target Push --nuget-api-url ${{ inputs.NuGetApiUrl }} --nuget-api-key ${{ secrets.NUGET_API_KEY }}
+
+      - uses: cloud-tek/poc-gitversion-action/smart-tag-cleanup@0.2
+        id: smart-tag-cleanup
+        if: ${{ failure() && !startsWith(github.ref, 'refs/heads/main') }}
+        with:
+          build-status: ${{ steps.nuke-all.outputs.outcome }}
+          semVer: ${{ steps.gitversion.outputs.semVer }}
+
+      - name: tree results
+        run: |
+          tree ${{ github.workspace }}/results
+      - name: tree artifacts
+        run: |
+          tree ${{ github.workspace }}/artifacts
       - name: Test Report
         uses: dorny/test-reporter@v1
-        if: success() || failure()
+        if: ${{ inputs.UnitTests }} || ${{ inputs.IntegrationTests }} && (success() || failure())
         with:
-          name: XUnit Tests # Name of the check run which will be created
-          path: tests/results/*.trx
-          reporter: dotnet-trx # Format of test results
-    # https://github.com/marketplace/actions/cobertura-report
-    # - uses: 5monkeys/cobertura-action@master
-    #   with:
-    #     path: test/results/*.trx
-    #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-    #     minimum_coverage: 1
+          name: XUnit Tests
+          path: ${{ github.workspace }}/results/tests/*.trx
+          reporter: dotnet-trx
+
+      # - name: gh release create
+      #   shell: bash
+      #   if: |
+      #     ${{ inputs.GitVersion }} == true &&
+      #     github.ref == 'refs/heads/main' &&
+      #     github.event_name == 'pull_request' &&
+      #     github.event.action == 'closed' &&
+      #     github.event.pull_request.merged == true
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      #   run: |
+      #     BRANCH="${{ github.event.pull_request.head.ref }}"
+      #     if [[ $BRANCH =~ (release)(\/|-)([0-9]+\.[0-9]+) ]]
+      #     then
+      #       echo "${{ github.event.pull_request.head.ref }} --> ${{ github.ref }} (tag: ${BASH_REMATCH[3]})"
+      #       gh release create ${BASH_REMATCH[3]} --title "Release ${BASH_REMATCH[3]}" --verify-tag
+      #     else
+      #       echo "${{ github.event.pull_request.head.ref }} --> ${{ github.ref }} (tag: none)"
+
+
+      #if [[ $TAG =~ ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-((0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))$ ]]
+      # - shell: bash
+      #   name: git tag -d <pre-release tag>
+      #   if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature') }}
+      #   run: |
+      #     TAG=$(git describe --tags --abbrev=0)
+      #     if [[ $TAG == *"-"* ]];
+      #     then
+      #       echo "$TAG is prelease. Deleting..."
+      #       git push --delete origin $TAG
+      #     else
+      #       echo "$TAG is not prelease. Skipped."
+      #     fi
+
+      # - shell: bash
+      #   name: git tag (on push)
+      #   if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature') }}
+      #   run: |
+      #     git tag ${{ steps.gitversion.outputs.semVer }} --force
+      #     git push origin ${{ steps.gitversion.outputs.semVer }} --force
+      #     echo "${{ github.event.pull_request.head.ref }} --> ${{ github.ref }} (tag: ${{ steps.gitversion.outputs.semVer }})"

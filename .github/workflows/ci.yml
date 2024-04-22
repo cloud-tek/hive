@@ -1,7 +1,7 @@
 name: ci
 
 env:
-  NETCORE_VERSION: 6.0.100
+  NETCORE_VERSION: 8.0.201
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
   DOTNET_ROLL_FORWARD: Major
 
@@ -26,28 +26,34 @@ on:
     - main
     paths:
       - ".github/workflows/**"
+      - "./config/dotnet-tools.json"
       - "build/**"
       - "hive.core/**"
       - "hive.microservices/**"
       - "hive.logging/**"
       - "GitVersion.yml"
+      - "global.json"
   workflow_dispatch:
     inputs: {}
 
 jobs:
   build:
-    uses: cloud-tek/hive/.github/workflows/nuke.yml@main
+    uses: ./.github/workflows/nuke.yml
     name: build
     with:
       Directory: ${{ github.workspace }}
-      NetCoreVersion: 7.0.101
+      NetCoreVersion: 8.0.201
+      GitVersion:   true
       Compile:      true
       UnitTests:    true
+      IntegrationTests: true
       Pack:         true
-      Push:         true
+      Push:         false
       NuGetApiUrl:  'https://api.nuget.org/v3/index.json'
     secrets:
-      NuGetFeedCloudTek:  ${{ secrets.NUGET_FEED }}
-      NuGetApiKey:        ${{ secrets.NUGET_API_KEY_HIVE }}
-      NuGetUsername:      ${{ secrets.NUGET_USERNAME }}
-      NuGetPassword:      ${{ secrets.NUGET_PASSWORD }}
+      GH_TOKEN:       '${{ secrets.CLOUDTEK_AUTOMATION_TOKEN }}'
+      NUGET_API_KEY:  '${{ secrets.NUGET_API_KEY }}'
+      # NuGetFeedCloudTek:  ${{ secrets.NUGET_FEED }}
+      # NuGetApiKey:        ${{ secrets.NUGET_API_KEY_HIVE }}
+      # NuGetUsername:      ${{ secrets.NUGET_USERNAME }}
+      # NuGetPassword:      ${{ secrets.NUGET_PASSWORD }}

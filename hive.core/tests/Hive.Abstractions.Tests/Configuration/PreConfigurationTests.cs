@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Hive.Tests.Configuration;
+namespace Hive.Abstractions.Tests.Configuration;
 
 public partial class PreConfigurationTests : ConfigurationFixture
 {

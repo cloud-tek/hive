@@ -14,201 +14,212 @@ namespace Hive.MicroServices.Tests;
 
 public partial class MicroServiceTests
 {
-    public class Startup
+  public class Startup
+  {
+    private const string ServiceName = "microservice-tests-startup";
+
+    [Fact]
+    [UnitTest]
+    public async Task GivenConfigureDefaultServicePipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInNoneMode()
     {
-        private const string ServiceName = "microservice-tests-startup";
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
 
-        [Fact]
-        [UnitTest]
-        public async Task GivenConfigureDefaultServicePipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInNoneMode()
-        {
-            // Arrange
-            var config = new ConfigurationBuilder().Build();
+      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+        .InTestClass<MicroServiceTests>()
+        .ConfigureDefaultServicePipeline();
 
-            var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-                .InTestClass<MicroServiceTests>()
-                .ConfigureDefaultServicePipeline();
+      service.CancellationTokenSource.CancelAfter(1000);
 
-            service.CancellationTokenSource.CancelAfter(1000);
+      // Act
+      await service.RunAsync(config);
 
-            // Act
-            await service.RunAsync(config);
-
-            // Assert
-            service.PipelineMode.Should().Be(MicroServicePipelineMode.None);
-        }
-
-        [Fact]
-        [UnitTest]
-        public async Task GivenConfigureApiPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInApiMode()
-        {
-          // Arrange
-          var config = new ConfigurationBuilder().Build();
-
-          var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-            .InTestClass<MicroServiceTests>()
-            .ConfigureApiPipeline((x) =>
-            { });
-
-          service.CancellationTokenSource.CancelAfter(1000);
-
-          // Act
-          await service.RunAsync(config);
-
-          // Assert
-          service.PipelineMode.Should().Be(MicroServicePipelineMode.Api);
-        }
-
-        [Fact]
-        [UnitTest]
-        public async Task GivenConfigureApiControllerPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInApiControllersMode()
-        {
-          // Arrange
-          var config = new ConfigurationBuilder().Build();
-
-          var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-            .InTestClass<MicroServiceTests>()
-            .ConfigureApiControllerPipeline();
-
-          service.CancellationTokenSource.CancelAfter(1000);
-
-          // Act
-          await service.RunAsync(config);
-
-          // Assert
-          service.PipelineMode.Should().Be(MicroServicePipelineMode.ApiControllers);
-        }
-
-        [Fact]
-        [UnitTest]
-        public async Task GivenConfigureGraphQLPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInGraphQLMode()
-        {
-          // Arrange
-          var config = new ConfigurationBuilder().Build();
-
-          var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-            .InTestClass<MicroServiceTests>()
-            .ConfigureGraphQLPipeline((x) =>
-            { });
-
-          service.CancellationTokenSource.CancelAfter(1000);
-
-          // Act
-          await service.RunAsync(config);
-
-          // Assert
-          service.PipelineMode.Should().Be(MicroServicePipelineMode.GraphQL);
-        }
-
-        [Fact]
-        [UnitTest]
-        public async Task GivenConfigureGrpcPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInGrpcMode()
-        {
-          // Arrange
-          var config = new ConfigurationBuilder().Build();
-
-          var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-            .InTestClass<MicroServiceTests>()
-            .ConfigureGrpcPipeline((x) =>
-              { });
-
-          service.CancellationTokenSource.CancelAfter(1000);
-
-          // Act
-          await service.RunAsync(config);
-
-          // Assert
-          service.PipelineMode.Should().Be(MicroServicePipelineMode.Grpc);
-        }
-
-        [Fact]
-        [UnitTest]
-        public async Task GivenConfigureCodeFirstGrpcPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInGrpcMode()
-        {
-          // Arrange
-          var config = new ConfigurationBuilder().Build();
-
-          var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-            .InTestClass<MicroServiceTests>()
-            .ConfigureCodeFirstGrpcPipeline((x) =>
-              { });
-
-          service.CancellationTokenSource.CancelAfter(1000);
-
-          // Act
-          await service.RunAsync(config);
-
-          // Assert
-          service.PipelineMode.Should().Be(MicroServicePipelineMode.Grpc);
-        }
-
-        [Fact]
-        [UnitTest]
-        public async Task GivenRunAsyncIsInvoked_WhenNoIHostedStartupServicesAreUsed_ThenServiceShouldStartImmediately()
-        {
-            // Arrange
-            var config = new ConfigurationBuilder().Build();
-
-            var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-                .InTestClass<MicroServiceTests>()
-                .ConfigureDefaultServicePipeline();
-
-            service.CancellationTokenSource.CancelAfter(1000);
-
-            // Act & Assert
-            var task = service.RunAsync(config);
-
-            service.ShouldStart(500.Milliseconds());
-
-            await task;
-        }
-
-        [Fact]
-        [UnitTest]
-        public async Task GivenRunAsyncIsInvoked_WhenNonFailingIHostedStartupServicesAreUsed_ThenServiceShouldStart()
-        {
-            // Arrange
-            var config = new ConfigurationBuilder().Build();
-
-            var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-                .InTestClass<MicroServiceTests>()
-                .ConfigureServices((services, configuration) =>
-                {
-                    services.AddHostedStartupService<TestData.Sec2DelayStartupService>();
-                })
-                .ConfigureDefaultServicePipeline();
-
-            service.CancellationTokenSource.CancelAfter(1000);
-
-            // Act & Assert
-            var task = service.RunAsync(config);
-
-            service.ShouldStart(5000.Milliseconds());
-
-            await task;
-        }
-
-        [Fact]
-        [UnitTest]
-        public async Task GivenRunAsyncIsInvoked_WhenFailingIHostedStartupServicesAreUsed_ThenServiceShouldFailToStart()
-        {
-            // Arrange
-            var config = new ConfigurationBuilder().Build();
-
-            var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-                .InTestClass<MicroServiceTests>()
-                .ConfigureServices((services, configuration) =>
-                {
-                    services.AddHostedStartupService<TestData.FailingSec2DelayStartupService>();
-                })
-                .ConfigureDefaultServicePipeline();
-
-            // Act & Assert
-            var task = service.RunAsync(config);
-
-            service.ShouldFailToStart(5000.Milliseconds());
-
-            await task;
-        }
+      // Assert
+      service.PipelineMode.Should().Be(MicroServicePipelineMode.None);
     }
+
+    [Fact]
+    [UnitTest]
+    public async Task GivenRunAsyncIsInvoked_WhenNoIHostedStartupServicesAreUsed_ThenServiceShouldStartImmediately()
+    {
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
+
+      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+        .InTestClass<MicroServiceTests>()
+        .ConfigureDefaultServicePipeline();
+
+      service.CancellationTokenSource.CancelAfter(1000);
+
+      // Act & Assert
+      var task = service.RunAsync(config);
+
+      service.ShouldStart(500.Milliseconds());
+
+      await task;
+    }
+
+    [Fact]
+    [UnitTest]
+    public async Task GivenRunAsyncIsInvoked_WhenNonFailingIHostedStartupServicesAreUsed_ThenServiceShouldStart()
+    {
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
+
+      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+        .InTestClass<MicroServiceTests>()
+        .ConfigureServices(
+          (services, configuration) =>
+          {
+            services.AddHostedStartupService<TestData.Sec2DelayStartupService>();
+          })
+        .ConfigureDefaultServicePipeline();
+
+      service.CancellationTokenSource.CancelAfter(1000);
+
+      // Act & Assert
+      var task = service.RunAsync(config);
+
+      service.ShouldStart(5000.Milliseconds());
+
+      await task;
+    }
+
+    [Fact]
+    [UnitTest]
+    public async Task GivenRunAsyncIsInvoked_WhenFailingIHostedStartupServicesAreUsed_ThenServiceShouldFailToStart()
+    {
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
+
+      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+        .InTestClass<MicroServiceTests>()
+        .ConfigureServices(
+          (services, configuration) =>
+          {
+            services.AddHostedStartupService<TestData.FailingSec2DelayStartupService>();
+          })
+        .ConfigureDefaultServicePipeline();
+
+      // Act & Assert
+      var task = service.RunAsync(config);
+
+      service.ShouldFailToStart(5000.Milliseconds());
+
+      await task;
+    }
+
+    [Fact]
+    [UnitTest]
+    public async Task GivenConfigureApiPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInApiMode()
+    {
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
+
+      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+        .InTestClass<MicroServiceTests>()
+        .ConfigureApiPipeline(
+          (x) =>
+          {
+          });
+
+      service.CancellationTokenSource.CancelAfter(1000);
+
+      // Act
+      await service.RunAsync(config);
+
+      // Assert
+      service.PipelineMode.Should().Be(MicroServicePipelineMode.Api);
+    }
+
+    [Fact]
+    [UnitTest]
+    public async Task
+      GivenConfigureApiControllerPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInApiControllersMode()
+    {
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
+
+      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+        .InTestClass<MicroServiceTests>()
+        .ConfigureApiControllerPipeline();
+
+      service.CancellationTokenSource.CancelAfter(1000);
+
+      // Act
+      await service.RunAsync(config);
+
+      // Assert
+      service.PipelineMode.Should().Be(MicroServicePipelineMode.ApiControllers);
+    }
+
+    [Fact]
+    [UnitTest]
+    public async Task GivenConfigureGraphQLPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInGraphQLMode()
+    {
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
+
+      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+        .InTestClass<MicroServiceTests>()
+        .ConfigureGraphQLPipeline(
+          (x) =>
+          {
+          });
+
+      service.CancellationTokenSource.CancelAfter(1000);
+
+      // Act
+      await service.RunAsync(config);
+
+      // Assert
+      service.PipelineMode.Should().Be(MicroServicePipelineMode.GraphQL);
+    }
+
+    [Fact]
+    [UnitTest]
+    public async Task GivenConfigureGrpcPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInGrpcMode()
+    {
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
+
+      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+        .InTestClass<MicroServiceTests>()
+        .ConfigureGrpcPipeline(
+          (x) =>
+          {
+          });
+
+      service.CancellationTokenSource.CancelAfter(1000);
+
+      // Act
+      await service.RunAsync(config);
+
+      // Assert
+      service.PipelineMode.Should().Be(MicroServicePipelineMode.Grpc);
+    }
+
+    [Fact]
+    [UnitTest]
+    public async Task GivenConfigureCodeFirstGrpcPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInGrpcMode()
+    {
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
+
+      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+        .InTestClass<MicroServiceTests>()
+        .ConfigureCodeFirstGrpcPipeline(
+          (x) =>
+          {
+          });
+
+      service.CancellationTokenSource.CancelAfter(1000);
+
+      // Act
+      await service.RunAsync(config);
+
+      // Assert
+      service.PipelineMode.Should().Be(MicroServicePipelineMode.Grpc);
+    }
+  }
 }

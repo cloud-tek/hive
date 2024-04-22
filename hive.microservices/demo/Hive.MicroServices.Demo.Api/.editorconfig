@@ -1,0 +1,2 @@
+dotnet_separate_import_directive_groups = false
+dotnet_sort_system_directives_first = false

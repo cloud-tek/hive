@@ -1,0 +1,5 @@
+<Project>
+  <Import Project="Sdk.targets" Sdk="CloudTek.Sdk"/>
+
+  <!-- other project-specific properties -->
+</Project>
