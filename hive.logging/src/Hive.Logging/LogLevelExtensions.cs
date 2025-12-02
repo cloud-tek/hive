@@ -5,7 +5,7 @@ namespace Hive.Logging;
 
 internal static class LogLevelExtensions
 {
-  private static readonly IDictionary<LogLevel, LogEventLevel> LogLevelMappings = new Dictionary<LogLevel, LogEventLevel>()
+  private static readonly Dictionary<LogLevel, LogEventLevel> LogLevelMappings = new Dictionary<LogLevel, LogEventLevel>()
     {
         { LogLevel.Trace, LogEventLevel.Verbose },
         { LogLevel.Debug, LogEventLevel.Debug },
