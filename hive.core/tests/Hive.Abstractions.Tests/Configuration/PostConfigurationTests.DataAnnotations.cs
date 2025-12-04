@@ -21,7 +21,7 @@ public partial class PostConfigurationTests
     [UnitTest]
     public void
       GivenSimpleOptionsSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
-        string config, bool shouldBeValid, string? key, params string[] errors)
+        string config, bool shouldBeValid, string? key, params string[]? errors)
     {
       var cfg = GetConfigurationRoot(config);
 
