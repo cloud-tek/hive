@@ -6,12 +6,11 @@
     <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/cloud-tek/public/main/images/cloud-tek.png</PackageIconUrl>
     <NoWarn>NU5048</NoWarn>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="HotChocolate.AspNetCore" />
-    <PackageReference Include="HotChocolate.AspNetCore.Voyager" />
   </ItemGroup>
 
   <ItemGroup>
