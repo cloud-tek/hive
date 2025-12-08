@@ -1,4 +1,3 @@
-using System;
 using FluentAssertions;
 using Hive.Configuration;
 using Hive.Testing;
