@@ -1,4 +1,3 @@
-using System;
 using FluentValidation;
 
 namespace Hive.Abstractions.Tests.Configuration;
