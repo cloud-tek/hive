@@ -1,5 +1,4 @@
 using Hive.Extensions;
-using HotChocolate.AspNetCore.Voyager;
 using HotChocolate.Execution.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,11 +33,12 @@ public static class IMicroServiceExtensions
 
     service.UseCoreMicroServicePipeline(developmentOnlyPipeline: app =>
     {
-      app.UseVoyager(new VoyagerOptions()
-      {
-        Path = "/graphql-voyager",
-        QueryPath = "/graphql"
-      });
+      // todo: replace with Nitro / Banana Cake when available
+      // app.UseVoyager(new VoyagerOptions()
+      // {
+      //   Path = "/graphql-voyager",
+      //   QueryPath = "/graphql"
+      // });
     });
 
     service
