@@ -3,6 +3,6 @@
     "version": "10.0.100"
   },
   "msbuild-sdks": {
-    "CloudTek.Sdk": "10.0.0-beta.1"
+    "CloudTek.Sdk": "10.0.0-beta.3"
   }
 }

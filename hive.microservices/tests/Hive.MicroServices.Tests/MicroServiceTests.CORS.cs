@@ -1,6 +1,4 @@
 using FluentAssertions;
-using Hive.Logging;
-using Hive.Logging.Xunit;
 using Hive.MicroServices.CORS;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
@@ -35,7 +33,7 @@ public partial class MicroServiceTests
 
       var service = (MicroService)new MicroService(ServiceName)
         .InTestClass<MicroServiceTests>()
-        .WithLogging(log => log.ToXunit(_output))
+        //.WithLogging(log => log.ToXunit(_output))
         .WithCORS()
         .ConfigureDefaultServicePipeline();
 
@@ -68,7 +66,7 @@ public partial class MicroServiceTests
 
       var service = (MicroService)new MicroService(ServiceName)
         .InTestClass<MicroServiceTests>()
-        .WithLogging(log => log.ToXunit(_output))
+        //.WithLogging(log => log.ToXunit(_output))
         .WithCORS()
         .ConfigureDefaultServicePipeline();
 
@@ -95,7 +93,7 @@ public partial class MicroServiceTests
     [InlineData(true, CORSPolicyValidator.Errors.AllowedOriginsInvalidFormat, "shared-logging-config.json", "cors-config-10.json")]
     [InlineData(true, CORSPolicyValidator.Errors.AllowedMethodsInvalidValue, "shared-logging-config.json", "cors-config-11.json")]
     [UnitTest]
-    public async Task GivenOptionsWithPolicies_WhenInitializing_ThenPoliciesAreValidated(bool shouldFail, string expectedError, params string[] files)
+    public async Task GivenOptionsWithPolicies_WhenInitializing_ThenPoliciesAreValidated(bool shouldFail, string? expectedError, params string[] files)
     {
       using var scope = EnvironmentVariableScope.Create(Constants.EnvironmentVariables.DotNet.Environment, "Development");
       var config = new ConfigurationBuilder()
@@ -104,7 +102,7 @@ public partial class MicroServiceTests
 
       var service = (MicroService)new MicroService(ServiceName)
         .InTestClass<MicroServiceTests>()
-        .WithLogging(log => log.ToXunit(_output))
+        //.WithLogging(log => log.ToXunit(_output))
         .WithCORS()
         .ConfigureDefaultServicePipeline();
 
