@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>xUnit1012</NoWarn>
+    <NoWarn>$(NoWarn);xUnit1012</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
