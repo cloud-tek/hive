@@ -7,6 +7,9 @@
     <PackageVersion Include="FluentAssertions" Version="[7.2.0]" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.71.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="protobuf-net.Grpc.AspNetCore" Version="1.2.2" />
     <PackageVersion Include="HotChocolate.AspNetCore" Version="15.1.11" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.23.0" />
