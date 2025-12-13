@@ -8,8 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging.LogzIo\Hive.Logging.LogzIo.csproj" />
-    <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging\Hive.Logging.csproj" />
+    <ProjectReference Include="..\..\..\Hive.OpenTelemetry\Hive.OpenTelemetry.csproj" />
     <ProjectReference Include="..\..\src\Hive.MicroServices.Api\Hive.MicroServices.Api.csproj" />
   </ItemGroup>
 
