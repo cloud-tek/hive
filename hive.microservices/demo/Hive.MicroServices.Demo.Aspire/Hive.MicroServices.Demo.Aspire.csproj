@@ -8,4 +8,8 @@
     <UserSecretsId>2de35051-b74a-41a8-be7f-14cc8c953ee1</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Hive.MicroServices.Demo.Api\Hive.MicroServices.Demo.Api.csproj" />
+  </ItemGroup>
+
 </Project>
