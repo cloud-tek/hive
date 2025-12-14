@@ -33,9 +33,43 @@ public class Extension : MicroServiceExtension
           serviceInstanceId: service.Id,
           serviceVersion: null,
           autoGenerateServiceInstanceId: false))
-        .WithLogging(configure: logging)
+        .WithLogging(configure: (log) =>
+        {
+          log.AddConsoleExporter();
+
+          if (service.EnvironmentVariables.ContainsKey(Constants.Environment.OtelExporterOtlpEndpoint))
+          {
+            log.AddOtlpExporter(options =>
+            {
+              options.Endpoint = new Uri(service.EnvironmentVariables[Constants.Environment.OtelExporterOtlpEndpoint]);
+            });
+          }
+
+          if (logging != null)
+          {
+            logging(log);
+          }
+        })
         .WithTracing(configure: tracing)
-        .WithMetrics(configure: metrics);
+        .WithMetrics(configure: m =>
+        {
+          m.AddAspNetCoreInstrumentation();
+          m.AddHttpClientInstrumentation();
+          m.AddRuntimeInstrumentation();
+
+          if (metrics != null)
+          {
+            metrics(m);
+          }
+
+          if (service.EnvironmentVariables.ContainsKey(Constants.Environment.OtelExporterOtlpEndpoint))
+          {
+            m.AddOtlpExporter(options =>
+            {
+              options.Endpoint = new Uri(service.EnvironmentVariables[Constants.Environment.OtelExporterOtlpEndpoint]);
+            });
+          }
+        });
     });
   }
 }
