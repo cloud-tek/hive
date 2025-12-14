@@ -57,6 +57,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.OpenTelemetry", "Hive.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.MicroServices.Demo.Api", "hive.microservices\demo\Hive.MicroServices.Demo.Api\Hive.MicroServices.Demo.Api.csproj", "{D32F574E-4AE4-4036-8279-7D19A8D35A13}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.MicroServices.Demo.Aspire", "hive.microservices\demo\Hive.MicroServices.Demo.Aspire\Hive.MicroServices.Demo.Aspire.csproj", "{380C2A38-8424-49C2-B2F5-1CB532D5A3F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.MicroServices.Demo.ServiceDefaults", "hive.microservices\demo\Hive.MicroServices.Demo.ServiceDefaults\Hive.MicroServices.Demo.ServiceDefaults.csproj", "{0CCC05F9-6FA0-464F-9543-89923C52A338}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -124,6 +128,14 @@ Global
 		{D32F574E-4AE4-4036-8279-7D19A8D35A13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D32F574E-4AE4-4036-8279-7D19A8D35A13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D32F574E-4AE4-4036-8279-7D19A8D35A13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{380C2A38-8424-49C2-B2F5-1CB532D5A3F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{380C2A38-8424-49C2-B2F5-1CB532D5A3F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{380C2A38-8424-49C2-B2F5-1CB532D5A3F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{380C2A38-8424-49C2-B2F5-1CB532D5A3F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CCC05F9-6FA0-464F-9543-89923C52A338}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CCC05F9-6FA0-464F-9543-89923C52A338}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CCC05F9-6FA0-464F-9543-89923C52A338}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CCC05F9-6FA0-464F-9543-89923C52A338}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DF8CC8C9-89BB-450D-A06D-5DE35890FAEA} = {650A1B8E-7D2A-4C89-A4A4-ED849B4F421F}
@@ -149,5 +161,7 @@ Global
 		{092FBD16-5621-403E-AC2B-2AB1C9C6BA3F} = {C5892F32-3E30-48B5-9259-71F649760EF6}
 		{86354220-6869-4A86-8D0D-DAAC753A001F} = {17C230F7-F05D-4D9E-989B-BDF5016F56ED}
 		{D32F574E-4AE4-4036-8279-7D19A8D35A13} = {91B02555-8919-4F8E-A3ED-9B73FA898067}
+		{380C2A38-8424-49C2-B2F5-1CB532D5A3F8} = {91B02555-8919-4F8E-A3ED-9B73FA898067}
+		{0CCC05F9-6FA0-464F-9543-89923C52A338} = {91B02555-8919-4F8E-A3ED-9B73FA898067}
 	EndGlobalSection
 EndGlobal

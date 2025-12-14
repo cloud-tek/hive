@@ -5,6 +5,8 @@ using Hive.MicroServices.Api;
 using Hive.MicroServices.Demo.Api;
 using Hive.OpenTelemetry;
 using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 var summaries = new[]
 {
@@ -15,8 +17,8 @@ var service = new MicroService("hive-microservices-api-demo")
   //.WithCORS()
   .WithOpenTelemetry(
     logging: (log) => { log.AddConsoleExporter(); },
-    tracing: (trace) => { },
-    metrics: (meter) => { })
+    tracing: (trace) => { trace.AddConsoleExporter(); },
+    metrics: (meter) => { meter.AddAspNetCoreInstrumentation(); })
   // .WithLogging(
   //   log =>
   //   {z
