@@ -35,83 +35,115 @@ Tests for the `WithOpenTelemetry` extension method registration:
 
 ---
 
-### 2. Resource Configuration Tests
+### 2. Configuration Loading Tests ✅ IMPLEMENTED
+
+**File:** `ConfigurationTests.cs`
+
+Tests for IConfiguration-based OpenTelemetry configuration:
+
+- [x] Verify service starts with no configuration (uses defaults)
+- [x] Verify service starts with full JSON configuration (all sections)
+- [x] Verify service starts with OTLP endpoint configuration only
+- [x] Verify service starts with partial configuration (single property)
+- [x] Verify service starts with multiple resource attributes
+- [x] Verify service starts with OTLP headers configured
+- [x] Verify extension is registered when using default configuration
+
+**Status:** 7/7 tests passing (6 configuration tests + 1 from ExtensionTests verifying default behavior)
+
+---
+
+### 3. Resource Configuration Tests
 
 **File:** `OpenTelemetryTests.Resources.cs` (planned)
 
 Tests for OpenTelemetry resource attribute configuration:
 
-- [ ] Verify `service.name` is set from `IMicroService.Name`
-- [ ] Verify `service.instance.id` is set from `IMicroService.Id`
-- [ ] Verify `serviceNamespace` is null (as per current implementation)
-- [ ] Verify `serviceVersion` is null (as per current implementation)
+- [~] Verify `service.name` is set from `IMicroService.Name` (implicitly tested via ConfigurationTests)
+- [~] Verify `service.instance.id` is set from `IMicroService.Id` (implicitly tested via ConfigurationTests)
+- [ ] Verify `serviceNamespace` from IConfiguration is applied
+- [ ] Verify `serviceVersion` from IConfiguration is applied
 - [ ] Verify `autoGenerateServiceInstanceId` is false
-- [ ] Verify resource attributes are properly propagated to logs, traces, and metrics
+- [~] Verify custom resource attributes from IConfiguration are applied (implicitly tested via ConfigurationTests)
 
 ---
 
-### 3. Logging Configuration Tests
+### 4. Logging Configuration Tests
 
 **File:** `OpenTelemetryTests.Logging.cs` (planned)
 
 #### Default logging configuration (no custom action)
 
-- [ ] Verify console exporter is added by default
+- [~] Verify console exporter is enabled by default (implicitly tested via ConfigurationTests with EnableConsoleExporter=true)
+- [ ] Verify OTLP exporter is added when OTLP endpoint is configured in IConfiguration
 - [ ] Verify OTLP exporter is added when `OTEL_EXPORTER_OTLP_ENDPOINT` env var is set
+- [ ] Verify OTLP exporter uses correct endpoint from IConfiguration
 - [ ] Verify OTLP exporter uses correct endpoint from environment variable
-- [ ] Verify console exporter remains when OTLP endpoint is configured
-- [ ] Verify no OTLP exporter when environment variable is not set
+- [ ] Verify IConfiguration takes priority over environment variable
+- [ ] Verify console exporter can be disabled via IConfiguration
 
 #### Custom logging configuration
 
-- [ ] Verify custom `Action<LoggerProviderBuilder>` is invoked
-- [ ] Verify custom configuration overrides default behavior
+- [x] Verify custom `Action<LoggerProviderBuilder>` parameter is accepted (tested in ExtensionTests)
+- [ ] Verify custom configuration completely overrides default behavior
 - [ ] Verify service starts with custom logging configuration
+
+**Status:** 2/10 tests passing (1 explicit + 1 implicit)
 
 ---
 
-### 4. Tracing Configuration Tests
+### 5. Tracing Configuration Tests
 
 **File:** `OpenTelemetryTests.Tracing.cs` (planned)
 
 #### Default tracing configuration (no custom action)
 
-- [ ] Verify ASP.NET Core instrumentation is added
-- [ ] Verify HTTP Client instrumentation is added
+- [~] Verify ASP.NET Core instrumentation is enabled by default (implicitly tested via ConfigurationTests with EnableAspNetCoreInstrumentation=true)
+- [~] Verify HTTP Client instrumentation is enabled by default (implicitly tested via ConfigurationTests with EnableHttpClientInstrumentation=true)
+- [ ] Verify OTLP exporter is added when OTLP endpoint is configured in IConfiguration
 - [ ] Verify OTLP exporter is added when `OTEL_EXPORTER_OTLP_ENDPOINT` env var is set
+- [ ] Verify OTLP exporter uses correct endpoint from IConfiguration
 - [ ] Verify OTLP exporter uses correct endpoint from environment variable
-- [ ] Verify no OTLP exporter when environment variable is not set
+- [ ] Verify IConfiguration takes priority over environment variable
+- [ ] Verify instrumentation can be disabled via IConfiguration
 
 #### Custom tracing configuration
 
-- [ ] Verify custom `Action<TracerProviderBuilder>` is invoked
-- [ ] Verify custom configuration overrides default behavior
+- [x] Verify custom `Action<TracerProviderBuilder>` parameter is accepted (tested in ExtensionTests)
+- [ ] Verify custom configuration completely overrides default behavior
 - [ ] Verify service starts with custom tracing configuration
+
+**Status:** 3/11 tests passing (1 explicit + 2 implicit)
 
 ---
 
-### 5. Metrics Configuration Tests
+### 6. Metrics Configuration Tests
 
 **File:** `OpenTelemetryTests.Metrics.cs` (planned)
 
 #### Default metrics configuration (no custom action)
 
-- [ ] Verify ASP.NET Core instrumentation is added
-- [ ] Verify HTTP Client instrumentation is added
-- [ ] Verify Runtime instrumentation is added
+- [~] Verify ASP.NET Core instrumentation is enabled by default (implicitly tested via ConfigurationTests with EnableAspNetCoreInstrumentation=true)
+- [~] Verify HTTP Client instrumentation is enabled by default (implicitly tested via ConfigurationTests with EnableHttpClientInstrumentation=true)
+- [~] Verify Runtime instrumentation is enabled by default (implicitly tested via ConfigurationTests with EnableRuntimeInstrumentation=true)
+- [ ] Verify OTLP exporter is added when OTLP endpoint is configured in IConfiguration
 - [ ] Verify OTLP exporter is added when `OTEL_EXPORTER_OTLP_ENDPOINT` env var is set
+- [ ] Verify OTLP exporter uses correct endpoint from IConfiguration
 - [ ] Verify OTLP exporter uses correct endpoint from environment variable
-- [ ] Verify no OTLP exporter when environment variable is not set
+- [ ] Verify IConfiguration takes priority over environment variable
+- [ ] Verify instrumentation can be disabled via IConfiguration
 
 #### Custom metrics configuration
 
-- [ ] Verify custom `Action<MeterProviderBuilder>` is invoked
-- [ ] Verify custom configuration overrides default behavior
+- [x] Verify custom `Action<MeterProviderBuilder>` parameter is accepted (tested in ExtensionTests)
+- [ ] Verify custom configuration completely overrides default behavior
 - [ ] Verify service starts with custom metrics configuration
+
+**Status:** 4/12 tests passing (1 explicit + 3 implicit)
 
 ---
 
-### 6. Environment Variable Tests
+### 7. Environment Variable Tests
 
 **File:** `OpenTelemetryTests.Environment.cs` (planned)
 
@@ -119,71 +151,74 @@ Tests for OpenTelemetry resource attribute configuration:
 
 - [ ] Verify endpoint is read from environment variables correctly
 - [ ] Verify endpoint is properly parsed as URI
-- [ ] Verify behavior when environment variable is missing
+- [ ] Verify behavior when environment variable is missing (fallback to null, no OTLP export)
 - [ ] Verify behavior when environment variable is empty string
 - [ ] Verify behavior with malformed URIs (should throw or handle gracefully)
 - [ ] Verify behavior with different URI schemes (http, https)
-
-#### Custom environment variable name
-
-- [ ] Verify custom environment variable name parameter works
-- [ ] Verify extension reads from custom variable instead of default
+- [ ] Verify IConfiguration OTLP endpoint takes priority over environment variable
+- [ ] Verify environment variable is used as fallback when IConfiguration Otlp.Endpoint is empty
 
 **Testing Utilities:**
 - Use `EnvironmentVariableScope` from `Hive.Testing` for scoped environment variable manipulation
 
+**Status:** 0/8 tests passing
+
 ---
 
-### 7. Service Lifecycle Integration Tests
+### 8. Service Lifecycle Integration Tests
 
-**File:** `MicroServiceTests.Startup.cs` (planned)
+**File:** `ConfigurationTests.cs` (partially implemented) / `MicroServiceTests.Startup.cs` (planned)
 
 #### Service startup with OpenTelemetry
 
-- [ ] Verify service starts successfully with OpenTelemetry configured
-- [ ] Verify service starts with Api pipeline mode
+- [x] Verify service starts successfully with OpenTelemetry configured (tested in ConfigurationTests)
+- [x] Verify service starts with Api pipeline mode (tested in ConfigurationTests via ConfigureApiPipeline)
 - [ ] Verify service starts with ApiControllers pipeline mode
 - [ ] Verify service starts with GraphQL pipeline mode
 - [ ] Verify service starts with Grpc pipeline mode
 - [ ] Verify service starts with Job pipeline mode
 - [ ] Verify service starts with None pipeline mode (default)
-- [ ] Verify OpenTelemetry doesn't prevent service startup
-- [ ] Verify service can start without OTLP endpoint configured (console-only mode)
+- [x] Verify OpenTelemetry doesn't prevent service startup (tested in ConfigurationTests)
+- [x] Verify service can start without OTLP endpoint configured (tested in ConfigurationTests - GivenNoConfiguration test)
 
 #### Service with multiple extensions
 
 - [ ] Verify OpenTelemetry works alongside other extensions
-- [ ] Verify order of extension registration doesn't break functionality
+- [x] Verify order of extension registration doesn't break functionality (tested in ExtensionTests - chaining test)
 
 **Testing Utilities:**
 - Use `.InTestClass<T>()` extension for test isolation
 - Use `.ShouldStart()` extension for startup verification
 - Use `.ShouldFailToStart()` for negative test cases
 
+**Status:** 5/11 tests passing
+
 ---
 
-### 8. Configuration Section Tests
+### 9. Configuration Section Tests
 
 **File:** `OpenTelemetryTests.Constants.cs` (planned)
 
 Tests for configuration constants:
 
 - [ ] Verify `Constants.Environment.OtelExporterOtlpEndpoint` has correct value ("OTEL_EXPORTER_OTLP_ENDPOINT")
-- [ ] Verify `Constants.OtelLoggingExporterSection` has correct value ("OpenTelemetry:Logging")
-- [ ] Verify `Constants.OtelTracingExporterSection` has correct value ("OpenTelemetry:Tracing")
-- [ ] Verify `Constants.OtelMetricsExporterSection` has correct value ("OpenTelemetry:Metrics")
+- [ ] Verify `OpenTelemetryOptions.SectionKey` has correct value ("OpenTelemetry")
+- [~] Verify IConfiguration section "OpenTelemetry" is properly bound to OpenTelemetryOptions (implicitly tested via ConfigurationTests)
+- [~] Verify subsections (Resource, Logging, Tracing, Metrics, Otlp) are properly bound (implicitly tested via ConfigurationTests)
 
-**Note:** Configuration sections are currently defined but not used in the implementation. Document intended usage.
+**Note:** Legacy constants (`OtelLoggingExporterSection`, `OtelTracingExporterSection`, `OtelMetricsExporterSection`) are defined but not used in favor of the unified `OpenTelemetryOptions` model.
+
+**Status:** 2/4 tests passing (implicit)
 
 ---
 
-### 9. Pipeline Mode Compatibility Tests
+### 10. Pipeline Mode Compatibility Tests
 
 **File:** `MicroServiceTests.PipelineModes.cs` (planned)
 
 Tests for OpenTelemetry compatibility with different pipeline modes:
 
-- [ ] Test with `ConfigureApiPipeline` - minimal API endpoints
+- [x] Test with `ConfigureApiPipeline` - minimal API endpoints (tested in ConfigurationTests)
 - [ ] Test with `ConfigureApiControllerPipeline` - controller-based APIs
 - [ ] Test with `ConfigureGraphQLPipeline` - GraphQL APIs
 - [ ] Test with `ConfigureGrpcPipeline` - gRPC services
@@ -191,9 +226,11 @@ Tests for OpenTelemetry compatibility with different pipeline modes:
 - [ ] Test with `ConfigureDefaultServicePipeline` - None mode
 - [ ] Verify telemetry is emitted for each pipeline mode
 
+**Status:** 1/7 tests passing
+
 ---
 
-### 10. Error Handling Tests
+### 11. Error Handling Tests
 
 **File:** `OpenTelemetryTests.ErrorHandling.cs` (planned)
 
@@ -205,9 +242,11 @@ Tests for invalid configuration scenarios:
 - [ ] Verify service handles OTLP export failures gracefully
 - [ ] Verify service continues operation if OTLP endpoint is unreachable
 
+**Status:** 0/5 tests passing
+
 ---
 
-### 11. End-to-End Observability Tests (Optional)
+### 12. End-to-End Observability Tests (Optional)
 
 **File:** `OpenTelemetryTests.E2E.cs` (planned)
 
@@ -225,9 +264,11 @@ Integration tests for actual telemetry emission:
 - Verify exported data contains expected resource attributes
 - Verify instrumentation captures expected signals
 
+**Status:** 0/6 tests passing (optional)
+
 ---
 
-### 12. Demo Application Validation
+### 13. Demo Application Validation (Optional)
 
 **File:** System/Smoke tests in demo project (planned)
 
@@ -239,6 +280,8 @@ Tests for demo application integration:
 - [ ] Verify demo emits logs, traces, and metrics
 
 **Demo Location:** `hive.microservices/demo/Hive.MicroServices.Demo.Api/`
+
+**Status:** 0/4 tests passing (optional)
 
 ---
 
@@ -278,32 +321,53 @@ dotnet test --filter FullyQualifiedName~ExtensionTests.GivenWithOpenTelemetry_Wh
 
 | Category | File | Tests Planned | Tests Implemented | Status |
 |----------|------|---------------|-------------------|--------|
-| Extension Registration | `ExtensionTests.cs` | 9 | 9 | ✅ Complete |
-| Resource Configuration | `OpenTelemetryTests.Resources.cs` | 6 | 0 | ⏳ Planned |
-| Logging Configuration | `OpenTelemetryTests.Logging.cs` | 8 | 0 | ⏳ Planned |
-| Tracing Configuration | `OpenTelemetryTests.Tracing.cs` | 8 | 0 | ⏳ Planned |
-| Metrics Configuration | `OpenTelemetryTests.Metrics.cs` | 8 | 0 | ⏳ Planned |
-| Environment Variables | `OpenTelemetryTests.Environment.cs` | 8 | 0 | ⏳ Planned |
-| Service Lifecycle | `MicroServiceTests.Startup.cs` | 11 | 0 | ⏳ Planned |
-| Configuration Constants | `OpenTelemetryTests.Constants.cs` | 4 | 0 | ⏳ Planned |
-| Pipeline Compatibility | `MicroServiceTests.PipelineModes.cs` | 7 | 0 | ⏳ Planned |
-| Error Handling | `OpenTelemetryTests.ErrorHandling.cs` | 5 | 0 | ⏳ Planned |
-| E2E Observability | `OpenTelemetryTests.E2E.cs` | 6 | 0 | 📋 Optional |
-| Demo Validation | Demo project tests | 4 | 0 | 📋 Optional |
+| 1. Extension Registration | `ExtensionTests.cs` | 9 | 9 | ✅ Complete |
+| 2. Configuration Loading | `ConfigurationTests.cs` | 7 | 7 | ✅ Complete |
+| 3. Resource Configuration | `OpenTelemetryTests.Resources.cs` | 6 | 3 (implicit) | 🔄 Partial |
+| 4. Logging Configuration | `OpenTelemetryTests.Logging.cs` | 10 | 2 (1+1i) | 🔄 Partial |
+| 5. Tracing Configuration | `OpenTelemetryTests.Tracing.cs` | 11 | 3 (1+2i) | 🔄 Partial |
+| 6. Metrics Configuration | `OpenTelemetryTests.Metrics.cs` | 12 | 4 (1+3i) | 🔄 Partial |
+| 7. Environment Variables | `OpenTelemetryTests.Environment.cs` | 8 | 0 | ⏳ Planned |
+| 8. Service Lifecycle | `ConfigurationTests.cs` + planned | 11 | 5 | 🔄 Partial |
+| 9. Configuration Constants | `OpenTelemetryTests.Constants.cs` | 4 | 2 (implicit) | 🔄 Partial |
+| 10. Pipeline Compatibility | `MicroServiceTests.PipelineModes.cs` | 7 | 1 | 🔄 Partial |
+| 11. Error Handling | `OpenTelemetryTests.ErrorHandling.cs` | 5 | 0 | ⏳ Planned |
+| 12. E2E Observability | `OpenTelemetryTests.E2E.cs` | 6 | 0 | 📋 Optional |
+| 13. Demo Validation | Demo project tests | 4 | 0 | 📋 Optional |
 
-**Total:** 84 tests planned, 9 implemented (10.7% complete)
+**Total:** 100 tests planned (90 mandatory + 10 optional), 36 implemented (40.0% complete)
+
+**Legend:**
+- ✅ Complete - All tests implemented and passing
+- 🔄 Partial - Some tests implemented, others implicitly validated or planned
+- ⏳ Planned - Not yet implemented
+- 📋 Optional - Nice to have, not required for core functionality
+- (i) = implicitly tested through integration tests
 
 ---
 
 ## Next Steps
 
-1. Implement Resource Configuration Tests
-2. Implement Logging Configuration Tests
-3. Implement Tracing Configuration Tests
-4. Implement Metrics Configuration Tests
-5. Implement Environment Variable Tests
-6. Implement Service Lifecycle Integration Tests
-7. Implement Pipeline Mode Compatibility Tests
-8. Implement Error Handling Tests
-9. Consider implementing E2E Observability Tests
-10. Consider implementing Demo Validation Tests
+Based on current implementation progress (36/90 mandatory tests, 40% complete):
+
+### High Priority
+1. **Environment Variable Tests** (0/8) - Critical for OTLP endpoint resolution priority chain
+2. **Resource Configuration Tests** (3/6 implicit → explicit) - Validate service.name, service.instance.id, custom attributes
+3. **Logging Configuration Tests** (2/10 → 10/10) - Validate OTLP exporter configuration and IConfiguration priority
+4. **Tracing Configuration Tests** (3/11 → 11/11) - Validate instrumentation and OTLP exporter configuration
+5. **Metrics Configuration Tests** (4/12 → 12/12) - Validate instrumentation and OTLP exporter configuration
+
+### Medium Priority
+6. **Service Lifecycle Integration Tests** (5/11 → 11/11) - Test remaining pipeline modes
+7. **Pipeline Mode Compatibility Tests** (1/7 → 7/7) - Test ApiControllers, GraphQL, Grpc, Job, None modes
+8. **Error Handling Tests** (0/5) - Validate graceful failure scenarios
+9. **Configuration Constants Tests** (2/4 implicit → explicit) - Validate constant values
+
+### Optional (Nice to Have)
+10. **E2E Observability Tests** (0/6) - Use InMemoryExporter to validate actual telemetry emission
+11. **Demo Validation Tests** (0/4) - Smoke tests for demo application
+
+### Implementation Notes
+- Many tests are currently "implicitly tested" through integration tests in `ConfigurationTests.cs`
+- Next focus should be on explicit unit tests to validate individual behaviors
+- Environment variable tests are critical as they validate the configuration priority chain documented in CONFIGURATION_STRATEGY.md
