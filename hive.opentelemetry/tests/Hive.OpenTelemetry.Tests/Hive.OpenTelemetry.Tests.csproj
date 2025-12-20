@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\src\Hive.OpenTelemetry\Hive.OpenTelemetry.csproj" />
     <ProjectReference Include="..\..\..\hive.core\src\Hive.Testing\Hive.Testing.csproj" />
     <ProjectReference Include="..\..\..\hive.microservices\src\Hive.MicroServices\Hive.MicroServices.csproj" />
+    <ProjectReference Include="..\..\..\hive.microservices\src\Hive.MicroServices.Api\Hive.MicroServices.Api.csproj" />
   </ItemGroup>
 
 </Project>
