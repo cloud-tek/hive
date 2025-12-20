@@ -53,18 +53,27 @@ Tests for IConfiguration-based OpenTelemetry configuration:
 
 ---
 
-### 3. Resource Configuration Tests
+### 3. Resource Configuration Tests ✅ IMPLEMENTED
 
-**File:** `OpenTelemetryTests.Resources.cs` (planned)
+**File:** `ResourceConfigurationTests.cs`
 
 Tests for OpenTelemetry resource attribute configuration:
 
-- [~] Verify `service.name` is set from `IMicroService.Name` (implicitly tested via ConfigurationTests)
-- [~] Verify `service.instance.id` is set from `IMicroService.Id` (implicitly tested via ConfigurationTests)
-- [ ] Verify `serviceNamespace` from IConfiguration is applied
-- [ ] Verify `serviceVersion` from IConfiguration is applied
-- [ ] Verify `autoGenerateServiceInstanceId` is false
-- [~] Verify custom resource attributes from IConfiguration are applied (implicitly tested via ConfigurationTests)
+- [x] Verify `service.name` is set from `IMicroService.Name`
+- [x] Verify `service.instance.id` is set from `IMicroService.Id`
+- [x] Verify `serviceNamespace` from IConfiguration is applied
+- [x] Verify `serviceVersion` from IConfiguration is applied
+- [x] Verify custom resource attributes from IConfiguration are applied
+- [x] Verify default resource options when no configuration provided
+
+**Status:** 6/6 tests passing
+
+**Implementation Notes:**
+- `service.name` is always set from `IMicroService.Name`
+- `service.instance.id` is always set from `IMicroService.Id`
+- `serviceNamespace` and `serviceVersion` are optional and loaded from IConfiguration
+- Custom attributes can be added via `OpenTelemetry:Resource:Attributes:*` configuration
+- Tests verify service starts successfully with various resource configurations
 
 ---
 
@@ -323,7 +332,7 @@ dotnet test --filter FullyQualifiedName~ExtensionTests.GivenWithOpenTelemetry_Wh
 |----------|------|---------------|-------------------|--------|
 | 1. Extension Registration | `ExtensionTests.cs` | 9 | 9 | ✅ Complete |
 | 2. Configuration Loading | `ConfigurationTests.cs` | 7 | 7 | ✅ Complete |
-| 3. Resource Configuration | `OpenTelemetryTests.Resources.cs` | 6 | 3 (implicit) | 🔄 Partial |
+| 3. Resource Configuration | `ResourceConfigurationTests.cs` | 6 | 6 | ✅ Complete |
 | 4. Logging Configuration | `OpenTelemetryTests.Logging.cs` | 10 | 2 (1+1i) | 🔄 Partial |
 | 5. Tracing Configuration | `OpenTelemetryTests.Tracing.cs` | 11 | 3 (1+2i) | 🔄 Partial |
 | 6. Metrics Configuration | `OpenTelemetryTests.Metrics.cs` | 12 | 4 (1+3i) | 🔄 Partial |
@@ -335,7 +344,9 @@ dotnet test --filter FullyQualifiedName~ExtensionTests.GivenWithOpenTelemetry_Wh
 | 12. E2E Observability | `OpenTelemetryTests.E2E.cs` | 6 | 0 | 📋 Optional |
 | 13. Demo Validation | Demo project tests | 4 | 0 | 📋 Optional |
 
-**Total:** 100 tests planned (90 mandatory + 10 optional), 36 implemented (40.0% complete)
+**Total:** 100 tests planned (90 mandatory + 10 optional), 42 implemented (46.7% complete)
+
+**Explicit Tests Passing:** 21 (9 Extension + 6 Configuration + 6 Resource)
 
 **Legend:**
 - ✅ Complete - All tests implemented and passing
@@ -348,26 +359,38 @@ dotnet test --filter FullyQualifiedName~ExtensionTests.GivenWithOpenTelemetry_Wh
 
 ## Next Steps
 
-Based on current implementation progress (36/90 mandatory tests, 40% complete):
+Based on current implementation progress (42/90 mandatory tests, 46.7% complete):
 
 ### High Priority
 1. **Environment Variable Tests** (0/8) - Critical for OTLP endpoint resolution priority chain
-2. **Resource Configuration Tests** (3/6 implicit → explicit) - Validate service.name, service.instance.id, custom attributes
-3. **Logging Configuration Tests** (2/10 → 10/10) - Validate OTLP exporter configuration and IConfiguration priority
-4. **Tracing Configuration Tests** (3/11 → 11/11) - Validate instrumentation and OTLP exporter configuration
-5. **Metrics Configuration Tests** (4/12 → 12/12) - Validate instrumentation and OTLP exporter configuration
+   - Priority: IConfiguration → OTEL_EXPORTER_OTLP_ENDPOINT → null
+   - Test with `EnvironmentVariableScope` from Hive.Testing
+2. **Logging Configuration Tests** (2/10 → 10/10) - Validate OTLP exporter configuration and IConfiguration priority
+   - Console exporter enabled/disabled
+   - OTLP exporter with IConfiguration endpoint
+   - OTLP exporter with environment variable
+   - Configuration priority chain
+3. **Tracing Configuration Tests** (3/11 → 11/11) - Validate instrumentation and OTLP exporter configuration
+   - ASP.NET Core and HTTP Client instrumentation toggle
+   - OTLP exporter configuration
+4. **Metrics Configuration Tests** (4/12 → 12/12) - Validate instrumentation and OTLP exporter configuration
+   - All three instrumentations (ASP.NET Core, HTTP Client, Runtime) toggle
+   - OTLP exporter configuration
 
 ### Medium Priority
-6. **Service Lifecycle Integration Tests** (5/11 → 11/11) - Test remaining pipeline modes
-7. **Pipeline Mode Compatibility Tests** (1/7 → 7/7) - Test ApiControllers, GraphQL, Grpc, Job, None modes
-8. **Error Handling Tests** (0/5) - Validate graceful failure scenarios
-9. **Configuration Constants Tests** (2/4 implicit → explicit) - Validate constant values
+5. **Service Lifecycle Integration Tests** (5/11 → 11/11) - Test remaining pipeline modes
+6. **Pipeline Mode Compatibility Tests** (1/7 → 7/7) - Test ApiControllers, GraphQL, Grpc, Job, None modes
+7. **Error Handling Tests** (0/5) - Validate graceful failure scenarios
+8. **Configuration Constants Tests** (2/4 implicit → explicit) - Validate constant values
 
 ### Optional (Nice to Have)
-10. **E2E Observability Tests** (0/6) - Use InMemoryExporter to validate actual telemetry emission
-11. **Demo Validation Tests** (0/4) - Smoke tests for demo application
+9. **E2E Observability Tests** (0/6) - Use InMemoryExporter to validate actual telemetry emission
+10. **Demo Validation Tests** (0/4) - Smoke tests for demo application
+
+### Recently Completed ✅
+- **Resource Configuration Tests** (6/6) - service.name, service.instance.id, serviceNamespace, serviceVersion, custom attributes
 
 ### Implementation Notes
-- Many tests are currently "implicitly tested" through integration tests in `ConfigurationTests.cs`
-- Next focus should be on explicit unit tests to validate individual behaviors
-- Environment variable tests are critical as they validate the configuration priority chain documented in CONFIGURATION_STRATEGY.md
+- Resource configuration tests now explicitly verify that `service.name` and `service.instance.id` are always set from `IMicroService`
+- Environment variable tests are the next critical priority to validate the configuration priority chain
+- Many signal configuration tests (logging/tracing/metrics) remain implicit - should convert to explicit tests
