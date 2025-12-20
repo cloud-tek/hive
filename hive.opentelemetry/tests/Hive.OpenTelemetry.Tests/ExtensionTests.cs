@@ -132,15 +132,13 @@ public class ExtensionTests
 
   [Fact]
   [UnitTest]
-  public void GivenWithOpenTelemetry_WhenCalledWithCustomEnvironmentVariable_ThenExtensionIsAdded()
+  public void GivenWithOpenTelemetry_WhenCalledWithNoParameters_ThenExtensionIsAdded()
   {
     // Arrange
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>());
-    var customEnvVar = "CUSTOM_OTLP_ENDPOINT";
 
     // Act
-    var result = service.WithOpenTelemetry(
-      otelExporterOtlpEnvpointEnvVar: customEnvVar);
+    var result = service.WithOpenTelemetry();
 
     // Assert
     service.Extensions.Should().HaveCount(1);
