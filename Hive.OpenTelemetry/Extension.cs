@@ -18,13 +18,18 @@ public class Extension : MicroServiceExtension
   /// <param name="logging"></param>
   /// <param name="tracing"></param>
   /// <param name="metrics"></param>
+  /// <param name="otelExporterOtlpEnvpointEnvVar"></param>
   public Extension(IMicroService service,
-    Action<LoggerProviderBuilder> logging,
-    Action<TracerProviderBuilder> tracing,
-    Action<MeterProviderBuilder> metrics) : base(service)
+    Action<LoggerProviderBuilder>? logging = null,
+    Action<TracerProviderBuilder>? tracing = null,
+    Action<MeterProviderBuilder>? metrics = null,
+    string otelExporterOtlpEnvpointEnvVar = Constants.Environment.OtelExporterOtlpEndpoint) : base(service)
   {
     ConfigureActions.Add((svc, cfg) =>
     {
+      //_ = svc.ConfigureOptions<OtlpExporterOptions>(cfg,);
+
+      //tracing.
       // register otel
       svc.AddOpenTelemetry()
         .ConfigureResource(resource => resource.AddService(
@@ -33,43 +38,47 @@ public class Extension : MicroServiceExtension
           serviceInstanceId: service.Id,
           serviceVersion: null,
           autoGenerateServiceInstanceId: false))
-        .WithLogging(configure: (log) =>
-        {
-          log.AddConsoleExporter();
-
-          if (service.EnvironmentVariables.ContainsKey(Constants.Environment.OtelExporterOtlpEndpoint))
+        .WithLogging(
+          configure: logging ?? ((log) =>
           {
-            log.AddOtlpExporter(options =>
+            log.AddConsoleExporter();
+
+            if (service.EnvironmentVariables.ContainsKey(otelExporterOtlpEnvpointEnvVar))
             {
-              options.Endpoint = new Uri(service.EnvironmentVariables[Constants.Environment.OtelExporterOtlpEndpoint]);
+              log.AddOtlpExporter(options =>
+              {
+                options.Endpoint = new Uri(
+                  service.EnvironmentVariables[otelExporterOtlpEnvpointEnvVar]);
+              });
+            }
+          }))
+      .WithTracing(configure: tracing ?? ((trace) =>
+        {
+          trace.AddAspNetCoreInstrumentation();
+          trace.AddHttpClientInstrumentation();
+
+          if (service.EnvironmentVariables.ContainsKey(otelExporterOtlpEnvpointEnvVar))
+          {
+            trace.AddOtlpExporter(options =>
+            {
+              options.Endpoint = new Uri(service.EnvironmentVariables[otelExporterOtlpEnvpointEnvVar]);
             });
           }
+        }))
+      .WithMetrics(configure: metrics ?? (meter =>
+      {
+        meter.AddAspNetCoreInstrumentation();
+        meter.AddHttpClientInstrumentation();
+        meter.AddRuntimeInstrumentation();
 
-          if (logging != null)
-          {
-            logging(log);
-          }
-        })
-        .WithTracing(configure: tracing)
-        .WithMetrics(configure: m =>
+        if (service.EnvironmentVariables.ContainsKey(otelExporterOtlpEnvpointEnvVar))
         {
-          m.AddAspNetCoreInstrumentation();
-          m.AddHttpClientInstrumentation();
-          m.AddRuntimeInstrumentation();
-
-          if (metrics != null)
+          meter.AddOtlpExporter(options =>
           {
-            metrics(m);
-          }
-
-          if (service.EnvironmentVariables.ContainsKey(Constants.Environment.OtelExporterOtlpEndpoint))
-          {
-            m.AddOtlpExporter(options =>
-            {
-              options.Endpoint = new Uri(service.EnvironmentVariables[Constants.Environment.OtelExporterOtlpEndpoint]);
-            });
-          }
-        });
+            options.Endpoint = new Uri(service.EnvironmentVariables[otelExporterOtlpEnvpointEnvVar]);
+          });
+        }
+      }));
     });
   }
 }

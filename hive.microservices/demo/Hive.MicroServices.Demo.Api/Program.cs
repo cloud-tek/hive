@@ -14,17 +14,7 @@ var summaries = new[]
 };
 
 var service = new MicroService("hive-microservices-api-demo")
-  //.WithCORS()
-  .WithOpenTelemetry(
-    logging: (log) => { log.AddConsoleExporter(); },
-    tracing: (trace) => { trace.AddConsoleExporter(); },
-    metrics: (meter) => { meter.AddAspNetCoreInstrumentation(); })
-  // .WithLogging(
-  //   log =>
-  //   {z
-  //     log
-  //       .ToConsole();
-  //   })
+  .WithOpenTelemetry()
   .ConfigureServices((services, _) => { })
   .ConfigureApiPipeline(app =>
   {

@@ -16,19 +16,22 @@ public static class MicroServiceExtensions
   /// <param name="logging"></param>
   /// <param name="tracing"></param>
   /// <param name="metrics"></param>
+  /// <param name="otelExporterOtlpEnvpointEnvVar"></param>
   /// <returns></returns>
   public static IMicroService WithOpenTelemetry(
     this IMicroService service,
-    Action<LoggerProviderBuilder> logging,
-    Action<TracerProviderBuilder> tracing,
-    Action<MeterProviderBuilder> metrics)
+    Action<LoggerProviderBuilder>? logging = null,
+    Action<TracerProviderBuilder>? tracing = null,
+    Action<MeterProviderBuilder>? metrics = null,
+    string otelExporterOtlpEnvpointEnvVar = Constants.Environment.OtelExporterOtlpEndpoint)
   {
     service.Extensions.Add(
       new Extension(
         service: service,
         logging: logging,
         tracing: tracing,
-        metrics: metrics));
+        metrics: metrics,
+        otelExporterOtlpEnvpointEnvVar: otelExporterOtlpEnvpointEnvVar));
     return service;
   }
 }
