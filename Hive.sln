@@ -41,7 +41,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{17C230F7-F05
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{092FBD16-5621-403E-AC2B-2AB1C9C6BA3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.OpenTelemetry", "Hive.OpenTelemetry\Hive.OpenTelemetry.csproj", "{86354220-6869-4A86-8D0D-DAAC753A001F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.OpenTelemetry", "hive.opentelemetry\src\Hive.OpenTelemetry\Hive.OpenTelemetry.csproj", "{86354220-6869-4A86-8D0D-DAAC753A001F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.MicroServices.Demo.Api", "hive.microservices\demo\Hive.MicroServices.Demo.Api\Hive.MicroServices.Demo.Api.csproj", "{D32F574E-4AE4-4036-8279-7D19A8D35A13}"
 EndProject
