@@ -58,6 +58,9 @@ Structure your review as follows:
 
 If a section has no items, omit it entirely.
 
+## Output Instructions
+After completing the review, post your findings as inline comments on the PR using the available GitHub tools. For critical issues, use inline comments on specific lines. Summarize overall findings in a PR comment.
+
 ## Guidelines
 
 - Be specific: Reference exact line numbers and provide concrete suggestions
