@@ -19,3 +19,4 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: "/dotnet-code-review"
           claude_args: "--max-turns 5"
+          show_full_output: true
