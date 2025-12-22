@@ -18,5 +18,5 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: "/dotnet-code-review"
-          claude_args: "--max-turns 5"
+          claude_args: "--max-turns 15"
           show_full_output: true
