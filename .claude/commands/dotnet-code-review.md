@@ -46,13 +46,13 @@ Structure your review as follows:
 ## Critical Issues ❌
 [List any security, correctness, or data integrity issues that must be addressed]
 
-## Recommendations 🟡
+## Recommendations ⚠️
 [Suggested improvements for code quality, performance, or maintainability]
 
-## Minor/Nitpicks ✅
+## Minor/Nitpicks 💡
 [Style suggestions, minor improvements - optional to address]
 
-## Positive Notes 👍
+## Positive Notes 🎉
 [Acknowledge good patterns, improvements, or well-written code]
 ```
 
