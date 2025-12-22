@@ -43,13 +43,13 @@ Structure your review as follows:
 ## Summary
 [One paragraph overview of the changes and overall assessment]
 
-## Critical Issues 🔴
+## Critical Issues ❌
 [List any security, correctness, or data integrity issues that must be addressed]
 
 ## Recommendations 🟡
 [Suggested improvements for code quality, performance, or maintainability]
 
-## Minor/Nitpicks 🟢
+## Minor/Nitpicks ✅
 [Style suggestions, minor improvements - optional to address]
 
 ## Positive Notes 👍
