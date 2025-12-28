@@ -129,7 +129,7 @@ public class OtlpOptions
 {
   /// <summary>
   /// OTLP endpoint (e.g., "http://localhost:4317")
-  /// Falls back to OTEL_EXPORTER_OTLP_ENDPOINT environment variable
+  /// If not set, falls back to OTEL_EXPORTER_OTLP_ENDPOINT environment variable
   /// </summary>
   public string? Endpoint { get; set; }
 
