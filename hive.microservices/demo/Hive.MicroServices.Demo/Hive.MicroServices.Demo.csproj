@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging\Hive.Logging.csproj" />
     <ProjectReference Include="..\..\..\hive.microservices\src\Hive.MicroServices\Hive.MicroServices.csproj" />
   </ItemGroup>
 

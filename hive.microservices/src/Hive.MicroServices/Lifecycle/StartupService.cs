@@ -34,11 +34,26 @@ public class StartupService : IHostedService
   /// <returns><see cref="Task"/></returns>
   public Task StartAsync(CancellationToken cancellationToken)
   {
-#pragma warning disable AsyncFixer03
-    lifetime.ApplicationStarted.Register(async () => await ExecuteHostedStartupServices().ConfigureAwait(false));
+    lifetime.ApplicationStarted.Register(state =>
+    {
+      _ = Task.Run(async () =>
+      {
+        try
+        {
+          await ExecuteHostedStartupServices().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+          // Log the exception since fire-and-forget tasks don't propagate exceptions
+          logger.LogCriticalServiceFailedToStart(ex);
 
-    return Task.FromResult(0);
-#pragma warning restore AsyncFixer03
+          // Note: ExecuteHostedStartupServices already handles failures by stopping the application,
+          // but we log here as well to ensure the exception is visible in case of unexpected failures
+        }
+      });
+    }, null);
+
+    return Task.CompletedTask;
   }
 
   /// <summary>
@@ -70,6 +85,7 @@ public class StartupService : IHostedService
 
       svc.IsStarted = true;
       svc.IsReady = true;
+      await ((MicroServiceLifetime)svc.Lifetime).ServiceStartedTokenSource.CancelAsync();
     }
     catch (Exception ex)
     {
