@@ -493,7 +493,31 @@ public class OptionsValidatorTests
 
     // Assert
     result.ShouldHaveValidationErrorFor(x => x.Otlp.Headers)
-      .WithErrorMessage("Header value for 'x-header' contains invalid characters (control characters or comma)");
+      .WithErrorMessage("Header value for 'x-header' contains invalid characters (control characters, comma, or equals sign). Per W3C Baggage spec, use percent-encoding for special characters.");
+  }
+
+  [Fact]
+  [UnitTest]
+  public void GivenHeaderValueWithEquals_WhenValidating_ThenValidationFails()
+  {
+    // Arrange
+    var options = new OpenTelemetryOptions
+    {
+      Otlp = new OtlpOptions
+      {
+        Headers = new Dictionary<string, string>
+        {
+          ["Authorization"] = "Bearer=token123"
+        }
+      }
+    };
+
+    // Act
+    var result = _validator.TestValidate(options);
+
+    // Assert
+    result.ShouldHaveValidationErrorFor(x => x.Otlp.Headers)
+      .WithErrorMessage("Header value for 'Authorization' contains invalid characters (control characters, comma, or equals sign). Per W3C Baggage spec, use percent-encoding for special characters.");
   }
 
   [Fact]
@@ -517,7 +541,7 @@ public class OptionsValidatorTests
 
     // Assert
     result.ShouldHaveValidationErrorFor(x => x.Otlp.Headers)
-      .WithErrorMessage("Header value for 'x-header' contains invalid characters (control characters or comma)");
+      .WithErrorMessage("Header value for 'x-header' contains invalid characters (control characters, comma, or equals sign). Per W3C Baggage spec, use percent-encoding for special characters.");
   }
 
   [Fact]

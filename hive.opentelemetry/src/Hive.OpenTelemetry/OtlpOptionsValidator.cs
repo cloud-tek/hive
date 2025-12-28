@@ -51,7 +51,7 @@ internal sealed class OtlpOptionsValidator : AbstractValidator<OtlpOptions>
       .WithMessage((options, header) => $"Header key '{header.Key}' contains invalid characters (control characters, comma, or equals sign)");
 
     RuleForEach(x => x.Headers)
-      .Must(header => header.Value == null || !header.Value.Any(c => char.IsControl(c) || c == ','))
-      .WithMessage((options, header) => $"Header value for '{header.Key}' contains invalid characters (control characters or comma)");
+      .Must(header => header.Value == null || !header.Value.Any(c => char.IsControl(c) || c == ',' || c == '='))
+      .WithMessage((options, header) => $"Header value for '{header.Key}' contains invalid characters (control characters, comma, or equals sign). Per W3C Baggage spec, use percent-encoding for special characters.");
   }
 }
