@@ -15,6 +15,33 @@ public static partial class ServiceCollectionExtensions
   private static readonly string[] DefaultOptionsValidationErrors = new[] { "Options validation failed" };
 
   /// <summary>
+  /// Adds a singleton IOptions instance to the service collection if not already registered.
+  /// Returns the registered instance (either newly added or existing).
+  /// </summary>
+  private static IOptions<TOptions> AddOrGetSingletonOptions<TOptions>(
+    this IServiceCollection services,
+    TOptions options)
+    where TOptions : class
+  {
+    var optionsInstance = Options.Create(options);
+
+    // Check if IOptions<TOptions> is already registered
+    var existingDescriptor = services.FirstOrDefault(sd =>
+      sd.ServiceType == typeof(IOptions<TOptions>) &&
+      sd.Lifetime == ServiceLifetime.Singleton);
+
+    if (existingDescriptor != null)
+    {
+      // Return the existing instance
+      return (IOptions<TOptions>)existingDescriptor.ImplementationInstance!;
+    }
+
+    // Not registered yet, add it
+    services.AddSingleton(optionsInstance);
+    return optionsInstance;
+  }
+
+  /// <summary>
   /// Pre-configures TOptions
   /// </summary>
   /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
@@ -36,10 +63,7 @@ public static partial class ServiceCollectionExtensions
     var options = new TOptions();
     configuration.GetExistingSection(sectionKeyProvider()).Bind(options);
 
-    var optionsInstance = Options.Create(options);
-    services.AddSingleton(optionsInstance);
-
-    return optionsInstance;
+    return services.AddOrGetSingletonOptions(options);
   }
 
   /// <summary>
@@ -69,10 +93,7 @@ public static partial class ServiceCollectionExtensions
 
     if (MiniValidator.TryValidate(options, true, out var errors))
     {
-      var optionsInstance = Options.Create(options);
-      services.AddSingleton(optionsInstance);
-
-      return optionsInstance;
+      return services.AddOrGetSingletonOptions(options);
     }
 
     switch (errors.Count)
@@ -132,10 +153,7 @@ public static partial class ServiceCollectionExtensions
         DefaultOptionsValidationErrors);
     }
 
-    var optionsInstance = Options.Create(options);
-    services.AddSingleton(optionsInstance);
-
-    return optionsInstance;
+    return services.AddOrGetSingletonOptions(options);
   }
 
   /// <summary>
@@ -195,10 +213,7 @@ public static partial class ServiceCollectionExtensions
 
     if (result.IsValid)
     {
-      var optionsInstance = Options.Create(options);
-      services.AddSingleton(optionsInstance);
-
-      return optionsInstance;
+      return services.AddOrGetSingletonOptions(options);
     }
 
     switch (result.Errors.Count)
@@ -260,10 +275,7 @@ public static partial class ServiceCollectionExtensions
     // Validate using MiniValidator (DataAnnotations)
     if (MiniValidator.TryValidate(options, true, out var errors))
     {
-      var optionsInstance = Options.Create(options);
-      services.AddSingleton(optionsInstance);
-
-      return optionsInstance;
+      return services.AddOrGetSingletonOptions(options);
     }
 
     // Validation failed - throw with detailed error messages
@@ -335,10 +347,7 @@ public static partial class ServiceCollectionExtensions
         DefaultOptionsValidationErrors);
     }
 
-    var optionsInstance = Options.Create(options);
-    services.AddSingleton(optionsInstance);
-
-    return optionsInstance;
+    return services.AddOrGetSingletonOptions(options);
   }
 
   /// <summary>
@@ -415,10 +424,7 @@ public static partial class ServiceCollectionExtensions
 
     if (result.IsValid)
     {
-      var optionsInstance = Options.Create(options);
-      services.AddSingleton(optionsInstance);
-
-      return optionsInstance;
+      return services.AddOrGetSingletonOptions(options);
     }
 
     // Validation failed - throw with detailed error messages
