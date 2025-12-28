@@ -32,8 +32,16 @@ public static partial class ServiceCollectionExtensions
 
     if (existingDescriptor != null)
     {
-      // Return the existing instance
-      return (IOptions<TOptions>)existingDescriptor.ImplementationInstance!;
+      // If registered with an instance, return it
+      if (existingDescriptor.ImplementationInstance != null)
+      {
+        return (IOptions<TOptions>)existingDescriptor.ImplementationInstance;
+      }
+
+      // If registered with a factory or type, build temporary provider to resolve
+      // This ensures we return the actual registered instance
+      var serviceProvider = services.BuildServiceProvider();
+      return serviceProvider.GetRequiredService<IOptions<TOptions>>();
     }
 
     // Not registered yet, add it
