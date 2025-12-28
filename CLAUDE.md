@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hive is a .NET 10.0 monorepo providing an opinionated, extensible microservices framework built on ASP.NET Core. It follows a plugin-based architecture where all features are implemented as extensions to the core `IMicroService` abstraction.
 
+## C# 14 Features in Use
+Hive uses .NET 10 with C# 14. The following features are valid:
+- Extension members using `extension<T>(Type receiver)` syntax (NOT experimental)
+- The `field` keyword in property accessors
+- Implicit span conversions
+
 ## Common Commands
 
 ### Building
