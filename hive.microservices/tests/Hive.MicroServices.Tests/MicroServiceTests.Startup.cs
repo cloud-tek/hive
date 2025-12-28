@@ -43,6 +43,7 @@ public partial class MicroServiceTests
     public async Task GivenRunAsyncIsInvoked_WhenNoIHostedStartupServicesAreUsed_ThenServiceShouldStartImmediately()
     {
       // Arrange
+      using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out var port);
       var config = new ConfigurationBuilder().Build();
 
       var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -64,6 +65,7 @@ public partial class MicroServiceTests
     public async Task GivenRunAsyncIsInvoked_WhenNonFailingIHostedStartupServicesAreUsed_ThenServiceShouldStart()
     {
       // Arrange
+      using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out var port);
       var config = new ConfigurationBuilder().Build();
 
       var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -90,6 +92,7 @@ public partial class MicroServiceTests
     public async Task GivenRunAsyncIsInvoked_WhenFailingIHostedStartupServicesAreUsed_ThenServiceShouldFailToStart()
     {
       // Arrange
+      using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out var port);
       var config = new ConfigurationBuilder().Build();
 
       var service = new MicroService(ServiceName, new NullLogger<IMicroService>())

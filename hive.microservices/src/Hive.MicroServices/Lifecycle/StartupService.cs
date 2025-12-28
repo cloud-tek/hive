@@ -13,6 +13,7 @@ public class StartupService : IHostedService
   private readonly IHostApplicationLifetime lifetime;
   private readonly ILogger<StartupService> logger;
   private readonly IMicroService service;
+  private readonly IServiceProvider serviceProvider;
 
   /// <summary>
   /// Initializes a new instance of the <see cref="StartupService"/> class.
@@ -20,11 +21,13 @@ public class StartupService : IHostedService
   /// <param name="service"></param>
   /// <param name="lifetime"></param>
   /// <param name="logger"></param>
-  public StartupService(IMicroService service, IHostApplicationLifetime lifetime, ILogger<StartupService> logger)
+  /// <param name="serviceProvider"></param>
+  public StartupService(IMicroService service, IHostApplicationLifetime lifetime, ILogger<StartupService> logger, IServiceProvider serviceProvider)
   {
     this.service = service ?? throw new ArgumentNullException(nameof(service));
     this.lifetime = lifetime ?? throw new ArgumentNullException(nameof(lifetime));
     this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
   }
 
   /// <summary>
@@ -69,7 +72,7 @@ public class StartupService : IHostedService
   private async Task ExecuteHostedStartupServices()
   {
     var svc = (MicroService)service;
-    var svcs = svc.Host.Services.GetServices<IHostedStartupService>();
+    var svcs = serviceProvider.GetServices<IHostedStartupService>();
 
     try
     {

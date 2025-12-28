@@ -101,6 +101,18 @@ public partial class MicroService : MicroServiceBase, IMicroService
   internal Func<Assembly> MicroServiceEntrypointAssemblyProvider { get; set; } = () => Assembly.GetEntryAssembly()!;
 
   /// <summary>
+  /// Optional external host provided via WithExternalHost extension method.
+  /// When set, InitializeAsync will use this host instead of creating a new one.
+  /// </summary>
+  internal IHost? ExternalHost { get; set; }
+
+  /// <summary>
+  /// Optional external host builder factory for test scenarios.
+  /// When set, InitializeAsync will call this factory with configuration to build the host.
+  /// </summary>
+  internal Func<IConfigurationRoot, IHost>? ExternalHostFactory { get; set; }
+
+  /// <summary>
   /// Initializes the microservice and creates the host but does not start it.
   /// </summary>
   /// <param name="configuration"></param>
@@ -110,7 +122,17 @@ public partial class MicroService : MicroServiceBase, IMicroService
   {
     Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
-    Host = CreateHostBuilder(configuration, args);
+    // Priority: ExternalHostFactory > ExternalHost > CreateHostBuilder
+    if (ExternalHostFactory != null)
+    {
+      var config = configuration ?? new ConfigurationBuilder().Build();
+      Host = ExternalHostFactory(config);
+      ConfigurationRoot = config;
+    }
+    else
+    {
+      Host = ExternalHost ?? CreateHostBuilder(configuration, args);
+    }
 
     return Task.CompletedTask;
   }
@@ -155,6 +177,30 @@ public partial class MicroService : MicroServiceBase, IMicroService
     }
 
     return 0;
+  }
+
+  /// <summary>
+  /// Starts the microservice after initialization. Returns immediately after starting.
+  /// </summary>
+  /// <returns><see cref="Task"/></returns>
+  /// <exception cref="ConfigurationException">Thrown when configuration validation fails</exception>
+  public async Task StartAsync()
+  {
+    if (PipelineMode == MicroServicePipelineMode.NotSet)
+    {
+      throw new ConfigurationException(Constants.Errors.PipelineNotSet);
+    }
+
+    await Host.StartAsync(CancellationTokenSource.Token);
+  }
+
+  /// <summary>
+  /// Stops the microservice.
+  /// </summary>
+  /// <returns><see cref="Task"/></returns>
+  public async Task StopAsync()
+  {
+    await Host.StopAsync(CancellationTokenSource.Token);
   }
 
   private IHost CreateHostBuilder(IConfigurationRoot? configuration = null, params string[] args)
