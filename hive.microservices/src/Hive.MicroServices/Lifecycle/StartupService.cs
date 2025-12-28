@@ -34,11 +34,9 @@ public class StartupService : IHostedService
   /// <returns><see cref="Task"/></returns>
   public Task StartAsync(CancellationToken cancellationToken)
   {
-#pragma warning disable AsyncFixer03
-    lifetime.ApplicationStarted.Register(async () => await ExecuteHostedStartupServices().ConfigureAwait(false));
+    lifetime.ApplicationStarted.Register(async state => await ExecuteHostedStartupServices().ConfigureAwait(false), null);
 
-    return Task.FromResult(0);
-#pragma warning restore AsyncFixer03
+    return Task.CompletedTask;
   }
 
   /// <summary>
@@ -70,6 +68,7 @@ public class StartupService : IHostedService
 
       svc.IsStarted = true;
       svc.IsReady = true;
+      await ((MicroServiceLifetime)svc.Lifetime).ServiceStartedTokenSource.CancelAsync();
     }
     catch (Exception ex)
     {
