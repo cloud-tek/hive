@@ -34,7 +34,24 @@ public class StartupService : IHostedService
   /// <returns><see cref="Task"/></returns>
   public Task StartAsync(CancellationToken cancellationToken)
   {
-    lifetime.ApplicationStarted.Register(async state => await ExecuteHostedStartupServices().ConfigureAwait(false), null);
+    lifetime.ApplicationStarted.Register(state =>
+    {
+      _ = Task.Run(async () =>
+      {
+        try
+        {
+          await ExecuteHostedStartupServices().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+          // Log the exception since fire-and-forget tasks don't propagate exceptions
+          logger.LogCriticalServiceFailedToStart(ex);
+
+          // Note: ExecuteHostedStartupServices already handles failures by stopping the application,
+          // but we log here as well to ensure the exception is visible in case of unexpected failures
+        }
+      });
+    }, null);
 
     return Task.CompletedTask;
   }
