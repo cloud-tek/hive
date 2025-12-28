@@ -17,6 +17,7 @@ public class ResourceConfigurationTests
   public async Task GivenMicroService_WhenOpenTelemetryConfigured_ThenServiceNameIsSetFromMicroServiceName()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -40,6 +41,7 @@ public class ResourceConfigurationTests
   public async Task GivenMicroService_WhenOpenTelemetryConfigured_ThenServiceInstanceIdIsSetFromMicroServiceId()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -63,6 +65,7 @@ public class ResourceConfigurationTests
   public async Task GivenServiceNamespaceInConfiguration_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Resource:ServiceNamespace"] = "test-namespace"
@@ -91,6 +94,7 @@ public class ResourceConfigurationTests
   public async Task GivenServiceVersionInConfiguration_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Resource:ServiceVersion"] = "2.0.0"
@@ -119,6 +123,7 @@ public class ResourceConfigurationTests
   public async Task GivenCustomResourceAttributes_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Resource:Attributes:environment"] = "test",
@@ -149,6 +154,7 @@ public class ResourceConfigurationTests
   public async Task GivenNoResourceConfiguration_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())

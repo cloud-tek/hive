@@ -23,6 +23,7 @@ public class MetricsConfigurationTests
   public async Task GivenNoConfiguration_WhenServiceStarts_ThenDefaultInstrumentationsAreEnabled()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -45,6 +46,7 @@ public class MetricsConfigurationTests
   public async Task GivenAspNetCoreInstrumentationExplicitlyEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableAspNetCoreInstrumentation"] = "true"
@@ -73,6 +75,7 @@ public class MetricsConfigurationTests
   public async Task GivenAspNetCoreInstrumentationDisabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableAspNetCoreInstrumentation"] = "false"
@@ -101,6 +104,7 @@ public class MetricsConfigurationTests
   public async Task GivenHttpClientInstrumentationExplicitlyEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableHttpClientInstrumentation"] = "true"
@@ -129,6 +133,7 @@ public class MetricsConfigurationTests
   public async Task GivenHttpClientInstrumentationDisabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableHttpClientInstrumentation"] = "false"
@@ -157,6 +162,7 @@ public class MetricsConfigurationTests
   public async Task GivenRuntimeInstrumentationExplicitlyEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableRuntimeInstrumentation"] = "true"
@@ -185,6 +191,7 @@ public class MetricsConfigurationTests
   public async Task GivenRuntimeInstrumentationDisabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableRuntimeInstrumentation"] = "false"
@@ -213,6 +220,7 @@ public class MetricsConfigurationTests
   public async Task GivenAllInstrumentationsDisabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableAspNetCoreInstrumentation"] = "false",
@@ -247,6 +255,7 @@ public class MetricsConfigurationTests
   public async Task GivenOtlpEndpointInConfiguration_WhenServiceStarts_ThenOtlpExporterIsConfigured()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317"
@@ -275,6 +284,7 @@ public class MetricsConfigurationTests
   public async Task GivenOtlpExporterExplicitlyEnabled_WhenEndpointConfigured_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableOtlpExporter"] = "true",
@@ -304,6 +314,7 @@ public class MetricsConfigurationTests
   public async Task GivenOtlpWithGrpcProtocol_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317",
@@ -333,6 +344,7 @@ public class MetricsConfigurationTests
   public async Task GivenOtlpWithHttpProtobufProtocol_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4318/v1/metrics",
@@ -362,6 +374,7 @@ public class MetricsConfigurationTests
   public async Task GivenOtlpWithCustomTimeout_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317",
@@ -391,6 +404,7 @@ public class MetricsConfigurationTests
   public async Task GivenOtlpWithHeaders_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317",
@@ -425,6 +439,7 @@ public class MetricsConfigurationTests
   public async Task GivenOtlpEndpointInEnvironmentVariable_WhenNoConfigurationEndpoint_ThenEnvironmentVariableIsUsed()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     using var scope = EnvironmentVariableScope.Create(
       Constants.Environment.OtelExporterOtlpEndpoint,
       "http://env-collector:4317");
@@ -453,6 +468,7 @@ public class MetricsConfigurationTests
   public async Task GivenOtlpEndpointInBothConfigurationAndEnvironment_WhenServiceStarts_ThenConfigurationTakesPriority()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     using var scope = EnvironmentVariableScope.Create(
       Constants.Environment.OtelExporterOtlpEndpoint,
       "http://env-collector:4317");
@@ -506,6 +522,7 @@ public class MetricsConfigurationTests
   public async Task GivenEmptyOtlpEndpointInConfiguration_WhenEnvironmentVariableSet_ThenEnvironmentVariableIsUsed()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     using var scope = EnvironmentVariableScope.Create(
       Constants.Environment.OtelExporterOtlpEndpoint,
       "http://env-fallback-collector:4317");
@@ -542,6 +559,7 @@ public class MetricsConfigurationTests
   public async Task GivenCustomMetricsConfiguration_WhenServiceStarts_ThenCustomConfigurationIsUsed()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var customConfigApplied = false;
 
     var config = new ConfigurationBuilder().Build();
@@ -572,6 +590,7 @@ public class MetricsConfigurationTests
   public async Task GivenCustomMetricsConfiguration_WhenConfigurationAlsoProvided_ThenCustomOverridesConfiguration()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var customConfigApplied = false;
 
     var configJson = new Dictionary<string, string>
@@ -613,6 +632,7 @@ public class MetricsConfigurationTests
   public async Task GivenCustomMetricsWithNoInstrumentations_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -638,6 +658,7 @@ public class MetricsConfigurationTests
   public async Task GivenCustomMetricsWithCustomMeter_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -669,6 +690,7 @@ public class MetricsConfigurationTests
   public async Task GivenAllInstrumentationsAndOtlpEnabled_WhenServiceStarts_ThenAllAreConfigured()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableAspNetCoreInstrumentation"] = "true",
@@ -701,6 +723,7 @@ public class MetricsConfigurationTests
   public async Task GivenOnlyAspNetCoreInstrumentationEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableAspNetCoreInstrumentation"] = "true",
@@ -731,6 +754,7 @@ public class MetricsConfigurationTests
   public async Task GivenOnlyHttpClientInstrumentationEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableAspNetCoreInstrumentation"] = "false",
@@ -761,6 +785,7 @@ public class MetricsConfigurationTests
   public async Task GivenOnlyRuntimeInstrumentationEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableAspNetCoreInstrumentation"] = "false",
@@ -791,6 +816,7 @@ public class MetricsConfigurationTests
   public async Task GivenFullMetricsConfiguration_WhenServiceStarts_ThenAllSettingsAreApplied()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Resource:ServiceNamespace"] = "test-namespace",
@@ -828,6 +854,7 @@ public class MetricsConfigurationTests
   public async Task GivenMetricsWithResourceAttributes_WhenServiceStarts_ThenResourceAttributesAreApplied()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Resource:ServiceNamespace"] = "my-namespace",
@@ -860,6 +887,7 @@ public class MetricsConfigurationTests
   public async Task GivenTwoInstrumentationsEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Metrics:EnableAspNetCoreInstrumentation"] = "true",

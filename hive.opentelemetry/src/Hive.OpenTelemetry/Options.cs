@@ -145,6 +145,7 @@ public class OtlpOptions
 
   /// <summary>
   /// Timeout in milliseconds (default: 10000)
+  /// Valid range: 1000-60000
   /// </summary>
   public int TimeoutMilliseconds { get; set; } = 10000;
 }
