@@ -23,6 +23,7 @@ public class LoggingConfigurationTests
   public async Task GivenNoConfiguration_WhenServiceStarts_ThenConsoleExporterIsEnabledByDefault()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -45,6 +46,7 @@ public class LoggingConfigurationTests
   public async Task GivenConsoleExporterExplicitlyEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Logging:EnableConsoleExporter"] = "true"
@@ -73,6 +75,7 @@ public class LoggingConfigurationTests
   public async Task GivenConsoleExporterDisabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Logging:EnableConsoleExporter"] = "false"
@@ -105,6 +108,7 @@ public class LoggingConfigurationTests
   public async Task GivenOtlpEndpointInConfiguration_WhenServiceStarts_ThenOtlpExporterIsConfigured()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317"
@@ -133,6 +137,7 @@ public class LoggingConfigurationTests
   public async Task GivenOtlpExporterExplicitlyEnabled_WhenEndpointConfigured_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Logging:EnableOtlpExporter"] = "true",
@@ -162,6 +167,7 @@ public class LoggingConfigurationTests
   public async Task GivenOtlpWithGrpcProtocol_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317",
@@ -191,6 +197,7 @@ public class LoggingConfigurationTests
   public async Task GivenOtlpWithHttpProtobufProtocol_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4318/v1/logs",
@@ -220,6 +227,7 @@ public class LoggingConfigurationTests
   public async Task GivenOtlpWithCustomTimeout_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317",
@@ -249,6 +257,7 @@ public class LoggingConfigurationTests
   public async Task GivenOtlpWithHeaders_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317",
@@ -283,6 +292,7 @@ public class LoggingConfigurationTests
   public async Task GivenOtlpEndpointInEnvironmentVariable_WhenNoConfigurationEndpoint_ThenEnvironmentVariableIsUsed()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     using var scope = EnvironmentVariableScope.Create(
       Constants.Environment.OtelExporterOtlpEndpoint,
       "http://env-collector:4317");
@@ -312,6 +322,7 @@ public class LoggingConfigurationTests
   public async Task GivenOtlpEndpointInBothConfigurationAndEnvironment_WhenServiceStarts_ThenConfigurationTakesPriority()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     using var scope = EnvironmentVariableScope.Create(
       Constants.Environment.OtelExporterOtlpEndpoint,
       "http://env-collector:4317");
@@ -365,6 +376,7 @@ public class LoggingConfigurationTests
   public async Task GivenEmptyOtlpEndpointInConfiguration_WhenEnvironmentVariableSet_ThenEnvironmentVariableIsUsed()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     using var scope = EnvironmentVariableScope.Create(
       Constants.Environment.OtelExporterOtlpEndpoint,
       "http://env-fallback-collector:4317");
@@ -401,6 +413,7 @@ public class LoggingConfigurationTests
   public async Task GivenCustomLoggingConfiguration_WhenServiceStarts_ThenCustomConfigurationIsUsed()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var customConfigApplied = false;
 
     var config = new ConfigurationBuilder().Build();
@@ -431,6 +444,7 @@ public class LoggingConfigurationTests
   public async Task GivenCustomLoggingConfiguration_WhenConfigurationAlsoProvided_ThenCustomOverridesConfiguration()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var customConfigApplied = false;
 
     var configJson = new Dictionary<string, string>
@@ -470,6 +484,7 @@ public class LoggingConfigurationTests
   public async Task GivenCustomLoggingWithNoExporters_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -499,6 +514,7 @@ public class LoggingConfigurationTests
   public async Task GivenBothConsoleAndOtlpEnabled_WhenServiceStarts_ThenBothExportersAreConfigured()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Logging:EnableConsoleExporter"] = "true",
@@ -529,6 +545,7 @@ public class LoggingConfigurationTests
   public async Task GivenConsoleDisabledAndOtlpEnabled_WhenServiceStarts_ThenOnlyOtlpExporterIsConfigured()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Logging:EnableConsoleExporter"] = "false",
@@ -558,6 +575,7 @@ public class LoggingConfigurationTests
   public async Task GivenFullLoggingConfiguration_WhenServiceStarts_ThenAllSettingsAreApplied()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Resource:ServiceNamespace"] = "test-namespace",

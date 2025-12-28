@@ -7,10 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Hive.OpenTelemetry.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\..\..\hive.core\src\Hive.Abstractions\Hive.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="FluentValidation" />
       <PackageReference Include="OpenTelemetry.Exporter.Console" />
       <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
       <PackageReference Include="OpenTelemetry.Extensions.Hosting" />

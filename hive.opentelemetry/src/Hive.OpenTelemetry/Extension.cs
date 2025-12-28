@@ -1,3 +1,4 @@
+using Hive.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Logs;
@@ -55,19 +56,14 @@ public class Extension : MicroServiceExtension
     IServiceCollection services,
     IConfiguration configuration)
   {
-    // Try to load from IConfiguration, fall back to defaults
-    var section = configuration.GetSection(OpenTelemetryOptions.SectionKey);
-    var options = new OpenTelemetryOptions();
+    // Use PreConfigureOptionalValidatedOptions since the configuration section is optional
+    // Returns null if section doesn't exist, allowing us to use defaults
+    var optionsInstance = services.PreConfigureOptionalValidatedOptions<OpenTelemetryOptions, OptionsValidator>(
+      configuration,
+      () => OpenTelemetryOptions.SectionKey);
 
-    if (section.Exists())
-    {
-      section.Bind(options);
-    }
-
-    // Register options for DI
-    services.Configure<OpenTelemetryOptions>(section);
-
-    return options;
+    // Return validated options if configuration exists, otherwise use defaults
+    return optionsInstance?.Value ?? new OpenTelemetryOptions();
   }
 
   private static string? ResolveOtlpEndpoint(OpenTelemetryOptions options, IMicroService service)
@@ -82,9 +78,9 @@ public class Extension : MicroServiceExtension
       return options.Otlp.Endpoint;
     }
 
-    if (service.EnvironmentVariables.TryGetValue(
+    if (service.EnvironmentVariables?.TryGetValue(
       Constants.Environment.OtelExporterOtlpEndpoint,
-      out var envEndpoint))
+      out var envEndpoint) == true && !string.IsNullOrWhiteSpace(envEndpoint))
     {
       return envEndpoint;
     }
@@ -104,8 +100,17 @@ public class Extension : MicroServiceExtension
       serviceVersion: options.Resource.ServiceVersion,
       autoGenerateServiceInstanceId: false);
 
-    // Add custom attributes from configuration
-    foreach (var attr in options.Resource.Attributes)
+    // Reserved attribute keys that should not be overridden from configuration
+    var reservedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+      "service.name",
+      "service.namespace",
+      "service.instance.id",
+      "service.version"
+    };
+
+    // Add custom attributes from configuration (skip reserved keys to avoid conflicts)
+    foreach (var attr in options.Resource.Attributes.Where(a => !reservedKeys.Contains(a.Key)))
     {
       resource.AddAttributes(new[] {
         new KeyValuePair<string, object>(attr.Key, attr.Value)

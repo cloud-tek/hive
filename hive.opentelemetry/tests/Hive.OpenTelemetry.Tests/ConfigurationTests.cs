@@ -17,6 +17,7 @@ public class ConfigurationTests
   public async Task GivenNoConfiguration_WhenServiceStarts_ThenUsesDefaultOptions()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -39,6 +40,7 @@ public class ConfigurationTests
   public async Task GivenConfigurationInJson_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Resource:ServiceNamespace"] = "test-namespace",
@@ -75,6 +77,7 @@ public class ConfigurationTests
   public async Task GivenOtlpEndpointInConfiguration_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317"
@@ -103,6 +106,7 @@ public class ConfigurationTests
   public async Task GivenPartialConfiguration_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Logging:EnableConsoleExporter"] = "false"
@@ -131,6 +135,7 @@ public class ConfigurationTests
   public async Task GivenMultipleResourceAttributes_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Resource:Attributes:attr1"] = "value1",
@@ -161,6 +166,7 @@ public class ConfigurationTests
   public async Task GivenOtlpHeaders_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317",

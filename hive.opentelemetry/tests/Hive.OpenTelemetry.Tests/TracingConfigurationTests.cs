@@ -23,6 +23,7 @@ public class TracingConfigurationTests
   public async Task GivenNoConfiguration_WhenServiceStarts_ThenDefaultInstrumentationsAreEnabled()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -45,6 +46,7 @@ public class TracingConfigurationTests
   public async Task GivenAspNetCoreInstrumentationExplicitlyEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Tracing:EnableAspNetCoreInstrumentation"] = "true"
@@ -73,6 +75,7 @@ public class TracingConfigurationTests
   public async Task GivenAspNetCoreInstrumentationDisabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Tracing:EnableAspNetCoreInstrumentation"] = "false"
@@ -101,6 +104,7 @@ public class TracingConfigurationTests
   public async Task GivenHttpClientInstrumentationExplicitlyEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Tracing:EnableHttpClientInstrumentation"] = "true"
@@ -129,6 +133,7 @@ public class TracingConfigurationTests
   public async Task GivenHttpClientInstrumentationDisabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Tracing:EnableHttpClientInstrumentation"] = "false"
@@ -157,6 +162,7 @@ public class TracingConfigurationTests
   public async Task GivenAllInstrumentationsDisabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Tracing:EnableAspNetCoreInstrumentation"] = "false",
@@ -190,6 +196,7 @@ public class TracingConfigurationTests
   public async Task GivenOtlpEndpointInConfiguration_WhenServiceStarts_ThenOtlpExporterIsConfigured()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317"
@@ -218,6 +225,7 @@ public class TracingConfigurationTests
   public async Task GivenOtlpExporterExplicitlyEnabled_WhenEndpointConfigured_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Tracing:EnableOtlpExporter"] = "true",
@@ -247,6 +255,7 @@ public class TracingConfigurationTests
   public async Task GivenOtlpWithGrpcProtocol_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317",
@@ -276,6 +285,7 @@ public class TracingConfigurationTests
   public async Task GivenOtlpWithHttpProtobufProtocol_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4318/v1/traces",
@@ -305,6 +315,7 @@ public class TracingConfigurationTests
   public async Task GivenOtlpWithCustomTimeout_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317",
@@ -334,6 +345,7 @@ public class TracingConfigurationTests
   public async Task GivenOtlpWithHeaders_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Otlp:Endpoint"] = "http://localhost:4317",
@@ -368,6 +380,7 @@ public class TracingConfigurationTests
   public async Task GivenOtlpEndpointInEnvironmentVariable_WhenNoConfigurationEndpoint_ThenEnvironmentVariableIsUsed()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     using var scope = EnvironmentVariableScope.Create(
       Constants.Environment.OtelExporterOtlpEndpoint,
       "http://env-collector:4317");
@@ -396,6 +409,7 @@ public class TracingConfigurationTests
   public async Task GivenOtlpEndpointInBothConfigurationAndEnvironment_WhenServiceStarts_ThenConfigurationTakesPriority()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     using var scope = EnvironmentVariableScope.Create(
       Constants.Environment.OtelExporterOtlpEndpoint,
       "http://env-collector:4317");
@@ -449,6 +463,7 @@ public class TracingConfigurationTests
   public async Task GivenEmptyOtlpEndpointInConfiguration_WhenEnvironmentVariableSet_ThenEnvironmentVariableIsUsed()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     using var scope = EnvironmentVariableScope.Create(
       Constants.Environment.OtelExporterOtlpEndpoint,
       "http://env-fallback-collector:4317");
@@ -485,6 +500,7 @@ public class TracingConfigurationTests
   public async Task GivenCustomTracingConfiguration_WhenServiceStarts_ThenCustomConfigurationIsUsed()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var customConfigApplied = false;
 
     var config = new ConfigurationBuilder().Build();
@@ -515,6 +531,7 @@ public class TracingConfigurationTests
   public async Task GivenCustomTracingConfiguration_WhenConfigurationAlsoProvided_ThenCustomOverridesConfiguration()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var customConfigApplied = false;
 
     var configJson = new Dictionary<string, string>
@@ -555,6 +572,7 @@ public class TracingConfigurationTests
   public async Task GivenCustomTracingWithNoInstrumentations_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -580,6 +598,7 @@ public class TracingConfigurationTests
   public async Task GivenCustomTracingWithCustomSource_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var config = new ConfigurationBuilder().Build();
 
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
@@ -611,6 +630,7 @@ public class TracingConfigurationTests
   public async Task GivenAllInstrumentationsAndOtlpEnabled_WhenServiceStarts_ThenAllAreConfigured()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Tracing:EnableAspNetCoreInstrumentation"] = "true",
@@ -642,6 +662,7 @@ public class TracingConfigurationTests
   public async Task GivenOnlyAspNetCoreInstrumentationEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Tracing:EnableAspNetCoreInstrumentation"] = "true",
@@ -671,6 +692,7 @@ public class TracingConfigurationTests
   public async Task GivenOnlyHttpClientInstrumentationEnabled_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Tracing:EnableAspNetCoreInstrumentation"] = "false",
@@ -700,6 +722,7 @@ public class TracingConfigurationTests
   public async Task GivenFullTracingConfiguration_WhenServiceStarts_ThenAllSettingsAreApplied()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Resource:ServiceNamespace"] = "test-namespace",
@@ -736,6 +759,7 @@ public class TracingConfigurationTests
   public async Task GivenTracingWithResourceAttributes_WhenServiceStarts_ThenResourceAttributesAreApplied()
   {
     // Arrange
+    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
     var configJson = new Dictionary<string, string>
     {
       ["OpenTelemetry:Resource:ServiceNamespace"] = "my-namespace",
