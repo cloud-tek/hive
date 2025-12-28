@@ -1,6 +1,7 @@
 using Hive.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -140,17 +141,7 @@ public class Extension : MicroServiceExtension
 
     if (ShouldEnableOtlpExporter(options.Logging.EnableOtlpExporter, otlpEndpoint))
     {
-      builder.AddOtlpExporter(otlp =>
-      {
-        otlp.Endpoint = new Uri(otlpEndpoint!);
-        otlp.Protocol = options.Otlp.Protocol;
-        otlp.TimeoutMilliseconds = options.Otlp.TimeoutMilliseconds;
-
-        if (options.Otlp.Headers.Count > 0)
-        {
-          otlp.Headers = string.Join(",", options.Otlp.Headers.Select(h => $"{h.Key}={h.Value}"));
-        }
-      });
+      builder.AddOtlpExporter(CreateOtlpExporterConfiguration(options.Otlp, otlpEndpoint!));
     }
   }
 
@@ -179,17 +170,7 @@ public class Extension : MicroServiceExtension
 
     if (ShouldEnableOtlpExporter(options.Tracing.EnableOtlpExporter, otlpEndpoint))
     {
-      builder.AddOtlpExporter(otlp =>
-      {
-        otlp.Endpoint = new Uri(otlpEndpoint!);
-        otlp.Protocol = options.Otlp.Protocol;
-        otlp.TimeoutMilliseconds = options.Otlp.TimeoutMilliseconds;
-
-        if (options.Otlp.Headers.Count > 0)
-        {
-          otlp.Headers = string.Join(",", options.Otlp.Headers.Select(h => $"{h.Key}={h.Value}"));
-        }
-      });
+      builder.AddOtlpExporter(CreateOtlpExporterConfiguration(options.Otlp, otlpEndpoint!));
     }
   }
 
@@ -223,17 +204,7 @@ public class Extension : MicroServiceExtension
 
     if (ShouldEnableOtlpExporter(options.Metrics.EnableOtlpExporter, otlpEndpoint))
     {
-      builder.AddOtlpExporter(otlp =>
-      {
-        otlp.Endpoint = new Uri(otlpEndpoint!);
-        otlp.Protocol = options.Otlp.Protocol;
-        otlp.TimeoutMilliseconds = options.Otlp.TimeoutMilliseconds;
-
-        if (options.Otlp.Headers.Count > 0)
-        {
-          otlp.Headers = string.Join(",", options.Otlp.Headers.Select(h => $"{h.Key}={h.Value}"));
-        }
-      });
+      builder.AddOtlpExporter(CreateOtlpExporterConfiguration(options.Otlp, otlpEndpoint!));
     }
   }
 
@@ -243,5 +214,22 @@ public class Extension : MicroServiceExtension
     // 1. Explicitly enabled in configuration, OR
     // 2. Endpoint is configured (implicit enable)
     return explicitlyEnabled || !string.IsNullOrWhiteSpace(endpoint);
+  }
+
+  private static Action<OtlpExporterOptions> CreateOtlpExporterConfiguration(
+    OtlpOptions otlpOptions,
+    string otlpEndpoint)
+  {
+    return otlp =>
+    {
+      otlp.Endpoint = new Uri(otlpEndpoint);
+      otlp.Protocol = otlpOptions.Protocol;
+      otlp.TimeoutMilliseconds = otlpOptions.TimeoutMilliseconds;
+
+      if (otlpOptions.Headers.Count > 0)
+      {
+        otlp.Headers = string.Join(",", otlpOptions.Headers.Select(h => $"{h.Key}={h.Value}"));
+      }
+    };
   }
 }
