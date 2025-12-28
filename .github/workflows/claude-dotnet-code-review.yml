@@ -22,4 +22,5 @@ jobs:
           claude_args: |
             --max-turns 25
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr view:*),Bash(gh pr diff:*)"
+            --model claude-sonnet-4-5-20250929
           show_full_output: true
