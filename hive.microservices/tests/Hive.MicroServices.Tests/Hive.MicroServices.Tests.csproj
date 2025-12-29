@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -27,6 +29,7 @@
     <ProjectReference Include="..\..\src\Hive.MicroServices.GraphQL\Hive.MicroServices.GraphQL.csproj" />
     <ProjectReference Include="..\..\src\Hive.MicroServices.Grpc\Hive.MicroServices.Grpc.csproj" />
     <ProjectReference Include="..\..\src\Hive.MicroServices.Job\Hive.MicroServices.Job.csproj" />
+    <ProjectReference Include="..\..\src\Hive.MicroServices.Testing\Hive.MicroServices.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

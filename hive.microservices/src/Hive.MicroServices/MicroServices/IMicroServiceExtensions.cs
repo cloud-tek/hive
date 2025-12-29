@@ -3,8 +3,10 @@ using Hive.Extensions;
 using Hive.MicroServices.Middleware;
 using Hive.Middleware;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Hive.MicroServices;
 
@@ -68,6 +70,52 @@ public static class IMicroServiceExtensions
     service.MicroServiceEntrypointAssemblyProvider = () => assembly;
 
     return microservice;
+  }
+
+  /// <summary>
+  /// Configures an IWebHostBuilder with the microservice's service registrations and pipeline configuration.
+  /// Use this with TestServer for integration testing while keeping all Hive configuration.
+  /// </summary>
+  /// <param name="microservice">The microservice instance</param>
+  /// <param name="webHostBuilder">The web host builder to configure</param>
+  /// <param name="configuration">Optional configuration to use (defaults to empty configuration)</param>
+  /// <returns>The configured <see cref="IWebHostBuilder"/></returns>
+  /// <exception cref="ArgumentNullException">Thrown when microservice or webHostBuilder is null</exception>
+  public static IWebHostBuilder ConfigureWebHost(this IMicroService microservice, IWebHostBuilder webHostBuilder, IConfigurationRoot? configuration = null)
+  {
+    _ = microservice ?? throw new ArgumentNullException(nameof(microservice));
+    _ = webHostBuilder ?? throw new ArgumentNullException(nameof(webHostBuilder));
+
+    var service = (MicroService)microservice;
+    var config = configuration ?? new ConfigurationBuilder().Build();
+
+    webHostBuilder
+      .ConfigureServices((ctx, services) =>
+      {
+        // Register the microservice instance so StartupService can access it
+        services.AddSingleton<IMicroService>(microservice);
+        services.AddSingleton<IConfigurationRoot>(config);
+        services.AddSingleton<IConfiguration>(config);
+
+        // Run all service configuration actions
+        service.ConfigureActions.ForEach(action => action(services, config));
+        service.Extensions.ForEach(extension =>
+          extension.ConfigureActions.ForEach(action => action(services, config)));
+      })
+      .Configure(app =>
+      {
+        // Configure request logging middleware if present
+        if (service.Extensions.SingleOrDefault(ex => ex is IHaveRequestLoggingMiddleware) is IHaveRequestLoggingMiddleware lex
+            && lex.ConfigureRequestLoggingMiddleware != null)
+        {
+          lex.ConfigureRequestLoggingMiddleware(app);
+        }
+
+        // Run all pipeline configuration actions
+        service.ConfigurePipelineActions.ForEach(action => action(app));
+      });
+
+    return webHostBuilder;
   }
 
   internal static IMicroService UseCoreMicroServicePipeline(this IMicroService microservice, Action<IApplicationBuilder>? developmentOnlyPipeline = null)

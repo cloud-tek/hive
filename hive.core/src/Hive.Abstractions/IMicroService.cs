@@ -5,7 +5,7 @@ namespace Hive;
 /// <summary>
 /// The base IMicroService interface. All Hive microservices implement this interface.
 /// </summary>
-public interface IMicroService
+public interface IMicroService : IAsyncDisposable, IDisposable
 {
   /// <summary>
   /// The cancellation token source for the microservice
@@ -85,10 +85,32 @@ public interface IMicroService
   IMicroService RegisterExtension<TExtension>() where TExtension : MicroServiceExtension, new();
 
   /// <summary>
-  /// Method to asynchonoously initialize and start the microservice.
+  /// Method to asynchonously initialize and start the microservice.
+  /// Blocks until the microservice stops.
   /// </summary>
   /// <param name="configuration"></param>
   /// <param name="args"></param>
   /// <returns>Exit code</returns>
   Task<int> RunAsync(IConfigurationRoot configuration = default!, params string[] args);
+
+  /// <summary>
+  /// Method to asynchronously initialize the microservice without starting it.
+  /// </summary>
+  /// <param name="configuration"></param>
+  /// <param name="args"></param>
+  /// <returns>Task</returns>
+  Task InitializeAsync(IConfigurationRoot? configuration = null, params string[] args);
+
+  /// <summary>
+  /// Method to asynchronously start the microservice after initialization.
+  /// Returns immediately after starting (does not block like RunAsync).
+  /// </summary>
+  /// <returns>Task that completes when the host has started</returns>
+  Task StartAsync();
+
+  /// <summary>
+  /// Method to asynchronously stop the microservice.
+  /// </summary>
+  /// <returns>Task that completes when the host has stopped</returns>
+  Task StopAsync();
 }

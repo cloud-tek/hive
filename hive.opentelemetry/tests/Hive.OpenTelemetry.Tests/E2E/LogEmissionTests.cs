@@ -190,7 +190,7 @@ public class LogEmissionTests : E2ETestBase
       ServiceName,
       app => app.MapGet("/multiple-test", (ILogger<LogEmissionTests> logger) =>
       {
-        for (int i = 1; i <= 5; i++)
+        for (var i = 1; i <= 5; i++)
         {
           logger.LogInformation("Log message number {Number}", i);
         }

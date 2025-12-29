@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.MicroServices.Demo.Ser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.OpenTelemetry.Tests", "hive.opentelemetry\tests\Hive.OpenTelemetry.Tests\Hive.OpenTelemetry.Tests.csproj", "{68CBA07C-6E5F-44DF-B056-919EBDE5009C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.MicroServices.Testing", "hive.microservices\src\Hive.MicroServices.Testing\Hive.MicroServices.Testing.csproj", "{C22B628D-7E1D-4087-BC7D-53218C93C193}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -229,6 +231,18 @@ Global
 		{68CBA07C-6E5F-44DF-B056-919EBDE5009C}.Release|x64.Build.0 = Release|Any CPU
 		{68CBA07C-6E5F-44DF-B056-919EBDE5009C}.Release|x86.ActiveCfg = Release|Any CPU
 		{68CBA07C-6E5F-44DF-B056-919EBDE5009C}.Release|x86.Build.0 = Release|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Debug|x64.Build.0 = Debug|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Debug|x86.Build.0 = Debug|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Release|x64.ActiveCfg = Release|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Release|x64.Build.0 = Release|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Release|x86.ActiveCfg = Release|Any CPU
+		{C22B628D-7E1D-4087-BC7D-53218C93C193}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -255,5 +269,6 @@ Global
 		{380C2A38-8424-49C2-B2F5-1CB532D5A3F8} = {91B02555-8919-4F8E-A3ED-9B73FA898067}
 		{0CCC05F9-6FA0-464F-9543-89923C52A338} = {91B02555-8919-4F8E-A3ED-9B73FA898067}
 		{68CBA07C-6E5F-44DF-B056-919EBDE5009C} = {092FBD16-5621-403E-AC2B-2AB1C9C6BA3F}
+		{C22B628D-7E1D-4087-BC7D-53218C93C193} = {DA6AB591-BEB6-4F6B-B8B9-847A1E75DC0C}
 	EndGlobalSection
 EndGlobal

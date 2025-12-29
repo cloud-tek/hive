@@ -9,9 +9,6 @@
 &lt;/SessionState&gt;</s:String>
 	
 	
-	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=12425f6b_002Dc2ec_002D4111_002D956f_002D3bc7e20e3c3d_0023Hive_002EMicroServices_002EJob/@EntryIndexedValue">True</s:Boolean>
-	
-	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=359ad44b_002D855c_002D4cf7_002Da58c_002D23648225b8cb_0023Hive_002EMicroServices_002EGrpc/@EntryIndexedValue">True</s:Boolean>
 	
 	
 	
@@ -25,5 +22,8 @@
 	
 	
 	
-	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=efbf0b5f_002D644b_002D4565_002D846e_002D352e84561499_0023Hive_002EMicroServices_002EGraphQL/@EntryIndexedValue">True</s:Boolean>
+	
+	
+	
+	
 	</wpf:ResourceDictionary>

@@ -3,7 +3,7 @@ namespace Hive;
 /// <summary>
 /// Interface for microservice lifetime events
 /// </summary>
-public interface IMicroServiceLifetime
+public interface IMicroServiceLifetime : IDisposable
 {
   /// <summary>
   /// One-time event indicating if the service has started

@@ -54,7 +54,7 @@ public class MetricsEmissionTests : E2ETestBase
       using var client = CreateHttpClient();
 
       // Make multiple requests
-      for (int i = 0; i < 5; i++)
+      for (var i = 0; i < 5; i++)
       {
         await client.GetAsync("/accumulate-test");
       }
