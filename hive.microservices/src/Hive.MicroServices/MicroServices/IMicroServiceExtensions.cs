@@ -73,26 +73,6 @@ public static class IMicroServiceExtensions
   }
 
   /// <summary>
-  /// Provides an external host factory to the microservice.
-  /// The factory will be called during InitializeAsync with the provided configuration to build the host.
-  /// Use this for integration testing scenarios where the host needs to be built with test-specific configuration.
-  /// </summary>
-  /// <param name="microservice">The microservice instance</param>
-  /// <param name="hostFactory">Factory function that takes configuration and returns a built IHost</param>
-  /// <returns><see cref="IMicroService"/></returns>
-  /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null</exception>
-  public static IMicroService WithExternalHostFactory(this IMicroService microservice, Func<IConfigurationRoot, IHost> hostFactory)
-  {
-    _ = microservice ?? throw new ArgumentNullException(nameof(microservice));
-    _ = hostFactory ?? throw new ArgumentNullException(nameof(hostFactory));
-
-    var service = (MicroService)microservice;
-    service.ExternalHostFactory = hostFactory;
-
-    return microservice;
-  }
-
-  /// <summary>
   /// Configures an IWebHostBuilder with the microservice's service registrations and pipeline configuration.
   /// Use this with TestServer for integration testing while keeping all Hive configuration.
   /// </summary>
