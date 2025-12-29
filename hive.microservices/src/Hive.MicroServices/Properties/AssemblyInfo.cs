@@ -5,3 +5,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Hive.MicroServices.Grpc")]
 [assembly: InternalsVisibleTo("Hive.MicroServices.GraphQL")]
 [assembly: InternalsVisibleTo("Hive.MicroServices.Job")]
+[assembly: InternalsVisibleTo("Hive.MicroServices.Tests")]

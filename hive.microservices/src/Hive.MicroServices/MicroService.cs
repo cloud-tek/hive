@@ -101,12 +101,6 @@ public partial class MicroService : MicroServiceBase, IMicroService
   internal Func<Assembly> MicroServiceEntrypointAssemblyProvider { get; set; } = () => Assembly.GetEntryAssembly()!;
 
   /// <summary>
-  /// Optional external host provided via WithExternalHost extension method.
-  /// When set, InitializeAsync will use this host instead of creating a new one.
-  /// </summary>
-  internal IHost? ExternalHost { get; set; }
-
-  /// <summary>
   /// Optional external host builder factory for test scenarios.
   /// When set, InitializeAsync will call this factory with configuration to build the host.
   /// </summary>
@@ -122,7 +116,6 @@ public partial class MicroService : MicroServiceBase, IMicroService
   {
     Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
-    // Priority: ExternalHostFactory > ExternalHost > CreateHostBuilder
     if (ExternalHostFactory != null)
     {
       var config = configuration ?? new ConfigurationBuilder().Build();
@@ -131,7 +124,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
     }
     else
     {
-      Host = ExternalHost ?? CreateHostBuilder(configuration, args);
+      Host = CreateHostBuilder(configuration, args);
     }
 
     return Task.CompletedTask;
@@ -186,12 +179,20 @@ public partial class MicroService : MicroServiceBase, IMicroService
   /// <exception cref="ConfigurationException">Thrown when configuration validation fails</exception>
   public async Task StartAsync()
   {
-    if (PipelineMode == MicroServicePipelineMode.NotSet)
+    try
     {
-      throw new ConfigurationException(Constants.Errors.PipelineNotSet);
-    }
+      if (PipelineMode == MicroServicePipelineMode.NotSet)
+      {
+        throw new ConfigurationException(Constants.Errors.PipelineNotSet);
+      }
 
-    await Host.StartAsync(CancellationTokenSource.Token);
+      await Host.StartAsync(CancellationTokenSource.Token);
+    }
+    catch (Exception ex)
+    {
+      Logger.LogUnhandledException(Name, ex);
+      throw;
+    }
   }
 
   /// <summary>
@@ -200,7 +201,76 @@ public partial class MicroService : MicroServiceBase, IMicroService
   /// <returns><see cref="Task"/></returns>
   public async Task StopAsync()
   {
-    await Host.StopAsync(CancellationTokenSource.Token);
+    try
+    {
+      await Host.StopAsync(CancellationTokenSource.Token);
+    }
+    catch (Exception ex)
+    {
+      Logger.LogUnhandledException(Name, ex);
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Asynchronously disposes the microservice, releasing all managed resources including the host and cancellation token source.
+  /// </summary>
+  /// <returns>A <see cref="ValueTask"/> representing the asynchronous disposal operation</returns>
+  public async ValueTask DisposeAsync()
+  {
+    await DisposeAsyncCore().ConfigureAwait(false);
+    Dispose(disposing: false);
+    GC.SuppressFinalize(this);
+  }
+
+  /// <summary>
+  /// Synchronously disposes the microservice, releasing all managed resources including the host and cancellation token source.
+  /// </summary>
+  public void Dispose()
+  {
+    Dispose(disposing: true);
+    GC.SuppressFinalize(this);
+  }
+
+  /// <summary>
+  /// Core async disposal logic for releasing managed resources.
+  /// </summary>
+  /// <returns>A <see cref="ValueTask"/> representing the asynchronous disposal operation</returns>
+  protected virtual ValueTask DisposeAsyncCore()
+  {
+    // IHost only implements IDisposable, not IAsyncDisposable
+    // Dispose it synchronously
+    Host?.Dispose();
+
+    // Dispose CancellationTokenSource synchronously (only supports IDisposable)
+    CancellationTokenSource?.Dispose();
+
+    // Dispose Lifetime and its internal CancellationTokenSources
+    Lifetime?.Dispose();
+
+    return ValueTask.CompletedTask;
+  }
+
+  /// <summary>
+  /// Synchronous disposal logic for releasing managed resources.
+  /// </summary>
+  /// <param name="disposing">True if called from Dispose(), false if called from finalizer</param>
+  protected virtual void Dispose(bool disposing)
+  {
+    if (disposing)
+    {
+      // Dispose IHost synchronously if it supports IDisposable
+      if (Host is IDisposable disposable)
+      {
+        disposable.Dispose();
+      }
+
+      // Dispose CancellationTokenSource
+      CancellationTokenSource?.Dispose();
+
+      // Dispose Lifetime and its internal CancellationTokenSources
+      Lifetime?.Dispose();
+    }
   }
 
   private IHost CreateHostBuilder(IConfigurationRoot? configuration = null, params string[] args)

@@ -73,26 +73,6 @@ public static class IMicroServiceExtensions
   }
 
   /// <summary>
-  /// Provides an externally built IHost to the microservice.
-  /// Use this for integration testing with WebApplicationFactory or other test infrastructure.
-  /// When set, InitializeAsync will use the provided host instead of creating a new one.
-  /// </summary>
-  /// <param name="microservice">The microservice instance</param>
-  /// <param name="externalHost">The externally built IHost</param>
-  /// <returns><see cref="IMicroService"/></returns>
-  /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null</exception>
-  public static IMicroService WithExternalHost(this IMicroService microservice, IHost externalHost)
-  {
-    _ = microservice ?? throw new ArgumentNullException(nameof(microservice));
-    _ = externalHost ?? throw new ArgumentNullException(nameof(externalHost));
-
-    var service = (MicroService)microservice;
-    service.ExternalHost = externalHost;
-
-    return microservice;
-  }
-
-  /// <summary>
   /// Provides an external host factory to the microservice.
   /// The factory will be called during InitializeAsync with the provided configuration to build the host.
   /// Use this for integration testing scenarios where the host needs to be built with test-specific configuration.

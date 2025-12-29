@@ -5,7 +5,7 @@ namespace Hive;
 /// <summary>
 /// The base IMicroService interface. All Hive microservices implement this interface.
 /// </summary>
-public interface IMicroService
+public interface IMicroService : IAsyncDisposable, IDisposable
 {
   /// <summary>
   /// The cancellation token source for the microservice
@@ -85,7 +85,7 @@ public interface IMicroService
   IMicroService RegisterExtension<TExtension>() where TExtension : MicroServiceExtension, new();
 
   /// <summary>
-  /// Method to asynchonoously initialize and start the microservice.
+  /// Method to asynchonously initialize and start the microservice.
   /// Blocks until the microservice stops.
   /// </summary>
   /// <param name="configuration"></param>

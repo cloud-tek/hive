@@ -11,20 +11,28 @@ namespace Hive.MicroServices;
 public static class IMicroServiceTestingExtensions
 {
   /// <summary>
-  /// Prepares the microservice to use a TestServer-based external host.
+  /// Configures the microservice to use a TestServer-based external host for integration testing.
   /// The host will be created during InitializeAsync with the configuration provided there.
   /// After calling this method, use microservice.InitializeAsync(config) to build and initialize the host,
   /// then microservice.StartAsync() to start it.
+  /// This method is idempotent - calling it multiple times has the same effect as calling it once.
   /// </summary>
   /// <param name="microservice">The microservice instance</param>
   /// <returns>The microservice instance for fluent chaining</returns>
   /// <exception cref="ArgumentNullException">Thrown when microservice is null</exception>
-  public static IMicroService UseTestHost(this IMicroService microservice)
+  public static IMicroService ConfigureTestHost(this IMicroService microservice)
   {
     _ = microservice ?? throw new ArgumentNullException(nameof(microservice));
 
-    // Set a factory that will be called during InitializeAsync with the configuration
-    return microservice.WithExternalHostFactory(config =>
+    var service = (MicroService)microservice;
+
+    // Idempotent: return early if already configured
+    if (service.ExternalHostFactory != null)
+    {
+      return microservice;
+    }
+
+    service.ExternalHostFactory = config =>
     {
       var hostBuilder = new HostBuilder()
         .ConfigureWebHost(webHostBuilder =>
@@ -34,6 +42,8 @@ public static class IMicroServiceTestingExtensions
         });
 
       return hostBuilder.Build();
-    });
+    };
+
+    return microservice;
   }
 }

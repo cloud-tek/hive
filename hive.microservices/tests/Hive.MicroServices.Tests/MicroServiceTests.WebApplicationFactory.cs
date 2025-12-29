@@ -29,12 +29,12 @@ public partial class MicroServiceTests
       // Arrange
       var config = new ConfigurationBuilder().Build();
 
-      var microservice = new MicroService(ServiceName, new NullLogger<IMicroService>())
+      await using var microservice = new MicroService(ServiceName, new NullLogger<IMicroService>())
         .ConfigureApiPipeline(endpoints =>
         {
           endpoints.MapGet("/api/test", () => Results.Ok(new { message = "Hello from Hive" }));
         })
-        .UseTestHost();
+        .ConfigureTestHost();
 
       // Act - Initialize and start using IMicroService APIs
       await microservice.InitializeAsync(config);
@@ -60,14 +60,14 @@ public partial class MicroServiceTests
       // Arrange
       var config = new ConfigurationBuilder().Build();
 
-      var microservice = new MicroService(ServiceName, new NullLogger<IMicroService>())
+      await using var microservice = new MicroService(ServiceName, new NullLogger<IMicroService>())
         .ConfigureApiPipeline(endpoints =>
         {
           endpoints.MapGet("/api/users", () => Results.Ok(new[] { "Alice", "Bob" }));
           endpoints.MapGet("/api/products", () => Results.Ok(new[] { "Product1", "Product2" }));
           endpoints.MapPost("/api/orders", () => Results.Created("/api/orders/1", new { id = 1, status = "created" }));
         })
-        .UseTestHost();
+        .ConfigureTestHost();
 
       // Act - Initialize and start using IMicroService APIs
       await microservice.InitializeAsync(config);
@@ -110,7 +110,7 @@ public partial class MicroServiceTests
         })
         .Build();
 
-      var microservice = new MicroService(ServiceName, new NullLogger<IMicroService>())
+      await using var microservice = new MicroService(ServiceName, new NullLogger<IMicroService>())
         .ConfigureServices((services, cfg) =>
         {
           // Configuration is available here via cfg parameter
@@ -120,7 +120,7 @@ public partial class MicroServiceTests
           endpoints.MapGet("/api/config", (IConfiguration configuration) =>
             Results.Ok(new { appName = configuration["AppName"] }));
         })
-        .UseTestHost();
+        .ConfigureTestHost();
 
       // Act - Initialize and start using IMicroService APIs
       await microservice.InitializeAsync(config);

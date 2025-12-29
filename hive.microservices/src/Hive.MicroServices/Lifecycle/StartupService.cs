@@ -72,6 +72,10 @@ public class StartupService : IHostedService
   private async Task ExecuteHostedStartupServices()
   {
     var svc = (MicroService)service;
+
+    // Use injected IServiceProvider instead of accessing svc.Host.Services
+    // to avoid async-over-sync pattern where Host.Services property access
+    // might block during startup initialization
     var svcs = serviceProvider.GetServices<IHostedStartupService>();
 
     try
