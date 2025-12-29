@@ -1,9 +1,7 @@
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace Hive.MicroServices;
+namespace Hive.MicroServices.Testing;
 
 /// <summary>
 /// Testing extension methods for <see cref="IMicroService"/>
