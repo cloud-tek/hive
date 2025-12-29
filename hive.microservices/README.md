@@ -22,14 +22,14 @@ graph TB
     end
 
     subgraph Testing
-        Testing[Hive.MicroServices.Testing]
+        HTesting[Hive.MicroServices.Testing]
     end
 
     MicroServices -->|REST APIs| Api
     MicroServices -->|GraphQL| GraphQL
     MicroServices -->|gRPC| Grpc
     MicroServices -->|Workers| Job
-    MicroServices -.->|Test Support| Testing
+    MicroServices -.->|Test Support| HTesting
 
     style MicroServices fill:#e1f5ff,stroke:#01579b,stroke-width:3px
     style Api fill:#b3e5fc,stroke:#0277bd
