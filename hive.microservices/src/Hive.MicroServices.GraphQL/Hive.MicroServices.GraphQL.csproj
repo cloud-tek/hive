@@ -17,4 +17,6 @@
     <ProjectReference Include="..\Hive.MicroServices\Hive.MicroServices.csproj" />
   </ItemGroup>
 
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\Version.targets" />
+
 </Project>
