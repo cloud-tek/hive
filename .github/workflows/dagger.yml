@@ -106,7 +106,7 @@ jobs:
           module: ${{ inputs.DaggerModule }}
           args: >-
             build
-            --source ${{ inputs.Directory }}
+            --source ${{ github.workspace }}
             --target ${{ inputs.Target }}
             --skip "${{ inputs.Skip }}"
             --toolVersion ${{ inputs.CloudTekBuildVersion }}
