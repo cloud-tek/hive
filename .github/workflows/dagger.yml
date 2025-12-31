@@ -11,6 +11,9 @@ on:
       DAGGER_CLOUD_TOKEN:
         description: "Dagger Cloud Token"
         required: false
+      DAGGER_SSH_PRIVATE_KEY:
+        description: "dagger@cloud-tek.io key"
+        required: true
     inputs:
       Directory:
         description: "Project directory"
@@ -53,11 +56,17 @@ jobs:
     runs-on: ubuntu-latest
     env: {}
     steps:
-
       - uses: actions/checkout@v5
         with:
           fetch-depth: "0"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
+      - name: 'git config'
+        run: |
+          git config --global url."git@github.com:".insteadOf https://github.com
+      - name: 'ssh-agent'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DAGGER_SSH_PRIVATE_KEY }}
 
       # - shell: bash
       #   name: git config
