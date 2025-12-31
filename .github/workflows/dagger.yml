@@ -111,7 +111,7 @@ jobs:
             --skip "${{ inputs.Skip }}"
             --toolVersion ${{ inputs.CloudTekBuildVersion }}
             --sdkVersion ${{ inputs.NetSdkVersion }}
-            --apply
+            --auto-apply
           # assumes the Dagger Cloud token is in
           # a repository secret named DAGGER_CLOUD_TOKEN
           # set via the GitHub UI/CLI
