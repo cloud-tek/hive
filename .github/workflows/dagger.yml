@@ -1,0 +1,201 @@
+name: "nuke"
+on:
+  workflow_call:
+    secrets:
+      NUGET_API_KEY:
+        description: "NuGet API Key"
+        required: false
+      GH_TOKEN:
+        description: "GitHub Token"
+        required: false
+      DAGGER_CLOUD_TOKEN:
+        description: "Dagger Cloud Token"
+        required: false
+    inputs:
+      Directory:
+        description: "Project directory"
+        type: string
+        required: true
+      NetVersion:
+        description: ".NET version"
+        type: string
+        default: "10.0"
+        required: false
+      NetSdkVersion:
+        description: ".NET SDK version"
+        type: string
+        default: "10.0.100"
+        required: false
+      DaggerModule:
+        description: "Dagger Module"
+        type: string
+        default: "github.com/cloud-tek/dagger/dotnet/cloudtek-build@v0.2.0"
+        required: false
+      CloudTekBuildVersion:
+        description: "CloudTek.Build.Tool version"
+        type: string
+        default: "10.0.0"
+        required: false
+      Target:
+        description: "NUKE Target"
+        type: string
+        default: "All"
+        required: false
+      Skip:
+        description: "NUKE Skip Targets"
+        type: string
+        default: ""
+        required: false
+
+jobs:
+  dagger:
+    name: dagger
+    runs-on: ubuntu-latest
+    env: {}
+    steps:
+
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: "0"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # - shell: bash
+      #   name: git config
+      #   if: |
+      #     github.ref == 'refs/heads/main' &&
+      #     github.event_name == 'pull_request' &&
+      #     github.event.action == 'closed' &&
+      #     github.event.pull_request.merged == true
+      #   run: |
+      #     git config --local user.email "action@github.com"
+      #     git config --local user.name "GitHub Action"
+
+      # - uses: actions/setup-dotnet@v1
+      #   name: dotnet installer
+      #   with:
+      #     dotnet-version: ${{ inputs.NetCoreVersion }}
+
+      # - name: dotnet tool restore
+      #   shell: bash
+      #   working-directory: ${{ inputs.Directory }}
+      #   run: |
+      #     dotnet nuget list source
+      #     dotnet tool restore
+
+      - name: global.json
+        shell: bash
+        run: |
+          if [ -f "${{ github.workspace }}/global.json" ]; then
+            echo "global.json exists"
+          else
+            echo "{ \"tools\": { \"dotnet\": \"${{ inputs.NetSdkVersion }}\" } }" > ${{ github.workspace }}/global.json
+          fi
+      - name: dagger call
+        uses: dagger/dagger-for-github@v8.2.0
+        env:
+          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+        with:
+          version: "latest"
+          module: ${{ inputs.DaggerModule }}
+          args: |
+            build
+            --source ${{ inputs.Directory }}
+            --target ${{ inputs.Target }}
+            --skip "${{ inputs.Skip }}"
+            --toolVersion ${{ inputs.CloudTekBuildVersion }}
+            --sdkVersion ${{ inputs.NetSdkVersion }}
+            --apply
+          # assumes the Dagger Cloud token is in
+          # a repository secret named DAGGER_CLOUD_TOKEN
+          # set via the GitHub UI/CLI
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+      # - name: setup gitversion
+      #   uses: gittools/actions/gitversion/setup@v0.12.1
+      #   with:
+      #     versionSpec: '5.x'
+
+      # - name: run giversion
+      #   id: gitversion
+      #   uses: gittools/actions/gitversion/execute@v0.12.1
+
+      # - uses: cloud-tek/poc-gitversion-action/smart-tag@0.2
+      #   id: smart-tag
+      #   with:
+      #     semVer: ${{ steps.gitversion.outputs.semVer }}
+
+      # - name: dotnet nuke --target All
+      #   id: nuke-all
+      #   shell: bash
+      #   working-directory: ${{ inputs.Directory }}
+      #   run: |
+      #     dotnet nuke --target All
+      # - name: dotnet nuke --target Push
+      #   id: nuke-push
+      #   if: ${{ inputs.Push }}
+      #   shell: bash
+      #   working-directory: ${{ inputs.Directory }}
+      #   run: |
+      #     dotnet nuke --target Push --nuget-api-url ${{ inputs.NuGetApiUrl }} --nuget-api-key ${{ secrets.NUGET_API_KEY }}
+
+      # - uses: cloud-tek/poc-gitversion-action/smart-tag-cleanup@0.2
+        # id: smart-tag-cleanup
+        # if: ${{ failure() && !startsWith(github.ref, 'refs/heads/main') }}
+        # with:
+        #   build-status: ${{ steps.nuke-all.outputs.outcome }}
+        #   semVer: ${{ steps.gitversion.outputs.semVer }}
+
+      - name: tree results
+        run: |
+          tree ${{ github.workspace }}/results
+      - name: tree artifacts
+        run: |
+          tree ${{ github.workspace }}/artifacts
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: ${{ inputs.UnitTests }} || ${{ inputs.IntegrationTests }} && (success() || failure())
+        with:
+          name: XUnit Tests
+          path: ${{ github.workspace }}/results/tests/*.trx
+          reporter: dotnet-trx
+
+      # - name: gh release create
+      #   shell: bash
+      #   if: |
+      #     ${{ inputs.GitVersion }} == true &&
+      #     github.ref == 'refs/heads/main' &&
+      #     github.event_name == 'pull_request' &&
+      #     github.event.action == 'closed' &&
+      #     github.event.pull_request.merged == true
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      #   run: |
+      #     BRANCH="${{ github.event.pull_request.head.ref }}"
+      #     if [[ $BRANCH =~ (release)(\/|-)([0-9]+\.[0-9]+) ]]
+      #     then
+      #       echo "${{ github.event.pull_request.head.ref }} --> ${{ github.ref }} (tag: ${BASH_REMATCH[3]})"
+      #       gh release create ${BASH_REMATCH[3]} --title "Release ${BASH_REMATCH[3]}" --verify-tag
+      #     else
+      #       echo "${{ github.event.pull_request.head.ref }} --> ${{ github.ref }} (tag: none)"
+
+
+      #if [[ $TAG =~ ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-((0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))$ ]]
+      # - shell: bash
+      #   name: git tag -d <pre-release tag>
+      #   if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature') }}
+      #   run: |
+      #     TAG=$(git describe --tags --abbrev=0)
+      #     if [[ $TAG == *"-"* ]];
+      #     then
+      #       echo "$TAG is prelease. Deleting..."
+      #       git push --delete origin $TAG
+      #     else
+      #       echo "$TAG is not prelease. Skipped."
+      #     fi
+
+      # - shell: bash
+      #   name: git tag (on push)
+      #   if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature') }}
+      #   run: |
+      #     git tag ${{ steps.gitversion.outputs.semVer }} --force
+      #     git push origin ${{ steps.gitversion.outputs.semVer }} --force
+      #     echo "${{ github.event.pull_request.head.ref }} --> ${{ github.ref }} (tag: ${{ steps.gitversion.outputs.semVer }})"
