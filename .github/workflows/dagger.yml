@@ -95,7 +95,7 @@ jobs:
         with:
           version: "latest"
           module: ${{ inputs.DaggerModule }}
-          args: |
+          args: >-
             build
             --source ${{ inputs.Directory }}
             --target ${{ inputs.Target }}
