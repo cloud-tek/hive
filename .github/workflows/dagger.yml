@@ -67,30 +67,6 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DAGGER_SSH_PRIVATE_KEY }}
-
-      # - shell: bash
-      #   name: git config
-      #   if: |
-      #     github.ref == 'refs/heads/main' &&
-      #     github.event_name == 'pull_request' &&
-      #     github.event.action == 'closed' &&
-      #     github.event.pull_request.merged == true
-      #   run: |
-      #     git config --local user.email "action@github.com"
-      #     git config --local user.name "GitHub Action"
-
-      # - uses: actions/setup-dotnet@v1
-      #   name: dotnet installer
-      #   with:
-      #     dotnet-version: ${{ inputs.NetCoreVersion }}
-
-      # - name: dotnet tool restore
-      #   shell: bash
-      #   working-directory: ${{ inputs.Directory }}
-      #   run: |
-      #     dotnet nuget list source
-      #     dotnet tool restore
-
       - name: global.json
         shell: bash
         run: |
@@ -112,9 +88,6 @@ jobs:
             --toolVersion ${{ inputs.CloudTekBuildVersion }}
             --sdkVersion ${{ inputs.NetSdkVersion }}
             --auto-apply
-          # assumes the Dagger Cloud token is in
-          # a repository secret named DAGGER_CLOUD_TOKEN
-          # set via the GitHub UI/CLI
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
       # - name: setup gitversion
       #   uses: gittools/actions/gitversion/setup@v0.12.1
@@ -164,45 +137,3 @@ jobs:
           name: XUnit Tests
           path: ${{ github.workspace }}/results/tests/*.trx
           reporter: dotnet-trx
-
-      # - name: gh release create
-      #   shell: bash
-      #   if: |
-      #     ${{ inputs.GitVersion }} == true &&
-      #     github.ref == 'refs/heads/main' &&
-      #     github.event_name == 'pull_request' &&
-      #     github.event.action == 'closed' &&
-      #     github.event.pull_request.merged == true
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      #   run: |
-      #     BRANCH="${{ github.event.pull_request.head.ref }}"
-      #     if [[ $BRANCH =~ (release)(\/|-)([0-9]+\.[0-9]+) ]]
-      #     then
-      #       echo "${{ github.event.pull_request.head.ref }} --> ${{ github.ref }} (tag: ${BASH_REMATCH[3]})"
-      #       gh release create ${BASH_REMATCH[3]} --title "Release ${BASH_REMATCH[3]}" --verify-tag
-      #     else
-      #       echo "${{ github.event.pull_request.head.ref }} --> ${{ github.ref }} (tag: none)"
-
-
-      #if [[ $TAG =~ ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-((0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))$ ]]
-      # - shell: bash
-      #   name: git tag -d <pre-release tag>
-      #   if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature') }}
-      #   run: |
-      #     TAG=$(git describe --tags --abbrev=0)
-      #     if [[ $TAG == *"-"* ]];
-      #     then
-      #       echo "$TAG is prelease. Deleting..."
-      #       git push --delete origin $TAG
-      #     else
-      #       echo "$TAG is not prelease. Skipped."
-      #     fi
-
-      # - shell: bash
-      #   name: git tag (on push)
-      #   if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature') }}
-      #   run: |
-      #     git tag ${{ steps.gitversion.outputs.semVer }} --force
-      #     git push origin ${{ steps.gitversion.outputs.semVer }} --force
-      #     echo "${{ github.event.pull_request.head.ref }} --> ${{ github.ref }} (tag: ${{ steps.gitversion.outputs.semVer }})"
