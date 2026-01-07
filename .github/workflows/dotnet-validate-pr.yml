@@ -1,0 +1,38 @@
+name: validate
+
+env:
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+on:
+  pull_request:
+    types:
+    - opened
+    - synchronize
+    - reopened
+    branches:
+    - "main"
+    paths:
+      - ".github/workflows/**"
+      - "*.sln"
+      - "**/*.*sproj"
+      - "**/*.cs"
+  workflow_dispatch:
+    inputs: {}
+
+jobs:
+  build:
+    uses: cloud-tek/.github/.github/workflows/dagger-cloudtek-build.yml@v0.1.0
+    name: build
+    with:
+      Directory: .
+      DaggerModule: git@github.com/cloud-tek/dagger/dotnet/cloudtek-build@refs/tags/v0.2.0
+      CloudTekBuildVersion: '10.0.0'
+      NetVersion: '10.0'
+      NetSdkVersion: '10.0.100'
+      Target: 'All'
+      Skip: ''
+    secrets:
+      GH_TOKEN:       '${{ secrets.CLOUDTEK_AUTOMATION_TOKEN }}'
+      NUGET_API_KEY:  '${{ secrets.NUGET_API_KEY }}'
+      DAGGER_CLOUD_TOKEN: '${{ secrets.DAGGER_CLOUD_TOKEN }}'
+      DAGGER_SSH_PRIVATE_KEY: '${{ secrets.DAGGER_SSH_PRIVATE_KEY }}'
