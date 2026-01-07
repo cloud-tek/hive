@@ -21,7 +21,7 @@ on:
 
 jobs:
   build:
-    uses: cloud-tek/.github/.github/workflows/dagger-cloudtek-build.yml@v0.1.0
+    uses: cloud-tek/.github/.github/workflows/dagger/cloudtek-build.yml@v0.1.0
     name: build
     with:
       Directory: .
