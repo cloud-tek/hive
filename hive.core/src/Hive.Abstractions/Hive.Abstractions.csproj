@@ -28,4 +28,6 @@
 		<PackageReference Include="MiniValidation" />
 		<PackageReference Include="Scrutor" />
 	</ItemGroup>
+
+	<Import Project="$(MSBuildThisFileDirectory)..\..\..\Version.targets" />
 </Project>

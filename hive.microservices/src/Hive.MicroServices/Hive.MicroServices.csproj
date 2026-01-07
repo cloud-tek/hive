@@ -17,4 +17,6 @@
     <ProjectReference Include="..\..\..\hive.core\src\Hive.Abstractions\Hive.Abstractions.csproj" />
   </ItemGroup>
 
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\Version.targets" />
+
 </Project>

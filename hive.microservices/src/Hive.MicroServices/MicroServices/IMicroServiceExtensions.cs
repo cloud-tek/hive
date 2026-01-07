@@ -97,6 +97,9 @@ public static class IMicroServiceExtensions
         services.AddSingleton<IConfigurationRoot>(config);
         services.AddSingleton<IConfiguration>(config);
 
+        // Add routing services (required by UseRouting/UseEndpoints middleware)
+        services.AddRouting();
+
         // Run all service configuration actions
         service.ConfigureActions.ForEach(action => action(services, config));
         service.Extensions.ForEach(extension =>

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DiagnosticAdapter;
 
-namespace Hive.Diagnostics;
+namespace Hive.MicroServices.Diagnostics;
 
 /// <summary>
 /// Diagnostic listener for middleware

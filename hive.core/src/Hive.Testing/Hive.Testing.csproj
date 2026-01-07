@@ -18,4 +18,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Hive.Abstractions\Hive.Abstractions.csproj" />
   </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\Version.targets" />
 </Project>
