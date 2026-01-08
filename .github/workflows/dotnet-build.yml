@@ -1,4 +1,4 @@
-name: validate
+name: build
 
 env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
