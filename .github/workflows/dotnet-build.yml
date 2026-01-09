@@ -4,6 +4,7 @@ env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 x-config:
+  cloudtek-build-version: &cloudtek-build-version '10.0.1'
   net-version: &net-version '10.0'
   net-sdk-version: &net-sdk-version '10.0.100'
 
@@ -27,7 +28,7 @@ jobs:
     with:
       directory: .
       dagger-module: git@github.com/cloud-tek/dagger/dotnet/cloudtek-build@refs/tags/v0.3.2
-      cloudtek-build-version: '10.0.1'
+      cloudtek-build-version: *cloudtek-build-version
       net-version: *net-version
       net-sdk-version: *net-sdk-version
       target: 'All'
