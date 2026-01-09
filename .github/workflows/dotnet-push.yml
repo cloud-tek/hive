@@ -9,9 +9,6 @@ on:
       NUGET_API_KEY:
         description: "NuGet API Key"
         required: false
-      GH_TOKEN:
-        description: "GitHub Token"
-        required: false
     inputs:
       artifact-name:
         description: "The name of the artifact containing the packed packages"
@@ -21,6 +18,11 @@ on:
         description: "The path to the packages inside the artifact"
         type: string
         required: true
+      nuget-api-url:
+        description: "NuGet API URL"
+        type: string
+        default: "https://api.nuget.org/v3/index.json"
+        required: false
       net-version:
         description: ".NET version"
         type: string
@@ -45,11 +47,19 @@ jobs:
       - name: tree artifacts
         run: |
           tree ${{ github.workspace }}/artifacts
-
-      # - name: upload-artifacts
-      #   uses: actions/upload-artifact@v5
-      #   if: ${{ !(contains(inputs.skip, 'Pack') && contains(inputs.skip, 'Publish')) }}
-      #   with:
-      #     name: ${{ env.VAR_ARTIFACT_NAME }}
-      #     path: ${{ github.workspace }}/artifacts
-      #     if-no-files-found: error
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ inputs.net-sdk-version }}
+      - name: dotnet nuget push
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          for package in ${{ github.workspace }}/artifacts/${{ inputs.artifact-path }}; do
+            if [ -f "$package" ]; then
+              echo "pushing $package ===> ${{ inputs.nuget-api-url }}"
+              dotnet nuget push "$package" \
+                --source "${{ inputs.nuget-api-url }}" \
+                --api-key "${{ secrets.NUGET_API_KEY }}" \
+                --skip-duplicate
+            fi
+          done

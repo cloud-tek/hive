@@ -3,6 +3,10 @@ name: build
 env:
   ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
+x-config:
+  net-version: &net-version '10.0'
+  net-sdk-version: &net-sdk-version '10.0.100'
+
 on:
   push:
     branches:
@@ -24,8 +28,8 @@ jobs:
       directory: .
       dagger-module: git@github.com/cloud-tek/dagger/dotnet/cloudtek-build@refs/tags/v0.3.2
       cloudtek-build-version: '10.0.1'
-      net-version: '10.0'
-      net-sdk-version: '10.0.100'
+      net-version: *net-version
+      net-sdk-version: *net-sdk-version
       target: 'All'
       skip: ''
     secrets:
@@ -41,8 +45,7 @@ jobs:
     with:
       artifact-name: ${{ needs.build.outputs.artifact-name }}
       artifact-path: 'packages/**/*.nupkg'
-      net-version: '10.0'
-      net-sdk-version: '10.0.100'
+      net-sdk-version: *net-sdk-version
+      nuget-api-url: 'https://api.nuget.org/v3/index.json'
     secrets:
-      GH_TOKEN:       '${{ secrets.CLOUDTEK_AUTOMATION_TOKEN }}'
       NUGET_API_KEY:  '${{ secrets.NUGET_API_KEY }}'
