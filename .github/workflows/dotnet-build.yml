@@ -42,7 +42,7 @@ jobs:
       DAGGER_SSH_PRIVATE_KEY: '${{ secrets.DAGGER_SSH_PRIVATE_KEY }}'
 
   push:
-    uses: ./.github/workflows/dotnet-push.yml
+    uses: cloud-tek/.github/.github/workflows/dotnet-push.yml@v0.3.0
     name: push
     needs: build
     if: |
