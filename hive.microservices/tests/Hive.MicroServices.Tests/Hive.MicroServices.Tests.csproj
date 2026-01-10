@@ -45,6 +45,9 @@
     <EmbeddedResource Include="cors-config-09.json" />
     <EmbeddedResource Include="cors-config-10.json" />
     <EmbeddedResource Include="cors-config-11.json" />
+    <EmbeddedResource Include="cors-integration-allowany.json" />
+    <EmbeddedResource Include="cors-integration-restrictive.json" />
+    <EmbeddedResource Include="cors-integration-multiple-origins.json" />
     <EmbeddedResource Include="shared-logging-config.json" />
   </ItemGroup>
 

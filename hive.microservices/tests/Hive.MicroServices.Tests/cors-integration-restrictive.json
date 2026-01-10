@@ -1,0 +1,23 @@
+{
+  "Hive": {
+    "CORS": {
+      "AllowAny": "false",
+      "Policies": [
+        {
+          "Name": "TrustedOriginOnly",
+          "AllowedOrigins": [
+            "https://trusted.com"
+          ],
+          "AllowedMethods": [
+            "GET",
+            "POST"
+          ],
+          "AllowedHeaders": [
+            "Content-Type",
+            "X-Custom-Header"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -46,12 +46,14 @@ public static class IMicroServiceExtensions
         .ConfigurePipelineActions.Add(app =>
     {
       app.UseRouting();
-      app.When(
-        () => microservice.Extensions.Any(x => x.Is<CORS.Extension>()),
-        (a) =>
-          {
-            a.UseCors();
-          });
+
+      // Apply CORS middleware (uses default policy configured in Extension)
+      var corsExtension = microservice.Extensions.SingleOrDefault(x => x.Is<CORS.Extension>()) as CORS.Extension;
+      if (corsExtension != null)
+      {
+        app.UseCors();
+      }
+
       app.UseAuthorization();
       app.UseEndpoints(endpoints =>
         {

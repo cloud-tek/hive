@@ -1,0 +1,28 @@
+{
+  "Hive": {
+    "CORS": {
+      "AllowAny": "false",
+      "Policies": [
+        {
+          "Name": "FirstPolicy",
+          "AllowedOrigins": [
+            "https://first.com"
+          ],
+          "AllowedMethods": [
+            "GET",
+            "POST"
+          ]
+        },
+        {
+          "Name": "SecondPolicy",
+          "AllowedOrigins": [
+            "https://second.com"
+          ],
+          "AllowedMethods": [
+            "POST"
+          ]
+        }
+      ]
+    }
+  }
+}
