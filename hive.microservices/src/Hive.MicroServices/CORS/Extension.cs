@@ -12,6 +12,11 @@ namespace Hive.MicroServices.CORS;
 public class Extension : MicroServiceExtension
 {
   /// <summary>
+  /// The name of the CORS policy to apply
+  /// </summary>
+  public string? PolicyName { get; private set; }
+
+  /// <summary>
   /// Create a new instance of the extension
   /// </summary>
   /// <param name="service"></param>
@@ -43,9 +48,19 @@ public class Extension : MicroServiceExtension
           if (options.Value.AllowAny)
           {
             const string name = "Allow Any";
+            PolicyName = name;
+
+            // Set as default policy so it applies to all endpoints automatically
+            cors.AddDefaultPolicy((policy) =>
+            {
+              policy.AllowAnyHeader();
+              policy.AllowAnyMethod();
+              policy.AllowAnyOrigin();
+            });
+
+            // Also add named policy for explicit use
             cors.AddPolicy(name, (policy) =>
             {
-              policy.AllowCredentials();
               policy.AllowAnyHeader();
               policy.AllowAnyMethod();
               policy.AllowAnyOrigin();
@@ -54,9 +69,18 @@ public class Extension : MicroServiceExtension
           }
           else
           {
+            // Use the first policy as the default policy
+            PolicyName = options.Value.Policies[0].Name;
+
+            // Set first policy as default
+            var firstPolicy = options.Value.Policies[0];
+            cors.AddDefaultPolicy(firstPolicy.ToCORSPolicyBuilderAction());
+            ((MicroService)Service).Logger.LogInformationPolicyConfigured($"{firstPolicy.Name} (default)");
+
+            // Also register all policies by name
             options.Value.Policies.ForEach(policy =>
             {
-              cors.AddPolicy(policy.Name, x => policy.ToCORSPolicyBuilderAction());
+              cors.AddPolicy(policy.Name, policy.ToCORSPolicyBuilderAction());
               ((MicroService)Service).Logger.LogInformationPolicyConfigured(policy.Name);
             });
           }
