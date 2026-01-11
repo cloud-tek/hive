@@ -289,6 +289,51 @@ var microservice = new MicroService("my-service")
     .ConfigureApiPipeline(endpoints => { /* ... */ });
 ```
 
+## Built-in Extensions
+
+### CORS (Cross-Origin Resource Sharing)
+
+Enable cross-origin HTTP requests from web browsers with secure, configurable policies.
+
+**Development Mode (Allow Any):**
+```csharp
+var microservice = new MicroService("my-api")
+    .WithCORS()  // Defaults to AllowAny in development
+    .ConfigureApiPipeline(endpoints =>
+    {
+        endpoints.MapGet("/api/data", () => Results.Ok(new { data = "value" }));
+    });
+```
+
+**Production Mode (Restrictive Policies):**
+```csharp
+// Configure via appsettings.json
+{
+  "Hive": {
+    "CORS": {
+      "AllowAny": false,
+      "Policies": [
+        {
+          "Name": "WebApp",
+          "AllowedOrigins": ["https://myapp.com"],
+          "AllowedMethods": ["GET", "POST"],
+          "AllowedHeaders": ["Content-Type", "Authorization"]
+        }
+      ]
+    }
+  }
+}
+```
+
+**Features:**
+- ✅ Default policy pattern (applies to all endpoints automatically)
+- ✅ Multiple named policies support
+- ✅ FluentValidation-based configuration validation
+- ✅ Comprehensive integration tests
+- ✅ Secure by default (prevents AllowCredentials + AllowAnyOrigin)
+
+📖 **[Complete CORS Documentation](src/Hive.MicroServices/CORS/README.md)** - Configuration guide, security best practices, troubleshooting, and examples
+
 ## Lifecycle
 
 ```mermaid

@@ -11,6 +11,8 @@ namespace Hive.MicroServices.CORS;
 /// </summary>
 public class Extension : MicroServiceExtension
 {
+  private const string AllowAnyPolicyName = "Allow Any";
+
   /// <summary>
   /// The name of the CORS policy to apply
   /// </summary>
@@ -47,28 +49,26 @@ public class Extension : MicroServiceExtension
         {
           if (options.Value.AllowAny)
           {
-            const string name = "Allow Any";
-            PolicyName = name;
+            PolicyName = AllowAnyPolicyName;
 
             // Set as default policy so it applies to all endpoints automatically
-            cors.AddDefaultPolicy((policy) =>
+            cors.AddDefaultPolicy(policy =>
             {
               policy.AllowAnyHeader();
               policy.AllowAnyMethod();
               policy.AllowAnyOrigin();
             });
 
-            // Also add named policy for explicit use
-            cors.AddPolicy(name, (policy) =>
-            {
-              policy.AllowAnyHeader();
-              policy.AllowAnyMethod();
-              policy.AllowAnyOrigin();
-            });
-            ((MicroService)Service).Logger.LogInformationPolicyConfigured(name);
+            ((MicroService)Service).Logger.LogInformationPolicyConfigured(AllowAnyPolicyName);
           }
           else
           {
+            // Validate that policies collection is not empty
+            if (options.Value.Policies == null || options.Value.Policies.Length == 0)
+            {
+              throw new InvalidOperationException("CORS policies collection cannot be empty when AllowAny is false");
+            }
+
             // Use the first policy as the default policy
             PolicyName = options.Value.Policies[0].Name;
 
@@ -77,8 +77,9 @@ public class Extension : MicroServiceExtension
             cors.AddDefaultPolicy(firstPolicy.ToCORSPolicyBuilderAction());
             ((MicroService)Service).Logger.LogInformationPolicyConfigured($"{firstPolicy.Name} (default)");
 
-            // Also register all policies by name
-            options.Value.Policies.ForEach(policy =>
+            // Register remaining policies by name
+            // Skip(1) excludes the first policy since it's already registered as the default above
+            options.Value.Policies.Skip(1).ForEach(policy =>
             {
               cors.AddPolicy(policy.Name, policy.ToCORSPolicyBuilderAction());
               ((MicroService)Service).Logger.LogInformationPolicyConfigured(policy.Name);

@@ -113,6 +113,8 @@ public partial class MicroServiceTests
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-allowany.json");
 
+      await using var _ = service;
+
       try
       {
         var request = CreateSimpleRequest("/api/test", HttpMethod.Get, "https://example.com");
@@ -137,6 +139,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-allowany.json");
+      await using var _ = service;
 
       try
       {
@@ -164,6 +167,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-allowany.json");
+      await using var _ = service;
 
       try
       {
@@ -194,6 +198,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-restrictive.json");
+      await using var _ = service;
 
       try
       {
@@ -219,6 +224,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-restrictive.json");
+      await using var _ = service;
 
       try
       {
@@ -243,6 +249,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-restrictive.json");
+      await using var _ = service;
 
       try
       {
@@ -269,6 +276,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-restrictive.json");
+      await using var _ = service;
 
       try
       {
@@ -297,6 +305,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-restrictive.json");
+      await using var _ = service;
 
       try
       {
@@ -321,6 +330,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-restrictive.json");
+      await using var _ = service;
 
       try
       {
@@ -345,6 +355,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-restrictive.json");
+      await using var _ = service;
 
       try
       {
@@ -377,6 +388,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-restrictive.json");
+      await using var _ = service;
 
       try
       {
@@ -409,6 +421,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-multiple-origins.json");
+      await using var _ = service;
 
       try
       {
@@ -435,6 +448,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-multiple-origins.json");
+      await using var _ = service;
 
       try
       {
@@ -509,6 +523,7 @@ public partial class MicroServiceTests
     {
       // Arrange
       var (service, client) = await CreateTestServiceWithCORS("shared-logging-config.json", "cors-integration-allowany.json");
+      await using var _ = service;
 
       try
       {
