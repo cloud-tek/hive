@@ -8,7 +8,7 @@ namespace Hive.MicroServices.CORS;
 /// </summary>
 public class CORSPolicyValidator : AbstractValidator<CORSPolicy>
 {
-  private static readonly string[] AllowedHeaders = new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
+  private static readonly string[] ValidHttpMethods = new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
 
   /// <summary>
   /// Creates a new <see cref="CORSPolicyValidator"/> instance.
@@ -24,12 +24,12 @@ public class CORSPolicyValidator : AbstractValidator<CORSPolicy>
       .WithMessage(Errors.PolicyEmpty);
 
     RuleForEach(x => x.AllowedOrigins)
-      .Must(value => Uri.TryCreate(value, UriKind.Absolute, out _))
+      .Must(value => value == "*" || Uri.TryCreate(value, UriKind.Absolute, out _))
       .When(x => !x.AllowedOrigins.IsNullOrEmpty())
       .WithMessage(Errors.AllowedOriginsInvalidFormat);
 
     RuleForEach(x => x.AllowedMethods)
-      .Must(value => AllowedHeaders.Contains(value))
+      .Must(value => ValidHttpMethods.Contains(value))
       .When(x => !x.AllowedMethods.IsNullOrEmpty())
       .WithMessage(Errors.AllowedMethodsInvalidValue);
   }
@@ -47,7 +47,7 @@ public class CORSPolicyValidator : AbstractValidator<CORSPolicy>
   }
 
   /// <summary>
-  /// CORSPolicy validation erorrs
+  /// CORSPolicy validation errors
   /// </summary>
   public static class Errors
   {
