@@ -319,7 +319,8 @@ public partial class MicroService : MicroServiceBase, IMicroService
                diagnosticListener.SubscribeWithAdapter(listener);
                */
 
-              if (Extensions.SingleOrDefault(ex => ex is IHaveRequestLoggingMiddleware) is IHaveRequestLoggingMiddleware lex && lex.ConfigureRequestLoggingMiddleware != null)
+              var lex = Extensions.SingleOrDefault(ex => ex is IHaveRequestLoggingMiddleware) as IHaveRequestLoggingMiddleware;
+              if (lex is not null && lex.ConfigureRequestLoggingMiddleware != null)
               {
                 lex.ConfigureRequestLoggingMiddleware(app);
               }

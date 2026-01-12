@@ -108,8 +108,8 @@ public static class IMicroServiceExtensions
       .Configure(app =>
       {
         // Configure request logging middleware if present
-        if (service.Extensions.SingleOrDefault(ex => ex is IHaveRequestLoggingMiddleware) is IHaveRequestLoggingMiddleware lex
-            && lex.ConfigureRequestLoggingMiddleware != null)
+        var lex = service.Extensions.SingleOrDefault(ex => ex is IHaveRequestLoggingMiddleware) as IHaveRequestLoggingMiddleware;
+        if (lex is not null && lex.ConfigureRequestLoggingMiddleware != null)
         {
           lex.ConfigureRequestLoggingMiddleware(app);
         }
@@ -178,8 +178,8 @@ public static class IMicroServiceExtensions
           app.UseRouting();
 
           // Apply CORS middleware (uses default policy configured in Extension)
-          var corsExtension = microservice.Extensions.SingleOrDefault(x => x.Is<CORS.Extension>()) as CORS.Extension;
-          if (corsExtension != null)
+          var corsExtension = microservice.Extensions.SingleOrDefault(x => x.Is<CORS.Extension>());
+          if (corsExtension is not null)
           {
             app.UseCors();
           }
