@@ -1,7 +1,7 @@
 using FluentValidation;
 using Hive.Extensions;
 
-namespace Hive.MicroServices.CORS;
+namespace Hive.Configuration.CORS;
 
 /// <summary>
 /// The CORS policy validator.

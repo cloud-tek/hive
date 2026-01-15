@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Hive.MicroServices.CORS;
+using Hive.Configuration.CORS;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
