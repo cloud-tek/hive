@@ -1,4 +1,4 @@
-namespace Hive.MicroServices.CORS;
+namespace Hive.Configuration.CORS;
 
 /// <summary>
 /// The CORS policy options used to configure the service

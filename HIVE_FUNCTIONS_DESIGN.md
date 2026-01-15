@@ -1198,68 +1198,137 @@ public class FunctionsMiddleware : ICORSMiddleware
 
 ### 11.6 Recommendation
 
-**RECOMMENDED: Option B (Keep Embedded, Extract Abstractions)**
+**RECOMMENDED: Option A Modified - Move CORS Abstractions to Hive.Abstractions**
 
-**Rationale:**
-1. **Pragmatic** - CORS middleware is fundamentally different between ASP.NET Core and Functions
-2. **Lower Risk** - Less code churn, smaller migration surface
-3. **Clear Boundaries** - Each hosting model owns its CORS implementation
-4. **Shared Models** - Configuration/validation logic is reused via lightweight abstractions package
+After further analysis, the cleanest approach is to **move shared CORS configuration and validation to `Hive.Abstractions`** rather than creating a new module or keeping everything duplicated.
+
+**Why Hive.Abstractions is the Right Place:**
+
+1. **Precedent Exists** - `Hive.Abstractions` already contains:
+   - Configuration utilities (`PreConfigureValidatedOptions`, `ConfigureValidatedOptions`)
+   - Validation base classes (`FluentOptionsValidator`, `MiniOptionsValidator`)
+   - Extension base class (`MicroServiceExtension`)
+   - Shared constants (`Constants.Environment`, `Constants.Headers`)
+
+2. **Dependency Graph** - Already a required dependency:
+   ```
+   Hive.Abstractions
+       ├── Hive.MicroServices
+       └── Hive.Functions
+   ```
+
+3. **Package Semantics** - Configuration models and validators ARE abstractions
+
+4. **Zero Breaking Changes** - Just internal refactoring within the package
 
 **Implementation Plan:**
 
-**Phase 1 (For Functions Support):**
-- Create `Hive.CORS.Abstractions` with just `Options` and `CORSPolicy` POCOs
-- Keep `Hive.MicroServices.CORS` as-is, reference abstractions
-- Create `Hive.Functions.CORS` extension with Functions-specific middleware
-- Both share validation logic via copied validators (small duplication acceptable)
+**Step 1: Clean up ASP.NET Core dependency**
+- Remove `ToCORSPolicyBuilderAction()` method from `CORSPolicy.cs` (uses `Microsoft.AspNetCore.Cors.Infrastructure`)
+- This method should be in the ASP.NET Core specific extension, not the abstraction
 
-**Phase 2 (Future Optimization, Optional):**
-- If 3+ hosting models emerge, revisit full extraction (Option A)
-- Evaluate if middleware abstraction provides value vs. complexity
-- Consider if shared base `Extension` class is worth the abstraction cost
+**Step 2: Move to Hive.Abstractions**
+```bash
+# Move pure configuration models and validators
+git mv hive.microservices/src/Hive.MicroServices/CORS/Options.cs \
+       hive.core/src/Hive.Abstractions/CORS/Options.cs
 
-**Why NOT Option A (Full Extraction) Now:**
-1. ⏱️ **Time Investment** - Significant refactoring effort (6+ files, 5+ projects)
-2. 🎯 **YAGNI Violation** - We only have 2 hosting models (MicroServices, Functions)
-3. 🧪 **Testing Burden** - All CORS integration tests need migration and validation
-4. 🔀 **Abstraction Complexity** - `ICORSMiddleware` interface may not provide enough value
-5. 📦 **Dependency Web** - All pipeline modes need updating (Api, GraphQL, Grpc, Job)
+git mv hive.microservices/src/Hive.MicroServices/CORS/CORSPolicy.cs \
+       hive.core/src/Hive.Abstractions/CORS/CORSPolicy.cs
 
-**Decision Point:** Revisit full extraction (Option A) when:
-- We have 3+ hosting models that need CORS
-- Middleware abstraction proves beneficial in practice
-- Duplication of validators becomes maintenance burden
+git mv hive.microservices/src/Hive.MicroServices/CORS/OptionsValidator.cs \
+       hive.core/src/Hive.Abstractions/CORS/OptionsValidator.cs
+
+git mv hive.microservices/src/Hive.MicroServices/CORS/CORSPolicyValidator.cs \
+       hive.core/src/Hive.Abstractions/CORS/CORSPolicyValidator.cs
+
+# Keep Extension.cs in Hive.MicroServices (ASP.NET Core specific)
+```
+
+**Step 3: Update namespaces**
+- Change moved files from `namespace Hive.MicroServices.CORS;` to `namespace Hive.CORS;`
+
+**Step 4: Update Extensions to use new namespace**
+```csharp
+// hive.microservices/src/Hive.MicroServices/CORS/Extension.cs
+using Hive.CORS; // ← Import from Hive.Abstractions
+
+// hive.functions/src/Hive.Functions/CORS/Extension.cs
+using Hive.CORS; // ← Same namespace, same configuration!
+```
+
+**Benefits:**
+- ✅ **Shared Configuration** - Both hosting models use identical configuration
+- ✅ **Shared Validation** - Same validation rules everywhere
+- ✅ **No New Dependencies** - `Hive.Abstractions` already referenced
+- ✅ **Follows Pattern** - Matches existing structure in Abstractions
+- ✅ **Clean Separation** - Abstractions are pure, middleware is hosting-specific
+- ✅ **Zero Breaking Changes** - Just internal reorganization
+
+**Why NOT create separate Hive.CORS module:**
+1. ⏱️ **Unnecessary Complexity** - Would create new module for just 4 files
+2. 📦 **Dependency Management** - Would need to add new dependency to all projects
+3. 🎯 **YAGNI** - `Hive.Abstractions` already serves this purpose
+4. 🔄 **Pattern Violation** - Other shared config utilities are in Abstractions
 
 ### 11.7 Immediate Action Items for Functions Support
 
 **For MVP (Hive.Functions):**
 
-1. ✅ **Keep** `Hive.MicroServices.CORS` as-is
-2. ✅ **Create** `Hive.Functions` extension with CORS support:
+1. ✅ **Move** CORS abstractions to `Hive.Abstractions/CORS/`
+   - Remove ASP.NET Core dependency from `CORSPolicy.cs`
+   - Move `Options.cs`, `CORSPolicy.cs`, validators to `Hive.Abstractions`
+   - Update namespaces to `Hive.CORS`
+
+2. ✅ **Update** `Hive.MicroServices.CORS.Extension` to use `Hive.CORS` namespace
+
+3. ✅ **Create** `Hive.Functions` CORS extension:
    ```csharp
-   // hive.functions/src/Hive.Functions/Extensions/CORSExtension.cs
+   // hive.functions/src/Hive.Functions/CORS/Extension.cs
+   using Hive.CORS; // ← Shared namespace from Hive.Abstractions
+   using Microsoft.Azure.Functions.Worker;
+
    namespace Hive.Functions.CORS;
 
    public class Extension : MicroServiceExtension
    {
        public Extension(IFunctionHost functionHost) : base(functionHost) { }
 
-       public override IServiceCollection ConfigureServices(...)
+       public override IServiceCollection ConfigureServices(
+           IServiceCollection services,
+           IConfiguration configuration)
        {
-           // Load and validate CORS options (copy from MicroServices.CORS)
-           // Register CORS configuration in DI
+           // ✅ Same configuration loading as MicroServices!
+           services.PreConfigureValidatedOptions<Options>(
+               configuration.GetSection(Options.SectionKey)
+           );
+           return services;
        }
 
        public void ConfigureFunctions(IFunctionsWorkerApplicationBuilder builder)
        {
-           // Apply CORS middleware to Functions pipeline
-           builder.Use(async (context, next) => { ... });
+           builder.Use(async (FunctionContext context, Func<Task> next) =>
+           {
+               if (context.IsHttpRequest(out var httpReqData))
+               {
+                   var corsOptions = context.InstanceServices
+                       .GetRequiredService<IOptions<Options>>().Value;
+
+                   ApplyCorsHeaders(httpReqData, corsOptions);
+               }
+               await next();
+           });
+       }
+
+       private void ApplyCorsHeaders(HttpRequestData request, Options options)
+       {
+           // Apply CORS headers based on policy configuration
+           // Implementation similar to ASP.NET Core but using Functions APIs
        }
    }
    ```
 
-3. ✅ **Document** configuration compatibility:
+4. ✅ **Document** configuration compatibility:
    ```json
    {
      "Hive": {
@@ -1279,12 +1348,12 @@ public class FunctionsMiddleware : ICORSMiddleware
    ```
    Same configuration works for both MicroServices and Functions!
 
-4. ✅ **Add tests** to verify CORS headers applied correctly in Functions context
+5. ✅ **Add tests** to verify CORS headers applied correctly in Functions context
 
 **For Future (Post-MVP):**
-- Monitor code duplication between `MicroServices.CORS` and `Functions.CORS`
-- If validators diverge, extract to shared `Hive.CORS.Abstractions`
-- If 3rd hosting model emerges, reconsider Option A
+- Move validation tests to `Hive.Abstractions.Tests`
+- Consider if additional shared utilities should move to `Hive.Abstractions`
+- Monitor for other cross-cutting concerns that could benefit from same pattern
 
 ---
 
