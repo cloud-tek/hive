@@ -1,8 +1,11 @@
 using Hive.Configuration;
+using Hive.Configuration.CORS;
 using Hive.Extensions;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using CORSOptions = Hive.Configuration.CORS.Options;
 
 namespace Hive.MicroServices.CORS;
 
@@ -36,14 +39,14 @@ public class Extension : MicroServiceExtension
   {
     ConfigureActions.Add((svc, configuration) =>
     {
-      var validator = new OptionsValidator(microservice);
+      var validator = new Hive.Configuration.CORS.OptionsValidator(microservice);
       try
       {
         var options =
-          svc.PreConfigureValidatedOptions<Options, OptionsValidator>(
+          svc.PreConfigureValidatedOptions<CORSOptions, Hive.Configuration.CORS.OptionsValidator>(
             configuration,
             validator,
-            () => Options.SectionKey);
+            () => CORSOptions.SectionKey);
 
         svc.AddCors(cors =>
         {
@@ -74,14 +77,14 @@ public class Extension : MicroServiceExtension
 
             // Set first policy as default
             var firstPolicy = options.Value.Policies[0];
-            cors.AddDefaultPolicy(firstPolicy.ToCORSPolicyBuilderAction());
+            cors.AddDefaultPolicy(builder => BuildCorsPolicy(builder, firstPolicy));
             ((MicroService)Service).Logger.LogInformationPolicyConfigured($"{firstPolicy.Name} (default)");
 
             // Register remaining policies by name
             // Skip(1) excludes the first policy since it's already registered as the default above
             options.Value.Policies.Skip(1).ForEach(policy =>
             {
-              cors.AddPolicy(policy.Name, policy.ToCORSPolicyBuilderAction());
+              cors.AddPolicy(policy.Name, builder => BuildCorsPolicy(builder, policy));
               ((MicroService)Service).Logger.LogInformationPolicyConfigured(policy.Name);
             });
           }
@@ -95,6 +98,29 @@ public class Extension : MicroServiceExtension
     });
 
     return services;
+  }
+
+  /// <summary>
+  /// Builds a CORS policy from the configuration
+  /// </summary>
+  /// <param name="builder">The CORS policy builder</param>
+  /// <param name="policy">The CORS policy configuration</param>
+  private static void BuildCorsPolicy(CorsPolicyBuilder builder, CORSPolicy policy)
+  {
+    if (policy.AllowedHeaders != null && policy.AllowedHeaders.Length > 0)
+    {
+      builder.WithHeaders(policy.AllowedHeaders);
+    }
+
+    if (policy.AllowedOrigins != null && policy.AllowedOrigins.Length > 0)
+    {
+      builder.WithOrigins(policy.AllowedOrigins);
+    }
+
+    if (policy.AllowedMethods != null && policy.AllowedMethods.Length > 0)
+    {
+      builder.WithMethods(policy.AllowedMethods);
+    }
   }
 }
 
