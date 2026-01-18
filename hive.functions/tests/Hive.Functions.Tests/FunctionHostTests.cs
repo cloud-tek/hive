@@ -53,17 +53,17 @@ public class FunctionHostTests
   {
     // Arrange
     var functionHost = new FunctionHost("test-function");
-    var configureActionCalled = false;
 
     // Act
-    functionHost.ConfigureServices((services, config) =>
+    var result = functionHost.ConfigureServices((_, _) =>
     {
-      configureActionCalled = true;
+      // Configuration would happen here
     });
 
-    // Assert - we can't easily verify without running the host,
-    // but we can verify it returns the instance for chaining
-    functionHost.Should().NotBeNull();
+    // Assert - verify fluent interface
+    // Note: The callback is stored and invoked later during host creation (CreateHostBuilder)
+    // not immediately, so we only verify the fluent interface pattern here
+    result.Should().BeSameAs(functionHost);
   }
 
   [Fact]
@@ -74,12 +74,14 @@ public class FunctionHostTests
     var functionHost = new FunctionHost("test-function");
 
     // Act
-    var result = functionHost.ConfigureFunctions(builder =>
+    var result = functionHost.ConfigureFunctions(_ =>
     {
       // Configuration would happen here
     });
 
     // Assert - verify fluent interface
+    // Note: The callback is stored and invoked later during host creation (CreateHostBuilder)
+    // not immediately, so we only verify the fluent interface pattern here
     result.Should().BeSameAs(functionHost);
   }
 
@@ -105,5 +107,4 @@ public class FunctionHostTests
     // Assert
     functionHost.Environment.Should().NotBeNullOrEmpty();
   }
-
 }

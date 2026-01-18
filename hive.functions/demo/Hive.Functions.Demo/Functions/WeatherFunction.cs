@@ -9,7 +9,7 @@ namespace Hive.Functions.Demo.Functions;
 /// <summary>
 /// Weather-related Azure Functions
 /// </summary>
-public class WeatherFunction
+public partial class WeatherFunction
 {
   private readonly IWeatherService weatherService;
   private readonly ILogger<WeatherFunction> logger;
@@ -36,7 +36,7 @@ public class WeatherFunction
     string city,
     FunctionContext context)
   {
-    logger.LogInformation("Processing weather request for {City}", city);
+    LogProcessingWeatherRequest(logger, city);
 
     try
     {
@@ -48,7 +48,7 @@ public class WeatherFunction
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "Error retrieving weather for {City}", city);
+      LogErrorRetrievingWeather(logger, city, ex);
 
       var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
       await errorResponse.WriteAsJsonAsync(new { error = "Failed to retrieve weather forecast" });
@@ -64,18 +64,36 @@ public class WeatherFunction
     [TimerTrigger("0 */5 * * * *")] TimerInfo timer,
     FunctionContext context)
   {
-    logger.LogInformation("Weather cache refresh timer trigger executed at {Time}", DateTime.UtcNow);
-    logger.LogInformation("Next timer schedule at {NextSchedule}", timer.ScheduleStatus?.Next);
+    LogWeatherCacheRefreshTrigger(logger, DateTime.UtcNow);
+    LogNextTimerSchedule(logger, timer.ScheduleStatus?.Next);
 
     try
     {
       await weatherService.RefreshCacheAsync();
-      logger.LogInformation("Weather cache refreshed successfully");
+      LogWeatherCacheRefreshed(logger);
     }
     catch (Exception ex)
     {
-      logger.LogError(ex, "Error refreshing weather cache");
+      LogErrorRefreshingCache(logger, ex);
       throw;
     }
   }
+
+  [LoggerMessage(LogLevel.Information, "Processing weather request for {City}")]
+  private static partial void LogProcessingWeatherRequest(ILogger logger, string city);
+
+  [LoggerMessage(LogLevel.Error, "Error retrieving weather for {City}")]
+  private static partial void LogErrorRetrievingWeather(ILogger logger, string city, Exception ex);
+
+  [LoggerMessage(LogLevel.Information, "Weather cache refresh timer trigger executed at {Time}")]
+  private static partial void LogWeatherCacheRefreshTrigger(ILogger logger, DateTime time);
+
+  [LoggerMessage(LogLevel.Information, "Next timer schedule at {NextSchedule}")]
+  private static partial void LogNextTimerSchedule(ILogger logger, DateTimeOffset? nextSchedule);
+
+  [LoggerMessage(LogLevel.Information, "Weather cache refreshed successfully")]
+  private static partial void LogWeatherCacheRefreshed(ILogger logger);
+
+  [LoggerMessage(LogLevel.Error, "Error refreshing weather cache")]
+  private static partial void LogErrorRefreshingCache(ILogger logger, Exception ex);
 }

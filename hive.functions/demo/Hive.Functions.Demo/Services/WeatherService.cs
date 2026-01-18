@@ -5,7 +5,7 @@ namespace Hive.Functions.Demo.Services;
 /// <summary>
 /// Implementation of weather service
 /// </summary>
-public class WeatherService : IWeatherService
+public partial class WeatherService : IWeatherService
 {
   private readonly ILogger<WeatherService> logger;
   private static readonly string[] Summaries = new[]
@@ -25,7 +25,7 @@ public class WeatherService : IWeatherService
   /// <inheritdoc />
   public Task<WeatherForecast> GetForecastAsync(string city)
   {
-    logger.LogInformation("Getting weather forecast for {City}", city);
+    LogGettingWeatherForecast(logger, city);
 
     var forecast = new WeatherForecast
     {
@@ -41,10 +41,16 @@ public class WeatherService : IWeatherService
   /// <inheritdoc />
   public Task RefreshCacheAsync()
   {
-    logger.LogInformation("Refreshing weather cache at {Time}", DateTime.UtcNow);
+    LogRefreshingWeatherCache(logger, DateTime.UtcNow);
     // In a real implementation, this would refresh cached weather data
     return Task.CompletedTask;
   }
+
+  [LoggerMessage(LogLevel.Information, "Getting weather forecast for {City}")]
+  private static partial void LogGettingWeatherForecast(ILogger logger, string city);
+
+  [LoggerMessage(LogLevel.Information, "Refreshing weather cache at {Time}")]
+  private static partial void LogRefreshingWeatherCache(ILogger logger, DateTime time);
 }
 
 /// <summary>
