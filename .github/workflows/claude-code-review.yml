@@ -24,6 +24,6 @@ jobs:
           prompt: "/dotnet-code-review Review changes from ${{ github.event.pull_request.base.ref }}"
           claude_args: |
             --max-turns 25
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash,Read,Grep,Glob"
+            --allowedTools "mcp__github,mcp__github__create_issue_comment,mcp__github_inline_comment,mcp__github_inline_comment__create_inline_comment,mcp__github_comment,mcp__github_comment__update_claude_comment,Bash,Read,Grep,Glob,Edit,Write"
             --model claude-sonnet-4-5-20250929
           show_full_output: true
