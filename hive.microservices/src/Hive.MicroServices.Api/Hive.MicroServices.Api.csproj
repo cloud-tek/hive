@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
 	  <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
     <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
@@ -17,5 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Hive.MicroServices\Hive.MicroServices.csproj" />
   </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\Version.targets" />
 
 </Project>

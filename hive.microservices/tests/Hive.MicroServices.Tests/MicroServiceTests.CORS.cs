@@ -1,9 +1,8 @@
 using FluentAssertions;
-using Hive.Logging;
-using Hive.Logging.Xunit;
-using Hive.MicroServices.CORS;
+using Hive.Configuration.CORS;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,6 +20,11 @@ public partial class MicroServiceTests
       _output = output ?? throw new ArgumentNullException(nameof(output));
     }
 
+    // TODO: Revisit to support proper xunit logging via _output instead of NullLogger
+    // The tests currently use NullLogger to avoid NullReferenceException in CORS Extension.cs:67
+    // when validation fails. Need to implement a logger factory or extension method that properly
+    // wires up xunit logging to MicroService instances in test scenarios.
+
     [SmartTheory(Execute.Always, On.All)]
     [InlineData("Development", false, "shared-logging-config.json", "cors-config-01.json")]
     [InlineData("Production", true, "shared-logging-config.json", "cors-config-01.json")]
@@ -33,9 +37,8 @@ public partial class MicroServiceTests
         .UseEmbeddedConfiguration(typeof(CORS).Assembly, "Hive.MicroServices.Tests", files)
         .Build();
 
-      var service = (MicroService)new MicroService(ServiceName)
+      var service = (MicroService)new MicroService(ServiceName, new NullLogger<IMicroService>())
         .InTestClass<MicroServiceTests>()
-        .WithLogging(log => log.ToXunit(_output))
         .WithCORS()
         .ConfigureDefaultServicePipeline();
 
@@ -66,9 +69,8 @@ public partial class MicroServiceTests
         .UseEmbeddedConfiguration(typeof(CORS).Assembly, "Hive.MicroServices.Tests", files)
         .Build();
 
-      var service = (MicroService)new MicroService(ServiceName)
+      var service = (MicroService)new MicroService(ServiceName, new NullLogger<IMicroService>())
         .InTestClass<MicroServiceTests>()
-        .WithLogging(log => log.ToXunit(_output))
         .WithCORS()
         .ConfigureDefaultServicePipeline();
 
@@ -95,16 +97,15 @@ public partial class MicroServiceTests
     [InlineData(true, CORSPolicyValidator.Errors.AllowedOriginsInvalidFormat, "shared-logging-config.json", "cors-config-10.json")]
     [InlineData(true, CORSPolicyValidator.Errors.AllowedMethodsInvalidValue, "shared-logging-config.json", "cors-config-11.json")]
     [UnitTest]
-    public async Task GivenOptionsWithPolicies_WhenInitializing_ThenPoliciesAreValidated(bool shouldFail, string expectedError, params string[] files)
+    public async Task GivenOptionsWithPolicies_WhenInitializing_ThenPoliciesAreValidated(bool shouldFail, string? expectedError, params string[] files)
     {
       using var scope = EnvironmentVariableScope.Create(Constants.EnvironmentVariables.DotNet.Environment, "Development");
       var config = new ConfigurationBuilder()
         .UseEmbeddedConfiguration(typeof(CORS).Assembly, "Hive.MicroServices.Tests", files)
         .Build();
 
-      var service = (MicroService)new MicroService(ServiceName)
+      var service = (MicroService)new MicroService(ServiceName, new NullLogger<IMicroService>())
         .InTestClass<MicroServiceTests>()
-        .WithLogging(log => log.ToXunit(_output))
         .WithCORS()
         .ConfigureDefaultServicePipeline();
 

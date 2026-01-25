@@ -3,92 +3,60 @@ using Microsoft.Extensions.Configuration;
 namespace Hive;
 
 /// <summary>
-/// The base IMicroService interface. All Hive microservices implement this interface.
+/// ASP.NET Core-based microservice interface with Kubernetes probe support and pipeline configuration.
+/// Extends IMicroServiceCore with ASP.NET-specific lifecycle management and hosting capabilities.
 /// </summary>
-public interface IMicroService
+/// <remarks>
+/// This interface is specifically designed for ASP.NET Core microservices running in Kubernetes or
+/// similar container orchestration environments. It includes:
+/// - Kubernetes readiness and startup probes (IsReady, IsStarted)
+/// - ASP.NET Core pipeline mode configuration (Api, GraphQL, gRPC, Job, etc.)
+/// - Lifecycle event notifications (Lifetime)
+/// - Traditional application hosting with exit codes (RunAsync)
+///
+/// For non-ASP.NET hosting models (e.g., Azure Functions), see IMicroServiceCore or specific
+/// host interfaces like IFunctionHost.
+/// </remarks>
+public interface IMicroService : IMicroServiceCore
 {
   /// <summary>
-  /// The cancellation token source for the microservice
-  /// </summary>
-  CancellationTokenSource CancellationTokenSource { get; }
-
-  /// <summary>
-  /// The configuration root for the microservice
-  /// </summary>
-  IConfigurationRoot ConfigurationRoot { get; }
-
-  /// <summary>
-  /// The environment for the microservice
-  /// </summary>
-  string Environment { get; }
-
-  /// <summary>
-  /// The command line arguments for the microservice
-  /// </summary>
-  string[] Args { get; }
-
-  /// <summary>
-  /// The environment variables for the microservice
-  /// </summary>
-  IReadOnlyDictionary<string, string> EnvironmentVariables { get; }
-
-  /// <summary>
-  /// The extensions for the microservice
-  /// </summary>
-  IList<MicroServiceExtension> Extensions { get; }
-
-  /// <summary>
-  /// Flag indicating if an externally provided logger is used
-  /// </summary>
-  bool ExternalLogger { get; }
-
-  /// <summary>
-  /// Enum indicating the hosting mode of the microservice
-  /// </summary>
-  MicroServiceHostingMode HostingMode { get; }
-
-  /// <summary>
-  /// The Id of the microservice instance
-  /// </summary>
-  string Id { get; }
-
-  /// <summary>
-  /// Flag indicating if the microservice is ready to receive traffic. Used for k8s readiness probe(s)
+  /// Flag indicating if the microservice is ready to receive traffic. Used for Kubernetes readiness probe(s).
   /// </summary>
   bool IsReady { get; }
 
   /// <summary>
-  /// Flag indicating if the microservice has completed it's startup cycle. Used for k8s startup probe(s)
+  /// Flag indicating if the microservice has completed its startup cycle. Used for Kubernetes startup probe(s).
   /// </summary>
   bool IsStarted { get; }
 
   /// <summary>
-  /// The microservice's lifetime configuration
+  /// The microservice's lifetime configuration for monitoring startup completion and failures
   /// </summary>
   IMicroServiceLifetime Lifetime { get; }
 
   /// <summary>
-  /// The name of the microsevice
-  /// </summary>
-  string Name { get; }
-
-  /// <summary>
-  /// The pre-configured pipeline mode for the microservice
+  /// The pre-configured pipeline mode for the microservice (Api, GraphQL, gRPC, Job, None)
   /// </summary>
   MicroServicePipelineMode PipelineMode { get; }
 
   /// <summary>
-  /// Method to register additional MicroServiceExtensions
+  /// Method to register additional MicroServiceExtensions with covariant return type.
+  /// Extension must implement IMicroServiceExtension to ensure proper instantiation.
   /// </summary>
-  /// <typeparam name="TExtension">Type of the MicroServiceExtension</typeparam>
-  /// <returns>The IMicroService instance</returns>
-  IMicroService RegisterExtension<TExtension>() where TExtension : MicroServiceExtension, new();
+  /// <typeparam name="TExtension">
+  /// Type of the MicroServiceExtension.
+  /// Must implement IMicroServiceExtension&lt;TExtension&gt; with a Create factory method.
+  /// </typeparam>
+  /// <returns>The IMicroService instance for fluent chaining</returns>
+  new IMicroService RegisterExtension<TExtension>()
+    where TExtension : MicroServiceExtension<TExtension>, IMicroServiceExtension<TExtension>;
 
   /// <summary>
-  /// Method to asynchonoously initialize and start the microservice.
+  /// Method to asynchronously initialize and start the microservice.
+  /// Blocks until the microservice stops.
   /// </summary>
-  /// <param name="configuration"></param>
-  /// <param name="args"></param>
-  /// <returns>Exit code</returns>
+  /// <param name="configuration">Optional configuration root</param>
+  /// <param name="args">Optional command line arguments</param>
+  /// <returns>Exit code (0 for success, non-zero for failure)</returns>
   Task<int> RunAsync(IConfigurationRoot configuration = default!, params string[] args);
 }

@@ -1,15 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>CS1591,CA1848,CA2254</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging.AppInsights\Hive.Logging.AppInsights.csproj" />
-    <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging.LogzIo\Hive.Logging.LogzIo.csproj" />
-    <ProjectReference Include="..\..\..\hive.logging\src\Hive.Logging\Hive.Logging.csproj" />
     <ProjectReference Include="..\..\src\Hive.MicroServices.Api\Hive.MicroServices.Api.csproj" />
   </ItemGroup>
 

@@ -1,5 +1,4 @@
 using Hive.Extensions;
-using HotChocolate.AspNetCore.Voyager;
 using HotChocolate.Execution.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,11 +33,12 @@ public static class IMicroServiceExtensions
 
     service.UseCoreMicroServicePipeline(developmentOnlyPipeline: app =>
     {
-      app.UseVoyager(new VoyagerOptions()
-      {
-        Path = "/graphql-voyager",
-        QueryPath = "/graphql"
-      });
+      // todo: replace with Nitro / Banana Cake when available
+      // app.UseVoyager(new VoyagerOptions()
+      // {
+      //   Path = "/graphql-voyager",
+      //   QueryPath = "/graphql"
+      // });
     });
 
     service
@@ -46,12 +46,14 @@ public static class IMicroServiceExtensions
         .ConfigurePipelineActions.Add(app =>
     {
       app.UseRouting();
-      app.When(
-        () => microservice.Extensions.Any(x => x.Is<CORS.Extension>()),
-        (a) =>
-          {
-            a.UseCors();
-          });
+
+      // Apply CORS middleware (uses default policy configured in Extension)
+      var corsExtension = microservice.Extensions.SingleOrDefault(x => x is CORS.Extension);
+      if (corsExtension is not null)
+      {
+        app.UseCors();
+      }
+
       app.UseAuthorization();
       app.UseEndpoints(endpoints =>
         {

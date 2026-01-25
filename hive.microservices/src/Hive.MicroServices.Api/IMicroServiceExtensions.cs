@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Hive.MicroServices.Api
 {
@@ -75,12 +75,14 @@ namespace Hive.MicroServices.Api
           .ConfigurePipelineActions.Add(app =>
           {
             app.UseRouting();
-            app.When(
-              () => microservice.Extensions.Any(x => x.Is<CORS.Extension>()),
-              (a) =>
-                {
-                  a.UseCors();
-                });
+
+            // Apply CORS middleware (uses default policy configured in Extension)
+            var corsExtension = microservice.Extensions.SingleOrDefault(x => x is CORS.Extension);
+            if (corsExtension is not null)
+            {
+              app.UseCors();
+            }
+
             app.UseAuthorization();
             app.UseEndpoints(endpointBuilder);
           });

@@ -5,6 +5,7 @@ using Hive.MicroServices.Api;
 using Hive.MicroServices.GraphQL;
 using Hive.MicroServices.Grpc;
 using Hive.MicroServices.Lifecycle;
+using Hive.MicroServices.Testing;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -45,18 +46,22 @@ public partial class MicroServiceTests
       // Arrange
       var config = new ConfigurationBuilder().Build();
 
-      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+      await using var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
         .InTestClass<MicroServiceTests>()
-        .ConfigureDefaultServicePipeline();
+        .ConfigureDefaultServicePipeline()
+        .ConfigureTestHost();
 
       service.CancellationTokenSource.CancelAfter(1000);
 
-      // Act & Assert
-      var task = service.RunAsync(config);
+      // Act
+      await service.InitializeAsync(config);
+      var startTask = service.StartAsync();
 
+      // Assert
       service.ShouldStart(500.Milliseconds());
 
-      await task;
+      await startTask;
+      await service.StopAsync();
     }
 
     [Fact]
@@ -66,23 +71,27 @@ public partial class MicroServiceTests
       // Arrange
       var config = new ConfigurationBuilder().Build();
 
-      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+      await using var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
         .InTestClass<MicroServiceTests>()
         .ConfigureServices(
           (services, configuration) =>
           {
             services.AddHostedStartupService<TestData.Sec2DelayStartupService>();
           })
-        .ConfigureDefaultServicePipeline();
+        .ConfigureDefaultServicePipeline()
+        .ConfigureTestHost();
 
-      service.CancellationTokenSource.CancelAfter(1000);
+      service.CancellationTokenSource.CancelAfter(5000);
 
-      // Act & Assert
-      var task = service.RunAsync(config);
+      // Act
+      await service.InitializeAsync(config);
+      var startTask = service.StartAsync();
 
+      // Assert
       service.ShouldStart(5000.Milliseconds());
 
-      await task;
+      await startTask;
+      await service.StopAsync();
     }
 
     [Fact]
@@ -92,21 +101,24 @@ public partial class MicroServiceTests
       // Arrange
       var config = new ConfigurationBuilder().Build();
 
-      var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
+      await using var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
         .InTestClass<MicroServiceTests>()
         .ConfigureServices(
           (services, configuration) =>
           {
             services.AddHostedStartupService<TestData.FailingSec2DelayStartupService>();
           })
-        .ConfigureDefaultServicePipeline();
+        .ConfigureDefaultServicePipeline()
+        .ConfigureTestHost();
 
-      // Act & Assert
-      var task = service.RunAsync(config);
+      // Act
+      await service.InitializeAsync(config);
+      var startTask = service.StartAsync();
 
+      // Assert
       service.ShouldFailToStart(5000.Milliseconds());
 
-      await task;
+      await startTask;
     }
 
     [Fact]

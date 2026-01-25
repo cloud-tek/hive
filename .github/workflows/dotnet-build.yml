@@ -1,0 +1,52 @@
+name: build
+
+env:
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+on:
+  push:
+    branches:
+    - "main"
+    - "release/*"
+    paths:
+      - ".github/workflows/**"
+      - "*.sln"
+      - "**/*.*sproj"
+      - "**/*.cs"
+  workflow_dispatch:
+    inputs: {}
+  release:
+    types: [published]
+
+jobs:
+  build:
+    uses: cloud-tek/.github/.github/workflows/dagger-cloudtek-build.yml@v0.3.0
+    name: build
+    with:
+      directory: .
+      dagger-module: git@github.com/cloud-tek/dagger/dotnet/cloudtek-build@refs/tags/v0.3.2
+      cloudtek-build-version: '10.0.1'
+      net-version: '10.0'
+      net-sdk-version: &net-sdk-version '10.0.100'
+      target: 'All'
+      skip: ''
+    secrets:
+      GH_TOKEN:       '${{ secrets.CLOUDTEK_AUTOMATION_TOKEN }}'
+      NUGET_API_KEY:  '${{ secrets.NUGET_API_KEY }}'
+      DAGGER_CLOUD_TOKEN: '${{ secrets.DAGGER_CLOUD_TOKEN }}'
+      DAGGER_SSH_PRIVATE_KEY: '${{ secrets.DAGGER_SSH_PRIVATE_KEY }}'
+
+  push:
+    uses: cloud-tek/.github/.github/workflows/dotnet-push.yml@v0.3.0
+    name: push
+    needs: build
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'release'
+    with:
+      artifact-name: ${{ needs.build.outputs.artifact-name }}
+      artifact-path: 'packages/**/*.nupkg'
+      net-sdk-version: *net-sdk-version
+      nuget-api-url: 'https://api.nuget.org/v3/index.json'
+    secrets:
+      NUGET_API_KEY:  '${{ secrets.NUGET_API_KEY }}'

@@ -41,6 +41,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
 
     ConfigureActions.Add((svc, configuration) =>
     {
+      svc.AddSingleton<IMicroServiceCore>(this);
       svc.AddSingleton<IMicroService>(this);
       svc.AddAuthorization();
       svc.AddLogging(logger => logger.AddConsole());
@@ -101,6 +102,12 @@ public partial class MicroService : MicroServiceBase, IMicroService
   internal Func<Assembly> MicroServiceEntrypointAssemblyProvider { get; set; } = () => Assembly.GetEntryAssembly()!;
 
   /// <summary>
+  /// Optional external host builder factory for test scenarios.
+  /// When set, InitializeAsync will call this factory with configuration to build the host.
+  /// </summary>
+  internal Func<IConfigurationRoot, IHost>? ExternalHostFactory { get; set; }
+
+  /// <summary>
   /// Initializes the microservice and creates the host but does not start it.
   /// </summary>
   /// <param name="configuration"></param>
@@ -110,22 +117,44 @@ public partial class MicroService : MicroServiceBase, IMicroService
   {
     Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
-    Host = CreateHostBuilder(configuration, args);
+    if (ExternalHostFactory != null)
+    {
+      var config = configuration ?? new ConfigurationBuilder().Build();
+      Host = ExternalHostFactory(config);
+      ConfigurationRoot = config;
+    }
+    else
+    {
+      Host = CreateHostBuilder(configuration, args);
+    }
 
     return Task.CompletedTask;
   }
 
   /// <summary>
   /// Registers an extension with the microservice.
+  /// Uses compile-time enforced factory method from IMicroServiceExtension.
   /// </summary>
-  /// <typeparam name="TExtension">Type of the extension</typeparam>
+  /// <typeparam name="TExtension">
+  /// Type of the extension.
+  /// Must implement IMicroServiceExtension&lt;TExtension&gt; with a Create factory method.
+  /// </typeparam>
   /// <returns><see cref="IMicroService"/></returns>
   public IMicroService RegisterExtension<TExtension>()
-                          where TExtension : MicroServiceExtension, new()
+    where TExtension : MicroServiceExtension<TExtension>, IMicroServiceExtension<TExtension>
   {
-    Extensions.Add(new TExtension());
+    var extension = TExtension.Create(this);
+    Extensions.Add(extension);
 
     return this;
+  }
+
+  /// <summary>
+  /// Explicit interface implementation for IMicroServiceCore.RegisterExtension
+  /// </summary>
+  IMicroServiceCore IMicroServiceCore.RegisterExtension<TExtension>()
+  {
+    return RegisterExtension<TExtension>();
   }
 
   /// <summary>
@@ -155,6 +184,107 @@ public partial class MicroService : MicroServiceBase, IMicroService
     }
 
     return 0;
+  }
+
+  /// <summary>
+  /// Starts the microservice after initialization. Returns immediately after starting.
+  /// </summary>
+  /// <returns><see cref="Task"/></returns>
+  /// <exception cref="ConfigurationException">Thrown when configuration validation fails</exception>
+  public async Task StartAsync()
+  {
+    try
+    {
+      if (PipelineMode == MicroServicePipelineMode.NotSet)
+      {
+        throw new ConfigurationException(Constants.Errors.PipelineNotSet);
+      }
+
+      await Host.StartAsync(CancellationTokenSource.Token);
+    }
+    catch (Exception ex)
+    {
+      Logger.LogUnhandledException(Name, ex);
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Stops the microservice.
+  /// </summary>
+  /// <returns><see cref="Task"/></returns>
+  public async Task StopAsync()
+  {
+    try
+    {
+      await Host.StopAsync(CancellationTokenSource.Token);
+    }
+    catch (Exception ex)
+    {
+      Logger.LogUnhandledException(Name, ex);
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Asynchronously disposes the microservice, releasing all managed resources including the host and cancellation token source.
+  /// </summary>
+  /// <returns>A <see cref="ValueTask"/> representing the asynchronous disposal operation</returns>
+  public async ValueTask DisposeAsync()
+  {
+    await DisposeAsyncCore().ConfigureAwait(false);
+    Dispose(disposing: false);
+    GC.SuppressFinalize(this);
+  }
+
+  /// <summary>
+  /// Synchronously disposes the microservice, releasing all managed resources including the host and cancellation token source.
+  /// </summary>
+  public void Dispose()
+  {
+    Dispose(disposing: true);
+    GC.SuppressFinalize(this);
+  }
+
+  /// <summary>
+  /// Core async disposal logic for releasing managed resources.
+  /// </summary>
+  /// <returns>A <see cref="ValueTask"/> representing the asynchronous disposal operation</returns>
+  protected virtual ValueTask DisposeAsyncCore()
+  {
+    // IHost only implements IDisposable, not IAsyncDisposable
+    // Dispose it synchronously
+    Host?.Dispose();
+
+    // Dispose CancellationTokenSource synchronously (only supports IDisposable)
+    CancellationTokenSource?.Dispose();
+
+    // Dispose Lifetime and its internal CancellationTokenSources
+    Lifetime?.Dispose();
+
+    return ValueTask.CompletedTask;
+  }
+
+  /// <summary>
+  /// Synchronous disposal logic for releasing managed resources.
+  /// </summary>
+  /// <param name="disposing">True if called from Dispose(), false if called from finalizer</param>
+  protected virtual void Dispose(bool disposing)
+  {
+    if (disposing)
+    {
+      // Dispose IHost synchronously if it supports IDisposable
+      if (Host is IDisposable disposable)
+      {
+        disposable.Dispose();
+      }
+
+      // Dispose CancellationTokenSource
+      CancellationTokenSource?.Dispose();
+
+      // Dispose Lifetime and its internal CancellationTokenSources
+      Lifetime?.Dispose();
+    }
   }
 
   private IHost CreateHostBuilder(IConfigurationRoot? configuration = null, params string[] args)
@@ -203,7 +333,8 @@ public partial class MicroService : MicroServiceBase, IMicroService
                diagnosticListener.SubscribeWithAdapter(listener);
                */
 
-              if (Extensions.SingleOrDefault(ex => ex is IHaveRequestLoggingMiddleware) is IHaveRequestLoggingMiddleware lex && lex.ConfigureRequestLoggingMiddleware != null)
+              var lex = Extensions.SingleOrDefault(ex => ex is IHaveRequestLoggingMiddleware) as IHaveRequestLoggingMiddleware;
+              if (lex is not null && lex.ConfigureRequestLoggingMiddleware != null)
               {
                 lex.ConfigureRequestLoggingMiddleware(app);
               }
