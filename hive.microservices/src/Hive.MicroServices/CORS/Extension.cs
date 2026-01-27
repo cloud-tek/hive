@@ -12,7 +12,7 @@ namespace Hive.MicroServices.CORS;
 /// <summary>
 /// CORS extension for the microservice
 /// </summary>
-public class Extension : MicroServiceExtension
+public class Extension : MicroServiceExtension<Extension>
 {
   private const string AllowAnyPolicyName = "Allow Any";
 
@@ -25,7 +25,7 @@ public class Extension : MicroServiceExtension
   /// Create a new instance of the extension
   /// </summary>
   /// <param name="service"></param>
-  public Extension(IMicroService service) : base(service)
+  public Extension(IMicroServiceCore service) : base(service)
   {
   }
 
@@ -35,7 +35,7 @@ public class Extension : MicroServiceExtension
   /// <param name="services"></param>
   /// <param name="microservice"></param>
   /// <returns><see cref="IServiceCollection"/></returns>
-  public override IServiceCollection ConfigureServices(IServiceCollection services, IMicroService microservice)
+  public override IServiceCollection ConfigureServices(IServiceCollection services, IMicroServiceCore microservice)
   {
     ConfigureActions.Add((svc, configuration) =>
     {

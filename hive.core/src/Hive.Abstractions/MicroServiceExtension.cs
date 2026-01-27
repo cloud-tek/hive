@@ -7,7 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Hive;
 
 /// <summary>
-/// The base class for all microservice extensions
+/// Non-generic base class for all microservice extensions.
+/// Used for the Extensions collection to reference extensions polymorphically.
 /// </summary>
 public abstract class MicroServiceExtension
 {
@@ -15,8 +16,8 @@ public abstract class MicroServiceExtension
   /// Initializes a new instance of the <see cref="MicroServiceExtension"/> class
   /// </summary>
   /// <param name="service"></param>
-  /// <exception cref="ArgumentNullException">Thrown when provided IMicroservice is null</exception>
-  protected MicroServiceExtension(IMicroService service)
+  /// <exception cref="ArgumentNullException">Thrown when provided IMicroServiceCore is null</exception>
+  protected MicroServiceExtension(IMicroServiceCore service)
   {
     Service = service ?? throw new ArgumentNullException(nameof(service));
   }
@@ -27,9 +28,9 @@ public abstract class MicroServiceExtension
   public IList<Action<IServiceCollection, IConfiguration>> ConfigureActions { get; } = new List<Action<IServiceCollection, IConfiguration>>();
 
   /// <summary>
-  /// The IMicroService reference to the owning microservice
+  /// The IMicroServiceCore reference to the owning service
   /// </summary>
-  protected IMicroService Service { get; init; }
+  protected IMicroServiceCore Service { get; init; }
 
   /// <summary>
   /// Virtual method to override in order to configure custom middleware with the IApplicationBuilder
@@ -37,7 +38,7 @@ public abstract class MicroServiceExtension
   /// <param name="app"></param>
   /// <param name="microservice"></param>
   /// <returns>The IApplicationBuilder</returns>
-  public virtual IApplicationBuilder Configure(IApplicationBuilder app, IMicroService microservice)
+  public virtual IApplicationBuilder Configure(IApplicationBuilder app, IMicroServiceCore microservice)
   {
     return app;
   }
@@ -74,31 +75,44 @@ public abstract class MicroServiceExtension
   }
 
   /// <summary>
-  /// Virtual method to override in order to configure the IServiceCollection for the IMicroservice
+  /// Virtual method to override in order to configure the IServiceCollection for the service
   /// </summary>
   /// <param name="services"></param>
   /// <param name="microservice"></param>
   /// <returns>The IServiceCollection</returns>
-  public virtual IServiceCollection ConfigureServices(IServiceCollection services, IMicroService microservice)
+  public virtual IServiceCollection ConfigureServices(IServiceCollection services, IMicroServiceCore microservice)
   {
     return services;
   }
 }
 
 /// <summary>
-/// Helper extensions for the MicroServiceExtension(s)
+/// Generic base class for microservice extensions with compile-time factory enforcement
 /// </summary>
-public static class MicroServiceExtensionMethods
+/// <typeparam name="TExtension">The derived extension type</typeparam>
+public abstract class MicroServiceExtension<TExtension> : MicroServiceExtension, IMicroServiceExtension<TExtension>
+  where TExtension : MicroServiceExtension<TExtension>
 {
   /// <summary>
-  /// Extension method to check if the MicroServiceExtension is of a specific type
+  /// Initializes a new instance of the <see cref="MicroServiceExtension{TExtension}"/> class
   /// </summary>
-  /// <typeparam name="TExtension">Type of the extension</typeparam>
-  /// <param name="extension"></param>
-  /// <returns>boolean</returns>
-  public static bool Is<TExtension>(this MicroServiceExtension extension)
-    where TExtension : MicroServiceExtension
+  /// <param name="service"></param>
+  protected MicroServiceExtension(IMicroServiceCore service) : base(service)
   {
-    return extension.GetType() == typeof(TExtension);
   }
+
+  /// <summary>
+  /// Default factory implementation using Activator.CreateInstance.
+  /// Derived types can override by providing their own static Create implementation.
+  /// </summary>
+  /// <param name="service">The microservice core instance</param>
+  /// <returns>A new instance of the extension</returns>
+#pragma warning disable CA1000 // Do not declare static members on generic types - Required for IMicroServiceExtension interface
+  public static TExtension Create(IMicroServiceCore service)
+  {
+    return (TExtension)Activator.CreateInstance(typeof(TExtension), service)!
+           ?? throw new InvalidOperationException(
+             $"Failed to create instance of extension {typeof(TExtension).Name}");
+  }
+#pragma warning restore CA1000
 }

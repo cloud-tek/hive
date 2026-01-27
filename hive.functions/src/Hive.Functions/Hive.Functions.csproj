@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Hive.Functions</RootNamespace>
+    <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
+    <PackageId>Hive.Functions</PackageId>
+    <PackageDescription>Azure Functions integration for Hive microservices framework</PackageDescription>
+    <Authors>cloud-tek</Authors>
+    <PackageIconUrl>https://raw.githubusercontent.com/cloud-tek/public/main/images/cloud-tek.png</PackageIconUrl>
+    <NoWarn>NU5048</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" />
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\hive.core\src\Hive.Abstractions\Hive.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\hive.opentelemetry\src\Hive.OpenTelemetry\Hive.OpenTelemetry.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\Version.targets" />
+</Project>
