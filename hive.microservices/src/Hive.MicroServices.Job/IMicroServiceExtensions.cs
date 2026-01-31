@@ -37,7 +37,7 @@ namespace Hive.MicroServices.Job
             app.UseRouting();
 
             // Apply CORS middleware (uses default policy configured in Extension)
-            var corsExtension = microservice.Extensions.SingleOrDefault(x => x.Is<CORS.Extension>());
+            var corsExtension = microservice.Extensions.SingleOrDefault(x => x is CORS.Extension);
             if (corsExtension is not null)
             {
               app.UseCors();

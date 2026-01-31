@@ -41,6 +41,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
 
     ConfigureActions.Add((svc, configuration) =>
     {
+      svc.AddSingleton<IMicroServiceCore>(this);
       svc.AddSingleton<IMicroService>(this);
       svc.AddAuthorization();
       svc.AddLogging(logger => logger.AddConsole());
@@ -132,15 +133,28 @@ public partial class MicroService : MicroServiceBase, IMicroService
 
   /// <summary>
   /// Registers an extension with the microservice.
+  /// Uses compile-time enforced factory method from IMicroServiceExtension.
   /// </summary>
-  /// <typeparam name="TExtension">Type of the extension</typeparam>
+  /// <typeparam name="TExtension">
+  /// Type of the extension.
+  /// Must implement IMicroServiceExtension&lt;TExtension&gt; with a Create factory method.
+  /// </typeparam>
   /// <returns><see cref="IMicroService"/></returns>
   public IMicroService RegisterExtension<TExtension>()
-                          where TExtension : MicroServiceExtension, new()
+    where TExtension : MicroServiceExtension<TExtension>, IMicroServiceExtension<TExtension>
   {
-    Extensions.Add(new TExtension());
+    var extension = TExtension.Create(this);
+    Extensions.Add(extension);
 
     return this;
+  }
+
+  /// <summary>
+  /// Explicit interface implementation for IMicroServiceCore.RegisterExtension
+  /// </summary>
+  IMicroServiceCore IMicroServiceCore.RegisterExtension<TExtension>()
+  {
+    return RegisterExtension<TExtension>();
   }
 
   /// <summary>

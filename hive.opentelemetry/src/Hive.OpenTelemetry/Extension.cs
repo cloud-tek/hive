@@ -12,7 +12,7 @@ namespace Hive.OpenTelemetry;
 /// <summary>
 /// OpenTelemetry extension for Hive microservices
 /// </summary>
-public class Extension : MicroServiceExtension
+public class Extension : MicroServiceExtension<Extension>
 {
   private readonly Action<LoggerProviderBuilder>? loggingOverride;
   private readonly Action<TracerProviderBuilder>? tracingOverride;
@@ -21,12 +21,12 @@ public class Extension : MicroServiceExtension
   /// <summary>
   /// Initializes a new instance of the OpenTelemetry extension
   /// </summary>
-  /// <param name="service">The microservice instance</param>
+  /// <param name="service">The service host instance</param>
   /// <param name="logging">Optional logging configuration override</param>
   /// <param name="tracing">Optional tracing configuration override</param>
   /// <param name="metrics">Optional metrics configuration override</param>
   public Extension(
-    IMicroService service,
+    IMicroServiceCore service,
     Action<LoggerProviderBuilder>? logging = null,
     Action<TracerProviderBuilder>? tracing = null,
     Action<MeterProviderBuilder>? metrics = null)
@@ -67,7 +67,7 @@ public class Extension : MicroServiceExtension
     return optionsInstance?.Value ?? new OpenTelemetryOptions();
   }
 
-  private static string? ResolveOtlpEndpoint(OpenTelemetryOptions options, IMicroService service)
+  private static string? ResolveOtlpEndpoint(OpenTelemetryOptions options, IMicroServiceCore service)
   {
     // Priority order:
     // 1. IConfiguration (options.Otlp.Endpoint)
@@ -91,7 +91,7 @@ public class Extension : MicroServiceExtension
 
   private static ResourceBuilder ConfigureResource(
     ResourceBuilder resource,
-    IMicroService service,
+    IMicroServiceCore service,
     OpenTelemetryOptions options)
   {
     resource.AddService(

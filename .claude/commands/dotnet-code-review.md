@@ -58,8 +58,133 @@ Structure your review as follows:
 
 If a section has no items, omit it entirely.
 
+## Structured Output
+
+**CRITICAL: You MUST write a JSON summary file before posting any comments.**
+
+Write a structured JSON file to `/tmp/review-results.json` with the following schema:
+
+```json
+{
+  "has_critical_issues": boolean,
+  "has_high_priority_issues": boolean,
+  "critical_count": number,
+  "high_priority_count": number,
+  "recommendation_count": number,
+  "minor_count": number,
+  "summary": "string - one paragraph overview",
+  "issues": [
+    {
+      "severity": "critical|high|recommendation|minor",
+      "category": "string - e.g., 'security', 'performance', 'maintainability'",
+      "file": "string - file path",
+      "line": number,
+      "description": "string - issue description"
+    }
+  ]
+}
+```
+
+**Severity Classification:**
+- `critical`: Security vulnerabilities, data exposure, race conditions, resource leaks (from "Critical Issues ❌" section)
+- `high`: SOLID violations, significant performance issues, major exception handling problems (from "Recommendations ⚠️" that are severe)
+- `recommendation`: Code quality improvements, minor performance issues (from "Recommendations ⚠️")
+- `minor`: Style suggestions, nitpicks (from "Minor/Nitpicks 💡" section)
+
+**Rules:**
+- Set `has_critical_issues: true` if ANY issues have `severity: "critical"`
+- Set `has_high_priority_issues: true` if ANY issues have `severity: "high"`
+- If no issues found, set all counts to 0 and `has_critical_issues: false`, `has_high_priority_issues: false`
+
+## Comment Deduplication
+
+**CRITICAL: Prevent duplicate comments by updating existing ones instead of creating new comments.**
+
+The file `/tmp/existing-comments.json` contains inline review comments from previous review iterations. This file has the following structure:
+
+```json
+[
+  {
+    "id": 123456,
+    "path": "src/Example.cs",
+    "line": 42,
+    "body": "Previous comment text",
+    "user": "bot-username[bot]"
+  }
+]
+```
+
+**Comment Matching Logic:**
+
+For each issue you want to comment on:
+
+1. **Check for existing comment**: Search `/tmp/existing-comments.json` for a comment with:
+   - Same `path` (file path)
+   - Same `line` (line number)
+   - `user` is a bot (ends with `[bot]`)
+
+2. **If existing comment found**:
+   - **UPDATE** the existing comment using GitHub API PATCH endpoint:
+     ```bash
+     gh api -X PATCH "/repos/$REPO/pulls/comments/$COMMENT_ID" \
+       -f body="Updated comment text"
+     ```
+   - Use the `id` field from the existing comment as `$COMMENT_ID`
+   - This prevents duplicate comments on the same line
+
+3. **If no existing comment found**:
+   - **CREATE** a new inline comment using the MCP tools
+   - Use `mcp__github_inline_comment__create_inline_comment`
+
+**Important Rules:**
+- **NEVER post a new comment if an existing comment exists on the same file and line**
+- **ALWAYS update existing comments** rather than creating duplicates
+- If an issue has been fixed (no longer appears in current review), you can leave the old comment as-is (GitHub will mark it as outdated)
+- Only post ONE comment per unique issue location (file + line combination)
+
+**Example Workflow:**
+
+```bash
+# 1. Load existing comments
+EXISTING=$(cat /tmp/existing-comments.json)
+
+# 2. For each issue, check if comment exists
+COMMENT_ID=$(echo "$EXISTING" | jq -r --arg path "src/Example.cs" --arg line "42" \
+  '.[] | select(.path == $path and .line == ($line | tonumber)) | .id')
+
+# 3. Update or create
+if [ -n "$COMMENT_ID" ] && [ "$COMMENT_ID" != "null" ]; then
+  # UPDATE existing comment
+  gh api -X PATCH "/repos/$REPO/pulls/comments/$COMMENT_ID" \
+    -f body="Updated issue description"
+else
+  # CREATE new comment
+  # Use MCP tool: mcp__github_inline_comment__create_inline_comment
+fi
+```
+
 ## Output Instructions
-After completing the review, post your findings as inline comments on the PR using the available GitHub tools. For critical issues, use inline comments on specific lines. Summarize overall findings in a PR comment.
+
+**STEP 1: Write Structured Results (MANDATORY)**
+
+Before posting any comments, write the `/tmp/review-results.json` file as specified in the "Structured Output" section above.
+
+**STEP 2: Post Review Comments**
+
+After writing the JSON file, post your findings as inline comments on the PR using the available GitHub tools:
+
+1. **For inline code comments**:
+   - Follow the "Comment Deduplication" process above
+   - Check `/tmp/existing-comments.json` for each issue
+   - UPDATE existing comments via GitHub API PATCH if they exist
+   - CREATE new comments via MCP tools only if no existing comment found
+   - For critical issues, always use inline comments on specific lines
+
+2. **For PR-level summary**:
+   - DO NOT post a PR-level summary comment yourself
+   - The workflow will automatically generate and post a sticky summary comment
+   - The sticky comment will be updated on subsequent review iterations
+   - Focus only on inline comments for specific issues
 
 ## Guidelines
 
