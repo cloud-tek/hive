@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Hive;
 
@@ -19,6 +20,11 @@ namespace Hive;
 /// </remarks>
 public interface IMicroService : IMicroServiceCore
 {
+  /// <summary>
+  /// The microservice's logger instance
+  /// </summary>
+  ILogger<IMicroService> Logger { get; }
+
   /// <summary>
   /// Flag indicating if the microservice is ready to receive traffic. Used for Kubernetes readiness probe(s).
   /// </summary>
@@ -59,25 +65,4 @@ public interface IMicroService : IMicroServiceCore
   /// <param name="args">Optional command line arguments</param>
   /// <returns>Exit code (0 for success, non-zero for failure)</returns>
   Task<int> RunAsync(IConfigurationRoot configuration = default!, params string[] args);
-
-  /// <summary>
-  /// Method to asynchronously initialize the microservice without starting it.
-  /// </summary>
-  /// <param name="configuration"></param>
-  /// <param name="args"></param>
-  /// <returns>Task</returns>
-  Task InitializeAsync(IConfigurationRoot? configuration = null, params string[] args);
-
-  /// <summary>
-  /// Method to asynchronously start the microservice after initialization.
-  /// Returns immediately after starting (does not block like RunAsync).
-  /// </summary>
-  /// <returns>Task that completes when the host has started</returns>
-  Task StartAsync();
-
-  /// <summary>
-  /// Method to asynchronously stop the microservice.
-  /// </summary>
-  /// <returns>Task that completes when the host has stopped</returns>
-  Task StopAsync();
 }

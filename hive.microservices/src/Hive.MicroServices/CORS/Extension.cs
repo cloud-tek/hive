@@ -21,13 +21,37 @@ public class Extension : MicroServiceExtension<Extension>
   /// </summary>
   public string? PolicyName { get; private set; }
 
+  private readonly IMicroService _microService;
+
   /// <summary>
   /// Create a new instance of the extension
   /// </summary>
   /// <param name="service"></param>
-  public Extension(IMicroServiceCore service) : base(service)
+  public Extension(IMicroService service) : base(service)
   {
+    _microService = service ?? throw new ArgumentNullException(nameof(service));
   }
+
+  /// <summary>
+  /// Factory method for creating CORS extension instances.
+  /// Ensures the service is an ASP.NET microservice since CORS requires ASP.NET Core middleware.
+  /// </summary>
+  /// <param name="service">The microservice core instance</param>
+  /// <returns>A new CORS extension instance</returns>
+  /// <exception cref="InvalidOperationException">Thrown when service is not an IMicroService</exception>
+#pragma warning disable CA1000 // Do not declare static members on generic types - Required for IMicroServiceExtension interface
+  public static new Extension Create(IMicroServiceCore service)
+  {
+    if (service is not IMicroService microService)
+    {
+      throw new InvalidOperationException(
+        $"CORS extension requires an ASP.NET microservice (IMicroService), but received {service.GetType().Name}. " +
+        "CORS is only supported for ASP.NET Core-based microservices, not for other hosting models like Azure Functions.");
+    }
+
+    return new Extension(microService);
+  }
+#pragma warning restore CA1000
 
   /// <summary>
   /// Configure the service
@@ -62,7 +86,7 @@ public class Extension : MicroServiceExtension<Extension>
               policy.AllowAnyOrigin();
             });
 
-            ((MicroService)Service).Logger.LogInformationPolicyConfigured(AllowAnyPolicyName);
+            _microService.Logger.LogInformationPolicyConfigured(AllowAnyPolicyName);
           }
           else
           {
@@ -78,21 +102,21 @@ public class Extension : MicroServiceExtension<Extension>
             // Set first policy as default
             var firstPolicy = options.Value.Policies[0];
             cors.AddDefaultPolicy(builder => BuildCorsPolicy(builder, firstPolicy));
-            ((MicroService)Service).Logger.LogInformationPolicyConfigured($"{firstPolicy.Name} (default)");
+            _microService.Logger.LogInformationPolicyConfigured($"{firstPolicy.Name} (default)");
 
             // Register remaining policies by name
             // Skip(1) excludes the first policy since it's already registered as the default above
             options.Value.Policies.Skip(1).ForEach(policy =>
             {
               cors.AddPolicy(policy.Name, builder => BuildCorsPolicy(builder, policy));
-              ((MicroService)Service).Logger.LogInformationPolicyConfigured(policy.Name);
+              _microService.Logger.LogInformationPolicyConfigured(policy.Name);
             });
           }
         });
       }
       catch (OptionsValidationException oex)
       {
-        ((MicroService)Service).Logger.LogCriticalValidationFailed(oex);
+        _microService.Logger.LogCriticalValidationFailed(oex);
         throw;
       }
     });
