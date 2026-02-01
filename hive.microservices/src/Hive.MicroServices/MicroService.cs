@@ -39,6 +39,16 @@ public partial class MicroService : MicroServiceBase, IMicroService
       Logger = logger;
     }
 
+    // Eagerly initialize ConfigurationRoot to eliminate temporal coupling
+    // This ensures ConfigurationRoot is always available, even before InitializeAsync
+    ConfigurationRoot = new ConfigurationBuilder()
+      .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+      .AddJsonFile($"appsettings.{Environment}.json", optional: true)
+      .AddJsonFile("shared.json", optional: true)
+      .AddJsonFile($"shared.{Environment}.json", optional: true)
+      .AddEnvironmentVariables()
+      .Build();
+
     ConfigureActions.Add((svc, configuration) =>
     {
       svc.AddSingleton<IMicroServiceCore>(this);
@@ -121,6 +131,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
     {
       var config = configuration ?? new ConfigurationBuilder().Build();
       Host = ExternalHostFactory(config);
+      // Replace eagerly-initialized configuration with the provided or default configuration
       ConfigurationRoot = config;
     }
     else
@@ -310,6 +321,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
               .AddCommandLine(args);
           }
 
+          // Replace eagerly-initialized configuration with the host's built configuration
           ConfigurationRoot = cfg.Build();
         })
         .ConfigureWebHostDefaults(app =>

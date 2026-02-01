@@ -48,7 +48,15 @@ public class FunctionHost : IFunctionHost
         : "Production";
 
     CancellationTokenSource = new CancellationTokenSource();
-    ConfigurationRoot = default!; // Will be set during CreateHostBuilder
+
+    // Eagerly initialize ConfigurationRoot to eliminate temporal coupling
+    // This ensures ConfigurationRoot is always available, even before RunAsync/InitializeAsync
+    ConfigurationRoot = new ConfigurationBuilder()
+      .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+      .AddJsonFile($"appsettings.{Environment}.json", optional: true)
+      .AddJsonFile("appsettings.shared.json", optional: true)
+      .AddEnvironmentVariables()
+      .Build();
 
     // Core configuration - register the FunctionHost instance
     configureActions.Add((services, config) =>
@@ -174,6 +182,7 @@ public class FunctionHost : IFunctionHost
     // Configure services (DI container)
     builder.ConfigureServices((context, services) =>
     {
+      // Replace eagerly-initialized configuration with the host's built configuration
       ConfigurationRoot = (IConfigurationRoot)context.Configuration;
 
       // Apply all service configuration actions
