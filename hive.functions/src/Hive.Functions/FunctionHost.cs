@@ -1,3 +1,4 @@
+using System.Collections;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,21 +25,14 @@ public class FunctionHost : IFunctionHost
     Id = Guid.NewGuid().ToString();
     Args = Array.Empty<string>();
 
-    // Load environment variables
+    // Load environment variables using efficient DictionaryEntry pattern
     var envVars = System.Environment.GetEnvironmentVariables();
-    var envDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-    foreach (var key in envVars.Keys)
-    {
-      if (key is string keyStr)
-      {
-        var value = envVars[key]?.ToString();
-        if (value != null)
-        {
-          envDict[keyStr] = value;
-        }
-      }
-    }
-    EnvironmentVariables = envDict;
+    EnvironmentVariables = envVars
+      .OfType<DictionaryEntry>()
+      .ToDictionary(
+        entry => (string)entry.Key,
+        entry => (string)entry.Value!,
+        StringComparer.OrdinalIgnoreCase);
 
     // Determine environment
     Environment = EnvironmentVariables.TryGetValue("AZURE_FUNCTIONS_ENVIRONMENT", out var funcEnv) && !string.IsNullOrWhiteSpace(funcEnv)
