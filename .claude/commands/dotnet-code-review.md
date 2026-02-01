@@ -62,7 +62,7 @@ If a section has no items, omit it entirely.
 
 **CRITICAL: You MUST write a JSON summary file before posting any comments.**
 
-Write a structured JSON file to `/tmp/review-results.json` with the following schema:
+Write a structured JSON file to `./tmp/review-results.json` with the following schema:
 
 ```json
 {
