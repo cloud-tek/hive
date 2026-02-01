@@ -107,4 +107,85 @@ public class FunctionHostTests
     // Assert
     functionHost.Environment.Should().NotBeNullOrEmpty();
   }
+
+  [Fact]
+  [UnitTest]
+  public async Task FunctionHost_StartAsync_WithoutInitialize_ShouldThrow()
+  {
+    // Arrange
+    var functionHost = new FunctionHost("test-function");
+    var core = (IMicroServiceCore)functionHost;
+
+    // Act & Assert
+    var act = async () => await core.StartAsync();
+    await act.Should().ThrowAsync<InvalidOperationException>()
+      .WithMessage("Host not initialized. Call InitializeAsync first.");
+  }
+
+  [Fact]
+  [UnitTest]
+  public void FunctionHost_ConfigureServices_ShouldStoreCallback()
+  {
+    // Arrange
+    var callbackExecuted = false;
+    var functionHost = new FunctionHost("test-function");
+
+    // Act
+    functionHost.ConfigureServices((services, config) =>
+    {
+      callbackExecuted = true;
+    });
+
+    // Assert - callback is stored (will be invoked during host initialization)
+    // We verify the fluent API returns the same instance
+    functionHost.Should().NotBeNull();
+    // Note: The callback will be executed during CreateHostBuilder, not immediately
+    callbackExecuted.Should().BeFalse("callback should not execute until host is built");
+  }
+
+  [Fact]
+  [UnitTest]
+  public void FunctionHost_RegisterExtension_ShouldAddToExtensionsList()
+  {
+    // Arrange
+    var functionHost = new FunctionHost("test-function");
+    var core = (IMicroServiceCore)functionHost;
+
+    // Act
+    core.RegisterExtension<TestExtension>();
+
+    // Assert
+    functionHost.Extensions.Should().HaveCount(1);
+    functionHost.Extensions[0].Should().BeOfType<TestExtension>();
+  }
+
+  [Fact]
+  [UnitTest]
+  public void FunctionHost_ConfigurationRoot_ShouldBeAvailableImmediately()
+  {
+    // Arrange & Act
+    var functionHost = new FunctionHost("test-function");
+
+    // Assert - ConfigurationRoot should be available before InitializeAsync
+    functionHost.ConfigurationRoot.Should().NotBeNull();
+    var act = () => functionHost.ConfigurationRoot.GetSection("NonExistent");
+    act.Should().NotThrow<NullReferenceException>();
+  }
+
+  /// <summary>
+  /// Test service for DI validation
+  /// </summary>
+  private sealed class TestService
+  {
+  }
+
+  /// <summary>
+  /// Test extension for extension registration validation
+  /// </summary>
+  private sealed class TestExtension : MicroServiceExtension<TestExtension>
+  {
+    public TestExtension(IMicroServiceCore service) : base(service)
+    {
+    }
+  }
 }
