@@ -11,7 +11,7 @@ permissions:
   id-token: write
 jobs:
   review:
-    uses: cloud-tek/poc-claude-review/.github/workflows/claude-code-review.yml@main
+    uses: cloud-tek/poc-claude-review/.github/workflows/claude-code-review.yml@v0.0.1
     with:
       pr_number: ${{ github.event.pull_request.number }}
       base_ref: ${{ github.event.pull_request.base.ref }}
