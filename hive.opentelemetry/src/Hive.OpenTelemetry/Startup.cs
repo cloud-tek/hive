@@ -10,18 +10,20 @@ namespace Hive.OpenTelemetry;
 public static class MicroServiceExtensions
 {
   /// <summary>
-  /// Adds OpenTelemetry support to the microservice with optional configuration overrides
+  /// Adds OpenTelemetry support to any Hive service host with optional configuration overrides
   /// </summary>
-  /// <param name="service">The microservice instance</param>
+  /// <typeparam name="THost">The type of service host (IMicroService, IFunctionHost, etc.)</typeparam>
+  /// <param name="service">The service host instance</param>
   /// <param name="logging">Optional logging configuration override</param>
   /// <param name="tracing">Optional tracing configuration override</param>
   /// <param name="metrics">Optional metrics configuration override</param>
-  /// <returns>The microservice instance for fluent chaining</returns>
-  public static IMicroService WithOpenTelemetry(
-    this IMicroService service,
+  /// <returns>The service host instance for fluent chaining</returns>
+  public static THost WithOpenTelemetry<THost>(
+    this THost service,
     Action<LoggerProviderBuilder>? logging = null,
     Action<TracerProviderBuilder>? tracing = null,
     Action<MeterProviderBuilder>? metrics = null)
+    where THost : IMicroServiceCore
   {
     service.Extensions.Add(
       new Extension(

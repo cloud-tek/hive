@@ -39,8 +39,19 @@ public partial class MicroService : MicroServiceBase, IMicroService
       Logger = logger;
     }
 
+    // Eagerly initialize ConfigurationRoot to eliminate temporal coupling
+    // This ensures ConfigurationRoot is always available, even before InitializeAsync
+    ConfigurationRoot = new ConfigurationBuilder()
+      .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+      .AddJsonFile($"appsettings.{Environment}.json", optional: true)
+      .AddJsonFile("shared.json", optional: true)
+      .AddJsonFile($"shared.{Environment}.json", optional: true)
+      .AddEnvironmentVariables()
+      .Build();
+
     ConfigureActions.Add((svc, configuration) =>
     {
+      svc.AddSingleton<IMicroServiceCore>(this);
       svc.AddSingleton<IMicroService>(this);
       svc.AddAuthorization();
       svc.AddLogging(logger => logger.AddConsole());
@@ -120,6 +131,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
     {
       var config = configuration ?? new ConfigurationBuilder().Build();
       Host = ExternalHostFactory(config);
+      // Replace eagerly-initialized configuration with the provided or default configuration
       ConfigurationRoot = config;
     }
     else
@@ -132,15 +144,28 @@ public partial class MicroService : MicroServiceBase, IMicroService
 
   /// <summary>
   /// Registers an extension with the microservice.
+  /// Uses compile-time enforced factory method from IMicroServiceExtension.
   /// </summary>
-  /// <typeparam name="TExtension">Type of the extension</typeparam>
+  /// <typeparam name="TExtension">
+  /// Type of the extension.
+  /// Must implement IMicroServiceExtension&lt;TExtension&gt; with a Create factory method.
+  /// </typeparam>
   /// <returns><see cref="IMicroService"/></returns>
   public IMicroService RegisterExtension<TExtension>()
-                          where TExtension : MicroServiceExtension, new()
+    where TExtension : MicroServiceExtension<TExtension>, IMicroServiceExtension<TExtension>
   {
-    Extensions.Add(new TExtension());
+    var extension = TExtension.Create(this);
+    Extensions.Add(extension);
 
     return this;
+  }
+
+  /// <summary>
+  /// Explicit interface implementation for IMicroServiceCore.RegisterExtension
+  /// </summary>
+  IMicroServiceCore IMicroServiceCore.RegisterExtension<TExtension>()
+  {
+    return RegisterExtension<TExtension>();
   }
 
   /// <summary>
@@ -150,6 +175,12 @@ public partial class MicroService : MicroServiceBase, IMicroService
   /// <param name="args"></param>
   /// <returns><see cref="Task"/> returning an exit code</returns>
   /// <exception cref="ConfigurationException">Thrown when configuration validation fails</exception>
+  /// <remarks>
+  /// This method is not thread-safe and must not be called concurrently.
+  /// It is designed to be invoked once per application lifetime at startup.
+  /// For scenarios requiring separate initialization and execution phases,
+  /// use <see cref="InitializeAsync"/> followed by <see cref="IMicroServiceCore.StartAsync"/> instead.
+  /// </remarks>
   public async Task<int> RunAsync(IConfigurationRoot? configuration = null, params string[] args)
   {
     await InitializeAsync(configuration, args).ConfigureAwait(false);
@@ -296,6 +327,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
               .AddCommandLine(args);
           }
 
+          // Replace eagerly-initialized configuration with the host's built configuration
           ConfigurationRoot = cfg.Build();
         })
         .ConfigureWebHostDefaults(app =>

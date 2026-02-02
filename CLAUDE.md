@@ -74,7 +74,7 @@ dotnet run --project hive.microservices/demo/Hive.MicroServices.Demo.Aspire
 The monorepo is organized into four main components:
 
 1. **hive.core/** - Foundation layer
-   - `Hive.Abstractions` - Core abstractions (IMicroService, MicroServiceExtension, configuration patterns)
+   - `Hive.Abstractions` - Core abstractions (IMicroServiceCore, IMicroService, MicroServiceExtension, configuration patterns)
    - `Hive.Testing` - Testing utilities and custom xUnit attributes
 
 2. **hive.logging/** - Logging infrastructure
@@ -92,23 +92,86 @@ The monorepo is organized into four main components:
 4. **Hive.OpenTelemetry/** - OpenTelemetry integration (current development focus)
    - Logging, tracing, and metrics via OTLP protocol
 
+### Interface Hierarchy
+
+Hive uses a two-tier interface hierarchy to support different hosting models:
+
+**IMicroServiceCore** - Framework-agnostic base for all Hive hosts
+- Core properties: `Name`, `Id`, `Environment`, `ConfigurationRoot`, `EnvironmentVariables`, `Args`
+- Extension system: `Extensions` list, `RegisterExtension<T>()`
+- Lifecycle: `InitializeAsync()`, `StartAsync()`, `StopAsync()`
+- Hosting context: `ExternalLogger`, `HostingMode`, `CancellationTokenSource`
+- Use when: Building extensions that work across hosting models
+
+**IMicroService : IMicroServiceCore** - ASP.NET microservices with Kubernetes support
+- K8s probes: `IsReady`, `IsStarted`
+- Lifecycle events: `Lifetime` (IMicroServiceLifetime)
+- Pipeline modes: `PipelineMode` (Api, GraphQL, gRPC, Job, None)
+- Execution: `RunAsync(IConfigurationRoot, string[]) → Task<int>`
+- Use when: Building ASP.NET microservices or ASP.NET-specific middleware
+
+**IFunctionHost : IMicroServiceCore** - Azure Functions integration
+- Functions-specific configuration: `ConfigureServices()`, `ConfigureFunctions()`
+- Functions execution: `RunAsync(CancellationToken) → Task`
+- Use when: Building Azure Functions with Hive framework
+
 ### Extension Pattern
 
-All framework features are implemented as extensions inheriting from `MicroServiceExtension`. Extensions participate in the service lifecycle through:
+All framework features are implemented as extensions inheriting from `MicroServiceExtension<T>`. Extensions participate in the service lifecycle through:
 
-- Constructor receives `IMicroService` instance
+- Constructor receives `IMicroServiceCore` instance (works with all hosting models)
 - `ConfigureServices(IServiceCollection, IConfiguration)` - Service registration
-- `Configure(IApplicationBuilder)` - Middleware pipeline
-- `ConfigureBeforeReadinessProbe(IApplicationBuilder)` - Pre-readiness probe middleware
-- `ConfigureEndpoints(IEndpointRouteBuilder)` - Endpoint registration
-- `ConfigureHealthChecks(IHealthChecksBuilder)` - Health check registration
+- `Configure(IApplicationBuilder)` - Middleware pipeline (ASP.NET only)
+- `ConfigureBeforeReadinessProbe(IApplicationBuilder)` - Pre-readiness probe middleware (ASP.NET only)
+- `ConfigureEndpoints(IEndpointRouteBuilder)` - Endpoint registration (ASP.NET only)
+- `ConfigureHealthChecks(IHealthChecksBuilder)` - Health check registration (ASP.NET only)
 
-Example extension registration:
+#### Creating Extensions with Compile-Time Safety
+
+All extensions must inherit from the generic base class `MicroServiceExtension<TExtension>` where `TExtension` is the extension type itself. This provides compile-time safety through C# 11's static abstract interface members:
+
 ```csharp
+public class MyExtension : MicroServiceExtension<MyExtension>
+{
+    public MyExtension(IMicroServiceCore service) : base(service) { }
+
+    public override IServiceCollection ConfigureServices(
+        IServiceCollection services,
+        IMicroServiceCore microservice)
+    {
+        // Add your services here
+        services.AddSingleton<IMyService, MyService>();
+        return services;
+    }
+}
+```
+
+**Key Points:**
+- The generic type parameter must match the extension class name (Curiously Recurring Template Pattern)
+- A default factory method (`Create`) is inherited from the base class
+- Extensions without the correct generic pattern will not compile when used with `RegisterExtension<T>()`
+
+#### Extension Registration Examples
+
+```csharp
+// ASP.NET Microservice - Using custom extension methods (most common)
 new MicroService("service-name")
     .WithOpenTelemetry(logging: builder => { }, tracing: builder => { })
-    .RegisterExtension<CustomExtension>()
+    .ConfigureApiPipeline(app => { });
+
+// ASP.NET Microservice - Using RegisterExtension with compile-time safety
+new MicroService("service-name")
+    .RegisterExtension<MyExtension>()  // ✅ Compile-time checked
+    .ConfigureApiPipeline(app => { });
+
+// Azure Functions
+new FunctionHost("function-name")
+    .WithOpenTelemetry(logging: builder => { }, tracing: builder => { })
+    .ConfigureServices((services, config) => { });
 ```
+
+**Compile-Time Safety:**
+The generic base class ensures that only properly implemented extensions can be registered. Extensions that don't inherit from `MicroServiceExtension<TExtension>` will produce a compiler error when used with `RegisterExtension<T>()`.
 
 ### Pipeline Modes
 

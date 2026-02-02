@@ -13,7 +13,7 @@ public class OptionsValidator : AbstractValidator<Options>
   /// Initializes a new instance of the <see cref="OptionsValidator"/> class.
   /// </summary>
   /// <param name="service"></param>
-  public OptionsValidator(IMicroService service)
+  public OptionsValidator(IMicroServiceCore service)
   {
     _ = service ?? throw new ArgumentNullException(nameof(service));
 
