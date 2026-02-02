@@ -121,6 +121,12 @@ public class FunctionHost : IFunctionHost
   }
 
   /// <inheritdoc />
+  /// <remarks>
+  /// This method is not thread-safe and must not be called concurrently.
+  /// It is designed to be invoked once per application lifetime at startup.
+  /// For scenarios requiring separate initialization and execution phases,
+  /// use <see cref="IMicroServiceCore.InitializeAsync"/> followed by <see cref="IMicroServiceCore.StartAsync"/> instead.
+  /// </remarks>
   public async Task RunAsync(CancellationToken cancellationToken = default)
   {
     host = CreateHostBuilder();

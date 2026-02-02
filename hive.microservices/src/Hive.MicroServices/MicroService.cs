@@ -175,6 +175,12 @@ public partial class MicroService : MicroServiceBase, IMicroService
   /// <param name="args"></param>
   /// <returns><see cref="Task"/> returning an exit code</returns>
   /// <exception cref="ConfigurationException">Thrown when configuration validation fails</exception>
+  /// <remarks>
+  /// This method is not thread-safe and must not be called concurrently.
+  /// It is designed to be invoked once per application lifetime at startup.
+  /// For scenarios requiring separate initialization and execution phases,
+  /// use <see cref="InitializeAsync"/> followed by <see cref="IMicroServiceCore.StartAsync"/> instead.
+  /// </remarks>
   public async Task<int> RunAsync(IConfigurationRoot? configuration = null, params string[] args)
   {
     await InitializeAsync(configuration, args).ConfigureAwait(false);
