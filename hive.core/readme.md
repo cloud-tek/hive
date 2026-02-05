@@ -356,6 +356,6 @@ public async Task GivenService_WhenStarted_ThenRespondsToRequests()
 
 ## See Also
 
-- [Hive.MicroServices](../hive.microservices/readme.md) - Microservices framework
-- [Hive.OpenTelemetry](../hive.opentelemetry/readme.md) - OpenTelemetry integration
+- [Hive.MicroServices](../hive.microservices/README.md) - Microservices framework
+- [Hive.OpenTelemetry](../hive.opentelemetry/README.md) - OpenTelemetry integration
 - [CLAUDE.md](../CLAUDE.md) - Full project documentation

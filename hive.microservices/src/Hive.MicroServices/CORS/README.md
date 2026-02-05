@@ -527,7 +527,7 @@ This order is automatically configured by the framework.
 - [ASP.NET Core CORS Documentation](https://learn.microsoft.com/en-us/aspnet/core/security/cors)
 - [CORS Specification (W3C)](https://www.w3.org/TR/cors/)
 - [Hive MicroServices Framework](../README.md)
-- [Configuration Patterns](../../../hive.core/src/Hive.Abstractions/README.md)
+- [Configuration Patterns](../../../../hive.core/readme.md)
 
 ## Troubleshooting
 

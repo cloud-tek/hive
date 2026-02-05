@@ -379,6 +379,10 @@ var myService = microservice.ServiceProvider.GetRequiredService<IMyService>();
 - **[Hive.MicroServices.Testing](../Hive.MicroServices.Testing/)**: Testing utilities
 - **[Hive.OpenTelemetry](../../hive.opentelemetry/)**: OpenTelemetry integration
 
+## Built-in Extensions
+
+- **[CORS Extension](CORS/README.md)**: Cross-Origin Resource Sharing support with validation
+
 ## Package Information
 
 - **Package**: `Hive.MicroServices`

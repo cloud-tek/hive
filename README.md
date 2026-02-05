@@ -59,7 +59,7 @@ Hive follows these core principles:
 - ✅ **GraphQL** - HotChocolate integration
 - ✅ **gRPC** - Standard protobuf-first and code-first approaches
 - ✅ **Background Jobs** - Worker services and scheduled tasks
-- 🚧 **Azure Functions** - Planned integration ([design doc](./HIVE_FUNCTIONS_DESIGN.md))
+- ✅ **Azure Functions** - Azure Functions Worker integration ([docs](./hive.functions/README.md))
 
 ### Observability
 - ✅ **OpenTelemetry** - Unified logging, tracing, and metrics
@@ -97,24 +97,24 @@ graph TB
         MSTesting[Hive.MicroServices.Testing<br/>Integration Testing]
     end
 
-    subgraph "Planned"
-        Functions[Hive.Functions<br/>Azure Functions]
+    subgraph "Azure Functions"
+        Functions[Hive.Functions<br/>Serverless Functions]
     end
 
     Abstractions --> Testing
     Abstractions --> OpenTelemetry
     Abstractions --> MicroServices
+    Abstractions --> Functions
     MicroServices --> Api
     MicroServices --> GraphQL
     MicroServices --> Grpc
     MicroServices --> Job
     MicroServices --> MSTesting
-    Abstractions -.-> Functions
 
     style Abstractions fill:#e1f5ff,stroke:#01579b,stroke-width:3px
     style MicroServices fill:#81d4fa,stroke:#0277bd,stroke-width:2px
     style OpenTelemetry fill:#b3e5fc,stroke:#0288d1
-    style Functions fill:#ffecb3,stroke:#f57c00,stroke-dasharray: 5 5
+    style Functions fill:#b3e5fc,stroke:#0288d1
 ```
 
 ---
@@ -320,12 +320,21 @@ var service = new MicroService("my-service")
 
 ---
 
-### [hive.functions](./hive.functions/) 🚧 Planned
+### [hive.functions](./hive.functions/)
 
 Azure Functions integration following the same extension pattern.
 
-**Status:** Design phase
+**Packages:**
+- [Hive.Functions](./hive.functions/src/Hive.Functions/) - Azure Functions Worker integration with Hive framework
 
+**Key Features:**
+- `IFunctionHost` implementing `IMicroServiceCore`
+- Extension-based architecture (OpenTelemetry, configuration validation)
+- Native Azure Functions Worker support
+- HTTP, Timer, Queue, and Blob triggers
+- Automatic Application Insights integration
+
+📖 [Read Full Documentation](./hive.functions/README.md)
 📖 [Read Design Document](./HIVE_FUNCTIONS_DESIGN.md)
 
 ---
@@ -393,6 +402,7 @@ Hive uses custom xUnit attributes for test categorization:
 
 - [hive.core/readme.md](./hive.core/readme.md) - Foundation layer documentation
 - [hive.microservices/README.md](./hive.microservices/README.md) - Microservices framework guide
+- [hive.functions/README.md](./hive.functions/README.md) - Azure Functions integration guide
 - [hive.opentelemetry/README.md](./hive.opentelemetry/README.md) - OpenTelemetry integration guide
 - [hive.microservices/CORS/README.md](./hive.microservices/src/Hive.MicroServices/CORS/README.md) - CORS configuration guide
 
