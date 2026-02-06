@@ -19,9 +19,17 @@ Where:
 - `{subfolder}` is one of: `src/`, `tests/`, or `demo/`
 - `{ProjectName}` is the project directory and .csproj file name
 
+## Repository Root Structure
+
+The repository root contains:
+
+- Module folders (e.g., `hive.core`, `hive.microservices`) - Contains the modules hosted by this repository
+- `docs/` - Contains design documents and architectural documentation
+- Build artifacts folders (`artifacts/`, `results/`) - Temporary folders created during build (excluded from source control)
+
 ## Required Module Structure
 
-The repository root contains folders which represent the modules hosted by this repository. Each module folder MUST follow this structure:
+Each module folder MUST follow this structure:
 
 - `src/` (mandatory) - Contains source code projects for the module
 - `tests/` (optional) - Contains test projects for the module
