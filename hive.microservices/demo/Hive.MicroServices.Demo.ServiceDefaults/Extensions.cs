@@ -16,8 +16,9 @@ namespace Microsoft.Extensions.Hosting;
 // To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
 public static class Extensions
 {
-  private const string HealthEndpointPath = "/health";
-  private const string AlivenessEndpointPath = "/alive";
+  private const string StartupEndpointPath = "/status/startup";
+  private const string ReadinessEndpointPath = "/status/readiness";
+  private const string LivenessEndpointPath = "/status/liveness";
 
   extension<TBuilder>(TBuilder builder) where TBuilder : IHostApplicationBuilder
   {
@@ -25,7 +26,8 @@ public static class Extensions
     {
       builder.ConfigureOpenTelemetry();
 
-      builder.AddDefaultHealthChecks();
+      // TODO: Align Aspire health checks with Hive's probe middleware
+      // builder.AddDefaultHealthChecks();
 
       builder.Services.AddServiceDiscovery();
 
@@ -66,10 +68,11 @@ public static class Extensions
         {
           tracing.AddSource(builder.Environment.ApplicationName)
             .AddAspNetCoreInstrumentation(options =>
-              // Exclude health check requests from tracing
+              // Exclude Hive probe requests from tracing
               options.Filter = context =>
-                !context.Request.Path.StartsWithSegments(HealthEndpointPath)
-                && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
+                !context.Request.Path.StartsWithSegments(StartupEndpointPath)
+                && !context.Request.Path.StartsWithSegments(ReadinessEndpointPath)
+                && !context.Request.Path.StartsWithSegments(LivenessEndpointPath)
             )
             // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
             //.AddGrpcClientInstrumentation()
@@ -100,28 +103,29 @@ public static class Extensions
       return builder;
     }
 
-    public TBuilder AddDefaultHealthChecks()
-    {
-      builder.Services.AddHealthChecks()
-        // Add a default liveness check to ensure app is responsive
-        .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
-
-      return builder;
-    }
+    // TODO: Align Aspire health checks with Hive's probe middleware
+    // public TBuilder AddDefaultHealthChecks()
+    // {
+    //   builder.Services.AddHealthChecks()
+    //     // Add a default liveness check to ensure app is responsive
+    //     .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+    //
+    //   return builder;
+    // }
   }
 
+  // TODO: Hive's middleware handles probe endpoints (/status/startup, /status/readiness, /status/liveness).
+  // ASP.NET health check endpoint mapping is not needed at this time.
   public static WebApplication MapDefaultEndpoints(this WebApplication app)
   {
-    // Adding health checks endpoints to applications in non-development environments has security implications.
-    // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
-    if (app.Environment.IsDevelopment())
-    {
-      // All health checks must pass for app to be considered ready to accept traffic after starting
-      app.MapHealthChecks(HealthEndpointPath);
-
-      // Only health checks tagged with the "live" tag must pass for app to be considered alive
-      app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions { Predicate = r => r.Tags.Contains("live") });
-    }
+    // if (app.Environment.IsDevelopment())
+    // {
+    //   // All health checks must pass for app to be considered ready to accept traffic after starting
+    //   app.MapHealthChecks(ReadinessEndpointPath);
+    //
+    //   // Only health checks tagged with the "live" tag must pass for app to be considered alive
+    //   app.MapHealthChecks(LivenessEndpointPath, new HealthCheckOptions { Predicate = r => r.Tags.Contains("live") });
+    // }
 
     return app;
   }

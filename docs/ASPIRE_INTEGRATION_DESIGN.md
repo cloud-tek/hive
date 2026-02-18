@@ -192,10 +192,10 @@ builder.AddProject<Projects.Hive_MicroServices_Demo_Api>("demo-api")
 **AppHost Changes:**
 ```csharp
 var apiControllers = builder.AddProject<Projects.Hive_MicroServices_Demo_ApiControllers>("demo-api-controllers")
-    .WithHttpHealthCheck("/readiness");
+    .WithHttpHealthCheck("/status/readiness");
 
 var graphql = builder.AddProject<Projects.Hive_MicroServices_Demo_GraphQL>("demo-graphql")
-    .WithHttpHealthCheck("/readiness");
+    .WithHttpHealthCheck("/status/readiness");
 ```
 
 **Validation:**
@@ -214,10 +214,10 @@ var graphql = builder.AddProject<Projects.Hive_MicroServices_Demo_GraphQL>("demo
 **AppHost Changes:**
 ```csharp
 var grpc = builder.AddProject<Projects.Hive_MicroServices_Demo_Grpc>("demo-grpc")
-    .WithHttpHealthCheck("/readiness");
+    .WithHttpHealthCheck("/status/readiness");
 
 var grpcCodeFirst = builder.AddProject<Projects.Hive_MicroServices_Demo_GrpcCodeFirst>("demo-grpc-codefirst")
-    .WithHttpHealthCheck("/readiness");
+    .WithHttpHealthCheck("/status/readiness");
 ```
 
 **Validation:**
@@ -235,7 +235,7 @@ var grpcCodeFirst = builder.AddProject<Projects.Hive_MicroServices_Demo_GrpcCode
 **AppHost Changes:**
 ```csharp
 var job = builder.AddProject<Projects.Hive_MicroServices_Demo_Job>("demo-job")
-    .WithHttpHealthCheck("/readiness");
+    .WithHttpHealthCheck("/status/readiness");
 ```
 
 **Validation:**
@@ -438,13 +438,16 @@ Hive microservices already expose:
 ```csharp
 // In AppHost
 builder.AddProject<Projects.Hive_MicroServices_Demo_Api>("demo-api")
-    .WithHttpHealthCheck("/readiness")  // Uses Hive's readiness endpoint
-    .WithHttpHealthCheck("/startup");   // Uses Hive's startup endpoint
+    .WithHttpHealthCheck("/status/readiness");  // Uses Hive's readiness endpoint
 ```
 
+> **Note:** `/status/startup` is a Kubernetes startup probe (one-shot, 200 once started) and is not
+> suitable for Aspire's continuous health polling. Only `/status/readiness` should be used with
+> `.WithHttpHealthCheck()` as it reflects ongoing service health.
+
 **Health Check Flow:**
-1. Service starts → `/startup` checked until healthy
-2. Once started → `/readiness` checked continuously
+1. Service starts → Aspire detects process/port availability
+2. Once started → `/status/readiness` polled continuously
 3. Aspire dashboard reflects health status
 4. Unhealthy services shown in red
 
@@ -731,34 +734,34 @@ var otelCollector = builder.AddContainer("otel-collector", "otel/opentelemetry-c
 
 // Demo Services - HTTP
 var api = builder.AddProject<Projects.Hive_MicroServices_Demo_Api>("demo-api")
-    .WithHttpHealthCheck("/readiness")
+    .WithHttpHealthCheck("/status/readiness")
     .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
     .WaitFor(otelCollector);
 
 var apiControllers = builder.AddProject<Projects.Hive_MicroServices_Demo_ApiControllers>("demo-api-controllers")
-    .WithHttpHealthCheck("/readiness")
+    .WithHttpHealthCheck("/status/readiness")
     .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
     .WaitFor(otelCollector);
 
 var graphql = builder.AddProject<Projects.Hive_MicroServices_Demo_GraphQL>("demo-graphql")
-    .WithHttpHealthCheck("/readiness")
+    .WithHttpHealthCheck("/status/readiness")
     .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
     .WaitFor(otelCollector);
 
 // Demo Services - gRPC
 var grpc = builder.AddProject<Projects.Hive_MicroServices_Demo_Grpc>("demo-grpc")
-    .WithHttpHealthCheck("/readiness")
+    .WithHttpHealthCheck("/status/readiness")
     .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
     .WaitFor(otelCollector);
 
 var grpcCodeFirst = builder.AddProject<Projects.Hive_MicroServices_Demo_GrpcCodeFirst>("demo-grpc-codefirst")
-    .WithHttpHealthCheck("/readiness")
+    .WithHttpHealthCheck("/status/readiness")
     .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
     .WaitFor(otelCollector);
 
 // Demo Services - Background
 var job = builder.AddProject<Projects.Hive_MicroServices_Demo_Job>("demo-job")
-    .WithHttpHealthCheck("/readiness")
+    .WithHttpHealthCheck("/status/readiness")
     .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
     .WaitFor(otelCollector);
 

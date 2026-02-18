@@ -10,6 +10,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Hive.MicroServices.Demo.Api\Hive.MicroServices.Demo.Api.csproj" />
+    <ProjectReference Include="..\Hive.MicroServices.Demo.ApiControllers\Hive.MicroServices.Demo.ApiControllers.csproj" />
+    <ProjectReference Include="..\Hive.MicroServices.Demo.GraphQL\Hive.MicroServices.Demo.GraphQL.csproj" />
+    <ProjectReference Include="..\Hive.MicroServices.Demo.Grpc\Hive.MicroServices.Demo.Grpc.csproj" />
+    <ProjectReference Include="..\Hive.MicroServices.Demo.GrpcCodeFirst\Hive.MicroServices.Demo.GrpcCodeFirst.csproj" />
+    <ProjectReference Include="..\Hive.MicroServices.Demo.Job\Hive.MicroServices.Demo.Job.csproj" />
   </ItemGroup>
 
 </Project>

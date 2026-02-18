@@ -1,16 +1,24 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddProject<Projects.Hive_MicroServices_Demo_Api>("hive-microservices-demo-api");
+// HTTP Services
+builder.AddProject<Projects.Hive_MicroServices_Demo_Api>("hive-microservices-demo-api")
+  .WithHttpHealthCheck("/status/readiness");
 
-/*
- var apiService = builder.AddProject<Projects.PoC_ApiService>("apiservice")
-       .WithHttpHealthCheck("/health");
+builder.AddProject<Projects.Hive_MicroServices_Demo_ApiControllers>("hive-microservices-demo-apicontrollers")
+  .WithHttpHealthCheck("/status/readiness");
 
-   builder.AddProject<Projects.PoC_Web>("webfrontend")
-       .WithExternalHttpEndpoints()
-       .WithHttpHealthCheck("/health")
-       .WithReference(apiService)
-       .WaitFor(apiService);
- */
+builder.AddProject<Projects.Hive_MicroServices_Demo_GraphQL>("hive-microservices-demo-graphql")
+  .WithHttpHealthCheck("/status/readiness");
+
+// gRPC Services
+builder.AddProject<Projects.Hive_MicroServices_Demo_Grpc>("hive-microservices-demo-grpc")
+  .WithHttpHealthCheck("/status/readiness");
+
+builder.AddProject<Projects.Hive_MicroServices_Demo_GrpcCodeFirst>("hive-microservices-demo-grpccodefirst")
+  .WithHttpHealthCheck("/status/readiness");
+
+// Background Services
+builder.AddProject<Projects.Hive_MicroServices_Demo_Job>("hive-microservices-demo-job")
+  .WithHttpHealthCheck("/status/readiness");
 
 builder.Build().Run();
