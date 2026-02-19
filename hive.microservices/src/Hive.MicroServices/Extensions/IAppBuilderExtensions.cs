@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Hive.MicroServices;
+namespace Hive.MicroServices.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="IApplicationBuilder"/>

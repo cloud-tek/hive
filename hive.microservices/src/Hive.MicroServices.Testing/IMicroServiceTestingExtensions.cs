@@ -1,3 +1,4 @@
+using Hive.MicroServices.Extensions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
 

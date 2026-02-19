@@ -1,5 +1,9 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Default Service
+builder.AddProject<Projects.Hive_MicroServices_Demo>("hive-microservices-demo")
+  .WithHttpHealthCheck("/status/readiness");
+
 // HTTP Services
 builder.AddProject<Projects.Hive_MicroServices_Demo_Api>("hive-microservices-demo-api")
   .WithHttpHealthCheck("/status/readiness");

@@ -1,3 +1,4 @@
+using Hive.MicroServices.Extensions;
 using Hive.MicroServices.Job.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;

@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Hive.Extensions;
 using Hive.MicroServices.Api;
+using Hive.MicroServices.Extensions;
 using Hive.MicroServices.GraphQL;
 using Hive.MicroServices.Grpc;
 using Hive.MicroServices.Lifecycle;

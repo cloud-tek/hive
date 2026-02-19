@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Hive.MicroServices.Demo\Hive.MicroServices.Demo.csproj" />
     <ProjectReference Include="..\Hive.MicroServices.Demo.Api\Hive.MicroServices.Demo.Api.csproj" />
     <ProjectReference Include="..\Hive.MicroServices.Demo.ApiControllers\Hive.MicroServices.Demo.ApiControllers.csproj" />
     <ProjectReference Include="..\Hive.MicroServices.Demo.GraphQL\Hive.MicroServices.Demo.GraphQL.csproj" />

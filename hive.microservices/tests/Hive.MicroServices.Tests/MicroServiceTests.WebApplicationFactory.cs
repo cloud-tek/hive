@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Hive.MicroServices.Api;
+using Hive.MicroServices.Extensions;
 using Hive.MicroServices.Testing;
 using Hive.Testing;
 using Microsoft.AspNetCore.Builder;

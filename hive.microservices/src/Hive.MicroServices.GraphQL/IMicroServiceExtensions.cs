@@ -1,4 +1,5 @@
 using Hive.Extensions;
+using Hive.MicroServices.Extensions;
 using HotChocolate.Execution.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
