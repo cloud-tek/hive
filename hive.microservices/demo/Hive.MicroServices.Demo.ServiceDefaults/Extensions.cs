@@ -100,7 +100,6 @@ public static class Extensions
 
       return builder;
     }
-
   }
 
   // TODO: Hive's middleware handles probe endpoints (/status/startup, /status/readiness, /status/liveness).
