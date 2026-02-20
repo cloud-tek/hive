@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 //using Microsoft.Extensions.ServiceDiscovery;
 using OpenTelemetry;
@@ -103,30 +101,12 @@ public static class Extensions
       return builder;
     }
 
-    // TODO: Align Aspire health checks with Hive's probe middleware
-    // public TBuilder AddDefaultHealthChecks()
-    // {
-    //   builder.Services.AddHealthChecks()
-    //     // Add a default liveness check to ensure app is responsive
-    //     .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
-    //
-    //   return builder;
-    // }
   }
 
   // TODO: Hive's middleware handles probe endpoints (/status/startup, /status/readiness, /status/liveness).
   // ASP.NET health check endpoint mapping is not needed at this time.
   public static WebApplication MapDefaultEndpoints(this WebApplication app)
   {
-    // if (app.Environment.IsDevelopment())
-    // {
-    //   // All health checks must pass for app to be considered ready to accept traffic after starting
-    //   app.MapHealthChecks(ReadinessEndpointPath);
-    //
-    //   // Only health checks tagged with the "live" tag must pass for app to be considered alive
-    //   app.MapHealthChecks(LivenessEndpointPath, new HealthCheckOptions { Predicate = r => r.Tags.Contains("live") });
-    // }
-
     return app;
   }
 }

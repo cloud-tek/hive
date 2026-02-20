@@ -7,7 +7,7 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 exporters:
-  # Aspire Dashboard (env vars injected automatically by WithAppForwarding)
+  # Aspire Dashboard (env vars injected by AppHost via WithEnvironment)
   otlp/aspire:
     endpoint: ${env:ASPIRE_ENDPOINT}
     headers:

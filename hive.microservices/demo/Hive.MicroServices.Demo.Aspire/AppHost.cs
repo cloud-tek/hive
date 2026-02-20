@@ -3,15 +3,15 @@ using Hive.MicroServices.Demo.Aspire;
 var builder = DistributedApplication.CreateBuilder(args);
 
 // VictoriaMetrics Stack
-var victoriaMetrics = builder.AddContainer("victoria-metrics", "victoriametrics/victoria-metrics")
+_ = builder.AddContainer("victoria-metrics", "victoriametrics/victoria-metrics")
   .WithHttpEndpoint(port: 8428, targetPort: 8428, name: "http")
   .WithArgs("--storageDataPath=/victoria-metrics-data", "--httpListenAddr=:8428");
 
-var victoriaLogs = builder.AddContainer("victoria-logs", "victoriametrics/victoria-logs")
+_ = builder.AddContainer("victoria-logs", "victoriametrics/victoria-logs")
   .WithHttpEndpoint(port: 9428, targetPort: 9428, name: "http")
   .WithArgs("--storageDataPath=/victoria-logs-data", "--httpListenAddr=:9428");
 
-var victoriaTraces = builder.AddContainer("victoria-traces", "victoriametrics/victoria-traces")
+_ = builder.AddContainer("victoria-traces", "victoriametrics/victoria-traces")
   .WithHttpEndpoint(port: 10428, targetPort: 10428, name: "http")
   .WithArgs("--storageDataPath=/victoria-traces-data");
 
@@ -32,7 +32,7 @@ var otelCollector = builder.AddContainer("otel-collector", "otel/opentelemetry-c
   .WithEndpoint(targetPort: 4317, name: "grpc", scheme: "http")
   .WithEndpoint(targetPort: 4318, name: "http", scheme: "http")
   .WithEnvironment("ASPIRE_ENDPOINT", dashboardEndpointForContainer)
-  .WithEnvironment("ASPIRE_API_KEY", builder.Configuration["AppHost:OtlpApiKey"]);
+  .WithEnvironment("ASPIRE_API_KEY", builder.Configuration["AppHost:OtlpApiKey"] ?? string.Empty);
 
 // Default Service
 builder.AddProject<Projects.Hive_MicroServices_Demo>("hive-microservices-demo")
