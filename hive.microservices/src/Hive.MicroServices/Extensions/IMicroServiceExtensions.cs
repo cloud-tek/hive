@@ -6,9 +6,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
-namespace Hive.MicroServices;
+namespace Hive.MicroServices.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="IMicroService"/>

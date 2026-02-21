@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Hive.MicroServices;
 using Hive.MicroServices.Api;
+using Hive.MicroServices.Extensions;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;

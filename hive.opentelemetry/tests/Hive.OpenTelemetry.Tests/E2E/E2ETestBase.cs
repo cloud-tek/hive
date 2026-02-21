@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using Hive.MicroServices;
 using Hive.MicroServices.Api;
+using Hive.MicroServices.Extensions;
 using Hive.Testing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

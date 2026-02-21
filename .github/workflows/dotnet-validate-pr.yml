@@ -11,6 +11,7 @@ on:
     - reopened
     branches:
     - "main"
+    - "release/*"
     paths:
       - ".github/workflows/**"
       - "*.sln"
@@ -21,7 +22,7 @@ on:
 
 jobs:
   build:
-    uses: cloud-tek/.github/.github/workflows/dagger-cloudtek-build.yml@v0.3.0
+    uses: cloud-tek/.github/.github/workflows/dagger-cloudtek-build.yml@v0.3.1
     name: build
     with:
       directory: .
