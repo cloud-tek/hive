@@ -1,3 +1,5 @@
+using Refit;
+
 namespace Hive.HTTP;
 
 public static class Startup
@@ -100,7 +102,9 @@ public static class Startup
     var registration = new HttpClientRegistration
     {
       ClientName = clientName,
-      InterfaceType = typeof(TApi)
+      InterfaceType = typeof(TApi),
+      RefitClientFactory = (services, settings, name) =>
+        services.AddRefitClient<TApi>(settings, name)
     };
 
     if (configure is not null)

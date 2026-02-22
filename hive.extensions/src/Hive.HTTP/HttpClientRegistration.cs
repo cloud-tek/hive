@@ -1,4 +1,5 @@
 using Hive.HTTP.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hive.HTTP;
 
@@ -27,6 +28,12 @@ internal sealed class HttpClientRegistration
   public List<Type> CustomHandlerTypes { get; } = [];
 
   public Refit.RefitSettings? RefitSettings { get; set; }
+
+  /// <summary>
+  /// Factory captured at registration time while TApi is still known,
+  /// avoiding the need for reflection when calling AddRefitClient.
+  /// </summary>
+  public required Func<IServiceCollection, Refit.RefitSettings, string, IHttpClientBuilder> RefitClientFactory { get; init; }
 
   // Fluent overrides (stored separately, applied in ApplyFluentOverrides)
   internal string? FluentBaseAddress { get; set; }

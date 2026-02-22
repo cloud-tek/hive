@@ -89,7 +89,7 @@ public sealed class Extension : MicroServiceExtension<Extension>
     var clientName = registration.ClientName;
 
     var refitSettings = registration.RefitSettings ?? new RefitSettings();
-    var httpClientBuilder = RegisterRefitClient(services, registration.InterfaceType, refitSettings, clientName);
+    var httpClientBuilder = registration.RefitClientFactory(services, refitSettings, clientName);
 
     httpClientBuilder.ConfigureHttpClient(c =>
     {
@@ -143,26 +143,6 @@ public sealed class Extension : MicroServiceExtension<Extension>
 
     // Resilience pipeline
     ConfigureResilience(httpClientBuilder, registration, clientName);
-  }
-
-  private static IHttpClientBuilder RegisterRefitClient(
-    IServiceCollection services,
-    Type interfaceType,
-    RefitSettings settings,
-    string clientName)
-  {
-    // Use reflection to call AddRefitClient<T> with the correct type
-    var method = typeof(Refit.HttpClientFactoryExtensions)
-      .GetMethods()
-      .First(m =>
-        m.Name == "AddRefitClient"
-        && m.IsGenericMethodDefinition
-        && m.GetParameters().Length == 3
-        && m.GetParameters()[1].ParameterType == typeof(RefitSettings)
-        && m.GetParameters()[2].ParameterType == typeof(string));
-
-    var genericMethod = method.MakeGenericMethod(interfaceType);
-    return (IHttpClientBuilder)genericMethod.Invoke(null, [services, settings, clientName])!;
   }
 
   private static void ConfigureResilience(
