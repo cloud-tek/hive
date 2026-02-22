@@ -20,17 +20,23 @@ internal sealed class TelemetryHandler : DelegatingHandler
     var method = request.Method.Method;
     var host = request.RequestUri?.Host ?? "unknown";
 
-    var stopwatch = Stopwatch.StartNew();
+    var startTimestamp = Stopwatch.GetTimestamp();
 
     HttpResponseMessage? response = null;
+    Exception? exception = null;
     try
     {
       response = await base.SendAsync(request, cancellationToken);
       return response;
     }
+    catch (Exception ex)
+    {
+      exception = ex;
+      throw;
+    }
     finally
     {
-      stopwatch.Stop();
+      var elapsed = Stopwatch.GetElapsedTime(startTimestamp);
 
       var statusCode = response?.StatusCode.ToString() ?? "error";
       var tags = new TagList
@@ -42,7 +48,12 @@ internal sealed class TelemetryHandler : DelegatingHandler
         { "client.name", _clientName }
       };
 
-      HttpClientMeter.RequestDuration.Record(stopwatch.Elapsed.TotalMilliseconds, tags);
+      if (exception is not null)
+      {
+        tags.Add("error.type", exception.GetType().Name);
+      }
+
+      HttpClientMeter.RequestDuration.Record(elapsed.TotalMilliseconds, tags);
       HttpClientMeter.RequestCount.Add(1, tags);
 
       if (response is null || !response.IsSuccessStatusCode)

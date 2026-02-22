@@ -14,6 +14,7 @@ namespace Hive.HTTP;
 
 public sealed class Extension : MicroServiceExtension<Extension>
 {
+  private static readonly HttpClientRegistrationValidator Validator = new();
   private readonly List<HttpClientRegistration> _registrations = [];
   internal Dictionary<string, Func<HttpMessageHandler>> PrimaryHandlerOverrides { get; } = new();
 
@@ -58,8 +59,7 @@ public sealed class Extension : MicroServiceExtension<Extension>
 
         registration.ApplyFluentOverrides();
 
-        var validator = new HttpClientRegistrationValidator();
-        var result = validator.Validate(registration);
+        var result = Validator.Validate(registration);
 
         if (!result.IsValid)
         {
