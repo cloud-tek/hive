@@ -12,6 +12,8 @@ internal sealed class BearerTokenProvider : IAuthenticationProvider
   public async Task ApplyAsync(HttpRequestMessage message, CancellationToken cancellationToken)
   {
     var token = await _tokenFactory(cancellationToken);
+    if (string.IsNullOrWhiteSpace(token))
+      throw new InvalidOperationException("Bearer token factory returned a null or empty token.");
     message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
   }
 }
