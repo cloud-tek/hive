@@ -2,10 +2,19 @@ using Refit;
 
 namespace Hive.HTTP;
 
+/// <summary>
+/// Extension methods for registering Refit-based HTTP clients with the Hive microservice.
+/// </summary>
 public static class Startup
 {
   // --- IMicroService overloads (preferred by compiler for MicroService) ---
 
+  /// <summary>
+  /// Registers a typed HTTP client for the specified Refit interface using the interface name as the client name.
+  /// </summary>
+  /// <typeparam name="TApi">The Refit interface defining the HTTP API.</typeparam>
+  /// <param name="service">The microservice to register the client with.</param>
+  /// <returns>The microservice instance for chaining.</returns>
   public static IMicroService WithHttpClient<TApi>(this IMicroService service)
     where TApi : class
   {
@@ -13,6 +22,13 @@ public static class Startup
     return service;
   }
 
+  /// <summary>
+  /// Registers a typed HTTP client with fluent configuration using the interface name as the client name.
+  /// </summary>
+  /// <typeparam name="TApi">The Refit interface defining the HTTP API.</typeparam>
+  /// <param name="service">The microservice to register the client with.</param>
+  /// <param name="configure">A delegate to configure the client builder.</param>
+  /// <returns>The microservice instance for chaining.</returns>
   public static IMicroService WithHttpClient<TApi>(
     this IMicroService service,
     Action<HiveHttpClientBuilder> configure)
@@ -22,6 +38,13 @@ public static class Startup
     return service;
   }
 
+  /// <summary>
+  /// Registers a typed HTTP client with a custom client name.
+  /// </summary>
+  /// <typeparam name="TApi">The Refit interface defining the HTTP API.</typeparam>
+  /// <param name="service">The microservice to register the client with.</param>
+  /// <param name="clientName">The name used to identify this client in configuration and telemetry.</param>
+  /// <returns>The microservice instance for chaining.</returns>
   public static IMicroService WithHttpClient<TApi>(
     this IMicroService service,
     string clientName)
@@ -31,6 +54,14 @@ public static class Startup
     return service;
   }
 
+  /// <summary>
+  /// Registers a typed HTTP client with a custom client name and fluent configuration.
+  /// </summary>
+  /// <typeparam name="TApi">The Refit interface defining the HTTP API.</typeparam>
+  /// <param name="service">The microservice to register the client with.</param>
+  /// <param name="clientName">The name used to identify this client in configuration and telemetry.</param>
+  /// <param name="configure">An optional delegate to configure the client builder.</param>
+  /// <returns>The microservice instance for chaining.</returns>
   public static IMicroService WithHttpClient<TApi>(
     this IMicroService service,
     string clientName,
@@ -43,6 +74,7 @@ public static class Startup
 
   // --- IMicroServiceCore overloads (for FunctionHost and other hosts) ---
 
+  /// <inheritdoc cref="WithHttpClient{TApi}(IMicroService)"/>
   public static IMicroServiceCore WithHttpClient<TApi>(this IMicroServiceCore service)
     where TApi : class
   {
@@ -50,6 +82,7 @@ public static class Startup
     return service;
   }
 
+  /// <inheritdoc cref="WithHttpClient{TApi}(IMicroService, Action{HiveHttpClientBuilder})"/>
   public static IMicroServiceCore WithHttpClient<TApi>(
     this IMicroServiceCore service,
     Action<HiveHttpClientBuilder> configure)
@@ -59,6 +92,7 @@ public static class Startup
     return service;
   }
 
+  /// <inheritdoc cref="WithHttpClient{TApi}(IMicroService, string)"/>
   public static IMicroServiceCore WithHttpClient<TApi>(
     this IMicroServiceCore service,
     string clientName)
@@ -68,6 +102,7 @@ public static class Startup
     return service;
   }
 
+  /// <inheritdoc cref="WithHttpClient{TApi}(IMicroService, string, Action{HiveHttpClientBuilder})"/>
   public static IMicroServiceCore WithHttpClient<TApi>(
     this IMicroServiceCore service,
     string clientName,

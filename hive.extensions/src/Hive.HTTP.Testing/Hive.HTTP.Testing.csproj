@@ -11,7 +11,7 @@
     <PackageDescription>Testing utilities for Hive.HTTP</PackageDescription>
     <Authors>cloud-tek</Authors>
     <PackageIconUrl>https://raw.githubusercontent.com/cloud-tek/public/main/images/cloud-tek.png</PackageIconUrl>
-    <NoWarn>NU5048,CS1591</NoWarn>
+    <NoWarn>NU5048</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>

@@ -1,7 +1,17 @@
 namespace Hive.HTTP.Testing;
 
+/// <summary>
+/// Extension methods for replacing HTTP client handlers during integration testing.
+/// </summary>
 public static class IMicroServiceHttpTestExtensions
 {
+  /// <summary>
+  /// Replaces the primary HTTP message handler for the specified API client with a custom handler.
+  /// </summary>
+  /// <typeparam name="TApi">The Refit interface whose transport handler is being replaced.</typeparam>
+  /// <param name="service">The microservice under test.</param>
+  /// <param name="handler">The custom handler to use instead of <see cref="System.Net.Http.SocketsHttpHandler"/>.</param>
+  /// <returns>The microservice instance for chaining.</returns>
   public static IMicroService WithTestHandler<TApi>(
     this IMicroService service,
     HttpMessageHandler handler)
@@ -16,6 +26,13 @@ public static class IMicroServiceHttpTestExtensions
     return service;
   }
 
+  /// <summary>
+  /// Replaces the primary HTTP message handler for the specified API client with a mock response factory.
+  /// </summary>
+  /// <typeparam name="TApi">The Refit interface whose transport handler is being replaced.</typeparam>
+  /// <param name="service">The microservice under test.</param>
+  /// <param name="responseFactory">A delegate that produces a response for each incoming request.</param>
+  /// <returns>The microservice instance for chaining.</returns>
   public static IMicroService WithMockResponse<TApi>(
     this IMicroService service,
     Func<HttpRequestMessage, HttpResponseMessage> responseFactory)

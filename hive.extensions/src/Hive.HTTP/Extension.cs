@@ -12,12 +12,19 @@ using Refit;
 
 namespace Hive.HTTP;
 
+/// <summary>
+/// Hive extension that registers and configures Refit-based HTTP clients with telemetry, authentication, and resilience.
+/// </summary>
 public sealed class Extension : MicroServiceExtension<Extension>
 {
   private static readonly HttpClientRegistrationValidator Validator = new();
   private readonly List<HttpClientRegistration> _registrations = [];
   internal Dictionary<string, Func<HttpMessageHandler>> PrimaryHandlerOverrides { get; } = new();
 
+  /// <summary>
+  /// Initializes a new instance of the <see cref="Extension"/> class.
+  /// </summary>
+  /// <param name="service">The microservice this extension is registered with.</param>
   public Extension(IMicroServiceCore service) : base(service)
   {
   }
@@ -27,6 +34,7 @@ public sealed class Extension : MicroServiceExtension<Extension>
     _registrations.Add(registration);
   }
 
+  /// <inheritdoc />
   public override IServiceCollection ConfigureServices(
     IServiceCollection services,
     IMicroServiceCore microservice)

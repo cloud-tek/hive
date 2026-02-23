@@ -11,7 +11,7 @@
     <PackageDescription>Standardized HTTP client support for Hive microservices</PackageDescription>
     <Authors>cloud-tek</Authors>
     <PackageIconUrl>https://raw.githubusercontent.com/cloud-tek/public/main/images/cloud-tek.png</PackageIconUrl>
-    <NoWarn>NU5048,CS1591</NoWarn>
+    <NoWarn>NU5048</NoWarn>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
