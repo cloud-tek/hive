@@ -1,9 +1,9 @@
 using Hive.MicroServices;
 using Hive.MicroServices.Api;
-using Hive.MicroServices.Extensions;
+using Hive.OpenTelemetry;
 
 var service = new MicroService("hive-microservices-apicontrollers-demo")
-    .ConfigureServices((services, configuration) => { })
+    .WithOpenTelemetry()
     .ConfigureApiControllerPipeline()
     ;
 

@@ -40,13 +40,16 @@ builder.AddProject<Projects.Hive_MicroServices_Demo>("hive-microservices-demo")
   .WithOtelCollector(otelCollector);
 
 // HTTP Services
-builder.AddProject<Projects.Hive_MicroServices_Demo_Api>("hive-microservices-demo-api")
+var apiControllers = builder.AddProject<Projects.Hive_MicroServices_Demo_ApiControllers>("hive-microservices-demo-apicontrollers")
   .WithHttpHealthCheck("/status/readiness")
   .WithOtelCollector(otelCollector);
 
-builder.AddProject<Projects.Hive_MicroServices_Demo_ApiControllers>("hive-microservices-demo-apicontrollers")
+builder.AddProject<Projects.Hive_MicroServices_Demo_Api>("hive-microservices-demo-api")
   .WithHttpHealthCheck("/status/readiness")
-  .WithOtelCollector(otelCollector);
+  .WithOtelCollector(otelCollector)
+  .WithReference(apiControllers)
+  .WithEnvironment("Hive__Http__IWeatherForecastApi__BaseAddress",
+    () => $"http://{apiControllers.Resource.Name}");
 
 builder.AddProject<Projects.Hive_MicroServices_Demo_GraphQL>("hive-microservices-demo-graphql")
   .WithHttpHealthCheck("/status/readiness")
