@@ -6,6 +6,7 @@ Standardized HTTP client support for Hive microservices, providing typed Refit c
 
 - [Overview](#overview)
 - [Quick Start](#quick-start)
+- [Azure Functions Support](#azure-functions-support)
 - [Internal vs External Clients](#internal-vs-external-clients)
 - [Configuration](#configuration)
 - [Authentication](#authentication)
@@ -55,6 +56,26 @@ await service.RunAsync();
 ```
 
 The `IWeatherApi` interface is resolved from DI and all requests flow through the handler pipeline automatically.
+
+## Azure Functions Support
+
+Hive.HTTP works with `FunctionHost` (Azure Functions) in addition to `MicroService`. The `WithHttpClient<TApi>()` extension methods are available on both `IMicroService` and `IMicroServiceCore`, and `IFunctionHost` implements `IMicroServiceCore`.
+
+```csharp
+var host = new FunctionHost("my-function")
+    .WithHttpClient<IPaymentApi>(client => client
+        .External()
+        .WithBaseAddress("https://api.stripe.com")
+        .WithAuthentication(auth => auth.ApiKey("Authorization", "Bearer sk_live_...")))
+    .ConfigureServices((services, config) =>
+    {
+        // IPaymentApi is available via DI in your function triggers
+    });
+
+await host.RunAsync();
+```
+
+All features — authentication, resilience, telemetry, and configuration — work identically across both hosting models. The only difference is that ASP.NET-specific middleware (e.g., `Configure(IApplicationBuilder)`) does not apply to Azure Functions, but Hive.HTTP operates entirely through `ConfigureServices` and `IHttpClientFactory`, so this has no impact.
 
 ## Internal vs External Clients
 

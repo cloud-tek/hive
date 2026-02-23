@@ -33,7 +33,7 @@ graph TB
 
 ### [Hive.HTTP](src/Hive.HTTP/)
 
-Standardized HTTP client support for inter-service and external API communication. Provides Refit-based typed clients with built-in authentication, resilience, and telemetry.
+Standardized HTTP client support for inter-service and external API communication. Provides Refit-based typed clients with built-in authentication, resilience, and telemetry. Works with both `MicroService` and `FunctionHost` (Azure Functions).
 
 [Read Full Documentation](src/Hive.HTTP/README.md)
 
