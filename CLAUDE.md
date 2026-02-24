@@ -81,7 +81,10 @@ The monorepo is organized into four main components:
    - Currently transitioning from Serilog to OpenTelemetry
    - Includes AppInsights and LogzIo integrations
 
-3. **hive.microservices/** - Microservices framework
+3. **hive.extensions/** - Feature extensions
+   - `Hive.Messaging` - Messaging extension built on Wolverine (RabbitMQ transport)
+
+4. **hive.microservices/** - Microservices framework
    - `Hive.MicroServices` - Core orchestration framework
    - `Hive.MicroServices.Api` - REST API support (minimal and controller-based)
    - `Hive.MicroServices.GraphQL` - GraphQL support via HotChocolate
@@ -89,7 +92,7 @@ The monorepo is organized into four main components:
    - `Hive.MicroServices.Job` - Background job/worker support
    - `demo/` - Reference implementations
 
-4. **Hive.OpenTelemetry/** - OpenTelemetry integration (current development focus)
+5. **hive.opentelemetry/** - OpenTelemetry integration
    - Logging, tracing, and metrics via OTLP protocol
 
 ### Interface Hierarchy
@@ -150,6 +153,21 @@ public class MyExtension : MicroServiceExtension<MyExtension>
 - The generic type parameter must match the extension class name (Curiously Recurring Template Pattern)
 - A default factory method (`Create`) is inherited from the base class
 - Extensions without the correct generic pattern will not compile when used with `RegisterExtension<T>()`
+
+#### Cross-Extension Discovery: IActivitySourceProvider
+
+Extensions that create `ActivitySource` instances (for distributed tracing) should implement `IActivitySourceProvider` from `Hive.Abstractions`. The `Hive.OpenTelemetry` extension auto-discovers all registered extensions implementing this interface and subscribes to their activity sources automatically.
+
+```csharp
+public class MyExtension : MicroServiceExtension<MyExtension>, IActivitySourceProvider
+{
+    public MyExtension(IMicroServiceCore service) : base(service) { }
+
+    public IEnumerable<string> ActivitySourceNames => ["MyExtension"];
+}
+```
+
+This means users don't need to manually wire `builder.AddSource(...)` — registering both `.WithOpenTelemetry()` and a provider extension (e.g., `.WithMessaging()`) is sufficient for traces to flow end-to-end.
 
 #### Extension Registration Examples
 
@@ -288,6 +306,7 @@ When the endpoint is set, telemetry is exported via OTLP; otherwise, console exp
 - ASP.NET Core (requests, exceptions)
 - HTTP client (outbound calls)
 - Runtime metrics (GC, thread pool, etc.)
+- Auto-discovered activity sources from extensions implementing `IActivitySourceProvider` (e.g., Wolverine via `Hive.Messaging`)
 
 ## File References
 
@@ -301,7 +320,8 @@ When working with code, reference files using this format:
 
 - Core abstractions: `hive.core/src/Hive.Abstractions/`
 - Main framework: `hive.microservices/src/Hive.MicroServices/`
-- OpenTelemetry extension: `Hive.OpenTelemetry/`
+- OpenTelemetry extension: `hive.opentelemetry/src/Hive.OpenTelemetry/`
+- Messaging extension: `hive.extensions/src/Hive.Messaging/`
 - Demo applications: `hive.microservices/demo/`
 - Test projects: `*/tests/`
 
@@ -324,6 +344,7 @@ Hive.Abstractions (foundation)
     ├── Hive.Testing
     ├── Hive.Logging
     ├── Hive.OpenTelemetry
+    ├── Hive.Messaging (→ Hive.MicroServices)
     └── Hive.MicroServices
             ├── Hive.MicroServices.Api
             ├── Hive.MicroServices.GraphQL

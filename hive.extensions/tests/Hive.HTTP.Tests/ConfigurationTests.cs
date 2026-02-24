@@ -16,7 +16,7 @@ public class ConfigurationTests
 
   [Fact]
   [UnitTest]
-  public async Task GivenConfigOnly_WhenBaseAddressProvided_ThenClientIsRegistered()
+  public void GivenConfigOnly_WhenBaseAddressProvided_ThenClientIsRegistered()
   {
     var config = new ConfigurationBuilder()
       .UseDefaultLoggingConfiguration()
@@ -51,7 +51,7 @@ public class ConfigurationTests
 
   [Fact]
   [UnitTest]
-  public async Task GivenConfigOnly_WhenBaseAddressMissing_ThenStartupFails()
+  public void GivenConfigOnly_WhenBaseAddressMissing_ThenStartupFails()
   {
     var config = new ConfigurationBuilder()
       .UseDefaultLoggingConfiguration()
@@ -75,7 +75,7 @@ public class ConfigurationTests
 
   [Fact]
   [UnitTest]
-  public async Task GivenConfigOnly_WhenSectionMissing_ThenStartupFails()
+  public void GivenConfigOnly_WhenSectionMissing_ThenStartupFails()
   {
     var config = new ConfigurationBuilder()
       .UseDefaultLoggingConfiguration()
@@ -95,7 +95,7 @@ public class ConfigurationTests
 
   [Fact]
   [UnitTest]
-  public async Task GivenFluentOnly_WhenBaseAddressProvided_ThenClientIsRegistered()
+  public void GivenFluentOnly_WhenBaseAddressProvided_ThenClientIsRegistered()
   {
     var config = new ConfigurationBuilder()
       .UseDefaultLoggingConfiguration()
@@ -127,7 +127,7 @@ public class ConfigurationTests
 
   [Fact]
   [UnitTest]
-  public async Task GivenFluentOnly_WhenBaseAddressMissing_ThenStartupFails()
+  public void GivenFluentOnly_WhenBaseAddressMissing_ThenStartupFails()
   {
     var config = new ConfigurationBuilder()
       .UseDefaultLoggingConfiguration()
@@ -237,7 +237,7 @@ public class ConfigurationTests
 
   [Fact]
   [UnitTest]
-  public async Task GivenMultipleClients_WhenMixingConfigAndFluent_ThenEachClientConfiguredIndependently()
+  public void GivenMultipleClients_WhenMixingConfigAndFluent_ThenEachClientConfiguredIndependently()
   {
     var config = new ConfigurationBuilder()
       .UseDefaultLoggingConfiguration()
@@ -279,7 +279,7 @@ public class ConfigurationTests
 
   [Fact]
   [UnitTest]
-  public async Task GivenClientNameOverride_WhenConfigUsesCustomKey_ThenClientIsRegistered()
+  public void GivenClientNameOverride_WhenConfigUsesCustomKey_ThenClientIsRegistered()
   {
     var config = new ConfigurationBuilder()
       .UseDefaultLoggingConfiguration()
@@ -314,7 +314,7 @@ public class ConfigurationTests
 
   [Fact]
   [UnitTest]
-  public async Task GivenConfig_WhenBearerTokenTypeWithoutFluentAuth_ThenStartupFails()
+  public void GivenConfig_WhenBearerTokenTypeWithoutFluentAuth_ThenStartupFails()
   {
     var config = new ConfigurationBuilder()
       .UseDefaultLoggingConfiguration()

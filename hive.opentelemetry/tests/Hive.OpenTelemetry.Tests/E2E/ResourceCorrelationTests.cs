@@ -45,16 +45,18 @@ public class ResourceCorrelationTests : IDisposable
 
     var service = new MicroService(expectedServiceName, new NullLogger<IMicroService>())
       .InTestClass<ResourceCorrelationTests>()
-      .WithOpenTelemetry(
-        tracing: builder =>
-        {
-          builder.AddAspNetCoreInstrumentation();
-          builder.AddInMemoryExporter(_exportedActivities);
-        })
-      .ConfigureApiPipeline(app =>
-      {
-        app.MapGet("/test", () => "OK");
-      });
+      .WithOpenTelemetry();
+
+    service.ConfigureServices((svc, _) =>
+    {
+      svc.ConfigureOpenTelemetryTracerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedActivities));
+    });
+
+    service.ConfigureApiPipeline(app =>
+    {
+      app.MapGet("/test", () => "OK");
+    });
 
     var config = new ConfigurationBuilder().Build();
     service.CancellationTokenSource.CancelAfter(10000);
@@ -88,15 +90,12 @@ public class ResourceCorrelationTests : IDisposable
 
     var service = new MicroService(expectedServiceName, new NullLogger<IMicroService>())
       .InTestClass<ResourceCorrelationTests>()
-      .WithOpenTelemetry(
-        logging: builder =>
-        {
-          builder.AddInMemoryExporter(_exportedLogs);
-        });
+      .WithOpenTelemetry();
 
-    // Configure OpenTelemetryLoggerOptions to include formatted messages
-    service.ConfigureServices((svc, cfg) =>
+    service.ConfigureServices((svc, _) =>
     {
+      svc.ConfigureOpenTelemetryLoggerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedLogs));
       svc.Configure<OpenTelemetryLoggerOptions>(options =>
       {
         options.IncludeFormattedMessage = true;
@@ -158,16 +157,18 @@ public class ResourceCorrelationTests : IDisposable
 
     var service = new MicroService(expectedServiceName, new NullLogger<IMicroService>())
       .InTestClass<ResourceCorrelationTests>()
-      .WithOpenTelemetry(
-        tracing: builder =>
-        {
-          builder.AddAspNetCoreInstrumentation();
-          builder.AddInMemoryExporter(_exportedActivities);
-        })
-      .ConfigureApiPipeline(app =>
-      {
-        app.MapGet("/test", () => "OK");
-      });
+      .WithOpenTelemetry();
+
+    service.ConfigureServices((svc, _) =>
+    {
+      svc.ConfigureOpenTelemetryTracerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedActivities));
+    });
+
+    service.ConfigureApiPipeline(app =>
+    {
+      app.MapGet("/test", () => "OK");
+    });
 
     service.CancellationTokenSource.CancelAfter(10000);
 
@@ -196,20 +197,14 @@ public class ResourceCorrelationTests : IDisposable
 
     var service = new MicroService(expectedServiceName, new NullLogger<IMicroService>())
       .InTestClass<ResourceCorrelationTests>()
-      .WithOpenTelemetry(
-        tracing: builder =>
-        {
-          builder.AddAspNetCoreInstrumentation();
-          builder.AddInMemoryExporter(_exportedActivities);
-        },
-        logging: builder =>
-        {
-          builder.AddInMemoryExporter(_exportedLogs);
-        });
+      .WithOpenTelemetry();
 
-    // Configure OpenTelemetryLoggerOptions to include formatted messages
-    service.ConfigureServices((svc, cfg) =>
+    service.ConfigureServices((svc, _) =>
     {
+      svc.ConfigureOpenTelemetryTracerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedActivities));
+      svc.ConfigureOpenTelemetryLoggerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedLogs));
       svc.Configure<OpenTelemetryLoggerOptions>(options =>
       {
         options.IncludeFormattedMessage = true;

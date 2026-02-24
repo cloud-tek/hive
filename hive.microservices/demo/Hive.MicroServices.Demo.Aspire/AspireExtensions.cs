@@ -14,4 +14,17 @@ internal static class AspireExtensions
       .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", otelCollector.GetEndpoint("grpc"))
       .WaitFor(otelCollector);
   }
+
+  public static IResourceBuilder<T> WithRabbitMq<T>(
+    this IResourceBuilder<T> builder,
+    IResourceBuilder<ContainerResource> rabbitmq)
+    where T : IResourceWithEnvironment, IResourceWithWaitSupport
+  {
+    return builder
+      .WithEnvironment("Hive__Messaging__Transport", "RabbitMQ")
+      .WithEnvironment("Hive__Messaging__RabbitMq__ConnectionUri",
+        "amqp://guest:guest@localhost:5672")
+      .WithEnvironment("Hive__Messaging__RabbitMq__AutoProvision", "true")
+      .WaitFor(rabbitmq);
+  }
 }

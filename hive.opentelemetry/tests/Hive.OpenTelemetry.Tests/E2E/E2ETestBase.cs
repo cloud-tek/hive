@@ -77,14 +77,18 @@ public abstract class E2ETestBase : IDisposable
 
     var service = new MicroService(serviceName, new NullLogger<IMicroService>())
       .InTestClass<TTestClass>()
-      .WithOpenTelemetry(
-        logging: builder => ConfigureLoggingExporter(builder),
-        tracing: builder => ConfigureTracingExporter(builder),
-        metrics: builder => ConfigureMetricsExporter(builder));
+      .WithOpenTelemetry();
 
-    // Configure OpenTelemetryLoggerOptions to include formatted messages for testing
+    // Add in-memory exporters additively via ConfigureOpenTelemetry*Provider
     service.ConfigureServices((svc, cfg) =>
     {
+      svc.ConfigureOpenTelemetryLoggerProvider((_, builder) =>
+        builder.AddInMemoryExporter(ExportedLogs));
+      svc.ConfigureOpenTelemetryTracerProvider((_, builder) =>
+        builder.AddInMemoryExporter(ExportedActivities));
+      svc.ConfigureOpenTelemetryMeterProvider((_, builder) =>
+        builder.AddInMemoryExporter(ExportedMetrics));
+
       svc.Configure<OpenTelemetryLoggerOptions>(options =>
       {
         options.IncludeFormattedMessage = true;
@@ -118,8 +122,13 @@ public abstract class E2ETestBase : IDisposable
 
     var service = new MicroService(serviceName, new NullLogger<IMicroService>())
       .InTestClass<TTestClass>()
-      .WithOpenTelemetry(
-        tracing: builder => ConfigureTracingExporter(builder));
+      .WithOpenTelemetry();
+
+    service.ConfigureServices((svc, _) =>
+    {
+      svc.ConfigureOpenTelemetryTracerProvider((_, builder) =>
+        builder.AddInMemoryExporter(ExportedActivities));
+    });
 
     service.ConfigureApiPipeline(app =>
     {
@@ -142,8 +151,13 @@ public abstract class E2ETestBase : IDisposable
 
     var service = new MicroService(serviceName, new NullLogger<IMicroService>())
       .InTestClass<TTestClass>()
-      .WithOpenTelemetry(
-        metrics: builder => ConfigureMetricsExporter(builder));
+      .WithOpenTelemetry();
+
+    service.ConfigureServices((svc, _) =>
+    {
+      svc.ConfigureOpenTelemetryMeterProvider((_, builder) =>
+        builder.AddInMemoryExporter(ExportedMetrics));
+    });
 
     service.ConfigureApiPipeline(app =>
     {
@@ -167,12 +181,13 @@ public abstract class E2ETestBase : IDisposable
 
     var service = new MicroService(serviceName, new NullLogger<IMicroService>())
       .InTestClass<TTestClass>()
-      .WithOpenTelemetry(
-        logging: builder => ConfigureLoggingExporter(builder));
+      .WithOpenTelemetry();
 
-    // Configure OpenTelemetryLoggerOptions to include formatted messages for testing
-    service.ConfigureServices((svc, cfg) =>
+    service.ConfigureServices((svc, _) =>
     {
+      svc.ConfigureOpenTelemetryLoggerProvider((_, builder) =>
+        builder.AddInMemoryExporter(ExportedLogs));
+
       svc.Configure<OpenTelemetryLoggerOptions>(options =>
       {
         options.IncludeFormattedMessage = true;
@@ -234,26 +249,6 @@ public abstract class E2ETestBase : IDisposable
       service.CancellationTokenSource.Cancel();
       await runTask;
     }
-  }
-
-  private void ConfigureLoggingExporter(LoggerProviderBuilder builder)
-  {
-    builder.AddInMemoryExporter(ExportedLogs);
-  }
-
-  private void ConfigureTracingExporter(TracerProviderBuilder builder)
-  {
-    builder.AddAspNetCoreInstrumentation();
-    builder.AddHttpClientInstrumentation();
-    builder.AddInMemoryExporter(ExportedActivities);
-  }
-
-  private void ConfigureMetricsExporter(MeterProviderBuilder builder)
-  {
-    builder.AddAspNetCoreInstrumentation();
-    builder.AddHttpClientInstrumentation();
-    builder.AddRuntimeInstrumentation();
-    builder.AddInMemoryExporter(ExportedMetrics);
   }
 
   public void Dispose()

@@ -5,7 +5,6 @@ using Hive.MicroServices.Extensions;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using OpenTelemetry.Logs;
 using Xunit;
 
 namespace Hive.OpenTelemetry.Tests;
@@ -402,107 +401,6 @@ public class LoggingConfigurationTests
     var action = async () => await service.RunAsync(config);
 
     // Assert - service starts using environment variable as fallback
-    await action.Should().NotThrowAsync();
-  }
-
-  #endregion
-
-  #region Custom Logging Override Tests
-
-  [Fact]
-  [UnitTest]
-  public async Task GivenCustomLoggingConfiguration_WhenServiceStarts_ThenCustomConfigurationIsUsed()
-  {
-    // Arrange
-    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
-    var customConfigApplied = false;
-
-    var config = new ConfigurationBuilder().Build();
-
-    var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-      .InTestClass<LoggingConfigurationTests>()
-      .WithOpenTelemetry(
-        logging: builder =>
-        {
-          customConfigApplied = true;
-          // Custom configuration - just add console exporter
-          builder.AddConsoleExporter();
-        })
-      .ConfigureApiPipeline(app => { });
-
-    service.CancellationTokenSource.CancelAfter(1000);
-
-    // Act
-    var action = async () => await service.RunAsync(config);
-
-    // Assert
-    await action.Should().NotThrowAsync();
-    customConfigApplied.Should().BeTrue("custom logging configuration should be applied");
-  }
-
-  [Fact]
-  [UnitTest]
-  public async Task GivenCustomLoggingConfiguration_WhenConfigurationAlsoProvided_ThenCustomOverridesConfiguration()
-  {
-    // Arrange
-    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
-    var customConfigApplied = false;
-
-    var configJson = new Dictionary<string, string>
-    {
-      ["OpenTelemetry:Logging:EnableConsoleExporter"] = "false",
-      ["OpenTelemetry:Logging:EnableOtlpExporter"] = "true",
-      ["OpenTelemetry:Otlp:Endpoint"] = "http://should-be-ignored:4317"
-    };
-
-    var config = new ConfigurationBuilder()
-      .AddInMemoryCollection(configJson!)
-      .Build();
-
-    var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-      .InTestClass<LoggingConfigurationTests>()
-      .WithOpenTelemetry(
-        logging: builder =>
-        {
-          customConfigApplied = true;
-          // Custom configuration completely overrides - just add console
-          builder.AddConsoleExporter();
-        })
-      .ConfigureApiPipeline(app => { });
-
-    service.CancellationTokenSource.CancelAfter(1000);
-
-    // Act
-    var action = async () => await service.RunAsync(config);
-
-    // Assert
-    await action.Should().NotThrowAsync();
-    customConfigApplied.Should().BeTrue("custom logging configuration should override IConfiguration");
-  }
-
-  [Fact]
-  [UnitTest]
-  public async Task GivenCustomLoggingWithNoExporters_WhenServiceStarts_ThenServiceStartsSuccessfully()
-  {
-    // Arrange
-    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
-    var config = new ConfigurationBuilder().Build();
-
-    var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-      .InTestClass<LoggingConfigurationTests>()
-      .WithOpenTelemetry(
-        logging: builder =>
-        {
-          // Intentionally empty - no exporters configured
-        })
-      .ConfigureApiPipeline(app => { });
-
-    service.CancellationTokenSource.CancelAfter(1000);
-
-    // Act
-    var action = async () => await service.RunAsync(config);
-
-    // Assert - service should start even with no exporters
     await action.Should().NotThrowAsync();
   }
 

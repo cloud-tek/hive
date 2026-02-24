@@ -5,7 +5,6 @@ using Hive.MicroServices.Extensions;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using OpenTelemetry.Trace;
 using Xunit;
 
 namespace Hive.OpenTelemetry.Tests;
@@ -494,83 +493,11 @@ public class TracingConfigurationTests
 
   #endregion
 
-  #region Custom Tracing Override Tests
+  #region Additional Activity Sources Tests
 
   [Fact]
   [UnitTest]
-  public async Task GivenCustomTracingConfiguration_WhenServiceStarts_ThenCustomConfigurationIsUsed()
-  {
-    // Arrange
-    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
-    var customConfigApplied = false;
-
-    var config = new ConfigurationBuilder().Build();
-
-    var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-      .InTestClass<TracingConfigurationTests>()
-      .WithOpenTelemetry(
-        tracing: builder =>
-        {
-          customConfigApplied = true;
-          // Custom configuration - add ASP.NET Core instrumentation
-          builder.AddAspNetCoreInstrumentation();
-        })
-      .ConfigureApiPipeline(app => { });
-
-    service.CancellationTokenSource.CancelAfter(1000);
-
-    // Act
-    var action = async () => await service.RunAsync(config);
-
-    // Assert
-    await action.Should().NotThrowAsync();
-    customConfigApplied.Should().BeTrue("custom tracing configuration should be applied");
-  }
-
-  [Fact]
-  [UnitTest]
-  public async Task GivenCustomTracingConfiguration_WhenConfigurationAlsoProvided_ThenCustomOverridesConfiguration()
-  {
-    // Arrange
-    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
-    var customConfigApplied = false;
-
-    var configJson = new Dictionary<string, string>
-    {
-      ["OpenTelemetry:Tracing:EnableAspNetCoreInstrumentation"] = "false",
-      ["OpenTelemetry:Tracing:EnableHttpClientInstrumentation"] = "false",
-      ["OpenTelemetry:Tracing:EnableOtlpExporter"] = "true",
-      ["OpenTelemetry:Otlp:Endpoint"] = "http://should-be-ignored:4317"
-    };
-
-    var config = new ConfigurationBuilder()
-      .AddInMemoryCollection(configJson!)
-      .Build();
-
-    var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-      .InTestClass<TracingConfigurationTests>()
-      .WithOpenTelemetry(
-        tracing: builder =>
-        {
-          customConfigApplied = true;
-          // Custom configuration completely overrides - just add one instrumentation
-          builder.AddAspNetCoreInstrumentation();
-        })
-      .ConfigureApiPipeline(app => { });
-
-    service.CancellationTokenSource.CancelAfter(1000);
-
-    // Act
-    var action = async () => await service.RunAsync(config);
-
-    // Assert
-    await action.Should().NotThrowAsync();
-    customConfigApplied.Should().BeTrue("custom tracing configuration should override IConfiguration");
-  }
-
-  [Fact]
-  [UnitTest]
-  public async Task GivenCustomTracingWithNoInstrumentations_WhenServiceStarts_ThenServiceStartsSuccessfully()
+  public async Task GivenAdditionalActivitySources_WhenServiceStarts_ThenServiceStartsSuccessfully()
   {
     // Arrange
     using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
@@ -579,38 +506,7 @@ public class TracingConfigurationTests
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
       .InTestClass<TracingConfigurationTests>()
       .WithOpenTelemetry(
-        tracing: builder =>
-        {
-          // Intentionally empty - no instrumentations configured
-        })
-      .ConfigureApiPipeline(app => { });
-
-    service.CancellationTokenSource.CancelAfter(1000);
-
-    // Act
-    var action = async () => await service.RunAsync(config);
-
-    // Assert - service should start even with no instrumentations
-    await action.Should().NotThrowAsync();
-  }
-
-  [Fact]
-  [UnitTest]
-  public async Task GivenCustomTracingWithCustomSource_WhenServiceStarts_ThenServiceStartsSuccessfully()
-  {
-    // Arrange
-    using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out _);
-    var config = new ConfigurationBuilder().Build();
-
-    var service = new MicroService(ServiceName, new NullLogger<IMicroService>())
-      .InTestClass<TracingConfigurationTests>()
-      .WithOpenTelemetry(
-        tracing: builder =>
-        {
-          // Add custom activity source
-          builder.AddSource("MyApp.CustomSource");
-          builder.AddAspNetCoreInstrumentation();
-        })
+        additionalActivitySources: ["MyApp.CustomSource"])
       .ConfigureApiPipeline(app => { });
 
     service.CancellationTokenSource.CancelAfter(1000);

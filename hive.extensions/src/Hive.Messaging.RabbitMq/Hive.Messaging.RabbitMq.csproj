@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <RootNamespace>Hive.Messaging.RabbitMq</RootNamespace>
+    <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
+    <PackageId>Hive.Messaging.RabbitMq</PackageId>
+    <PackageDescription>RabbitMQ transport for Hive.Messaging</PackageDescription>
+    <Authors>cloud-tek</Authors>
+    <PackageIconUrl>https://raw.githubusercontent.com/cloud-tek/public/main/images/cloud-tek.png</PackageIconUrl>
+    <NoWarn>NU5048</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Hive.Messaging.RabbitMq.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hive.Messaging\Hive.Messaging.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WolverineFx.RabbitMQ" />
+    <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\Version.targets" />
+</Project>
