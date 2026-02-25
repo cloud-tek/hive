@@ -1032,7 +1032,8 @@ internal sealed class MessagingExtension : MessagingExtensionBase<MessagingExten
 
                 var result = Validator.Validate(builder);
                 if (!result.IsValid)
-                    throw new ValidationException(result.Errors);
+                    throw new OptionsValidationException(
+                        MessagingOptions.SectionKey, typeof(MessagingOptions), result.Errors);
             });
         });
 
@@ -1064,7 +1065,8 @@ internal sealed class MessagingSendExtension : MessagingExtensionBase<MessagingS
 
                 var result = Validator.Validate(builder);
                 if (!result.IsValid)
-                    throw new ValidationException(result.Errors);
+                    throw new OptionsValidationException(
+                        MessagingOptions.SectionKey, typeof(MessagingOptions), result.Errors);
             });
         });
 
@@ -1298,7 +1300,7 @@ These tests verify that `IMicroService.IsReady` is the authoritative signal for 
 | # | Test | Category | Description |
 |---|------|----------|-------------|
 | 1 | Service starts with minimal configuration | `[UnitTest]` | Register `.WithMessaging(m => m.UseInMemoryTransport())`. Assert service starts successfully. |
-| 2 | Service fails to start with missing ConnectionUri | `[UnitTest]` | Register `.WithMessaging(m => m.UseRabbitMq())` with no URI in config. Assert `ValidationException` during startup. |
+| 2 | Service fails to start with missing ConnectionUri | `[UnitTest]` | Register `.WithMessaging(m => m.UseRabbitMq())` with no URI in config. Assert `OptionsValidationException` during startup. |
 | 3 | JSON config bound to MessagingOptions | `[UnitTest]` | Provide JSON config with Transport, Serialization, RabbitMq section. Assert options are correctly bound. |
 | 4 | Fluent API overrides JSON config | `[UnitTest]` | Provide URI in JSON, override with different URI in fluent. Assert fluent URI wins. |
 | 5 | Named broker registered alongside primary | `[UnitTest]` | Register primary + named broker. Assert both connections are available. |

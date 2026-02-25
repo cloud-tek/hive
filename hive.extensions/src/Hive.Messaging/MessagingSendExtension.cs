@@ -1,6 +1,6 @@
-using FluentValidation;
-using FluentValidation.Results;
+using Hive.Messaging.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Hive.Messaging;
 
@@ -34,8 +34,8 @@ internal sealed class MessagingSendExtension : MessagingExtensionBase<MessagingS
         {
           var errors = provider.Validate(options, configuration).ToList();
           if (errors.Count > 0)
-            throw new ValidationException(
-              errors.Select(e => new ValidationFailure("", e)));
+            throw new OptionsValidationException(
+              MessagingOptions.SectionKey, typeof(MessagingOptions), errors);
         }
 
         return provider;
