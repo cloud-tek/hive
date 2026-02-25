@@ -40,27 +40,25 @@ var otelCollector = builder.AddContainer("otel-collector", "otel/opentelemetry-c
   .WithEnvironment("ASPIRE_API_KEY", builder.Configuration["AppHost:OtlpApiKey"] ?? string.Empty);
 
 // RabbitMQ
-var rabbitmqHealthClient = new HttpClient();
-rabbitmqHealthClient.DefaultRequestHeaders.Authorization =
-  new AuthenticationHeaderValue("Basic",
-    Convert.ToBase64String(Encoding.UTF8.GetBytes("guest:guest")));
+const string rabbitmqHealthClientName = "rabbitmq-health";
+builder.Services.AddHttpClient(rabbitmqHealthClientName, client =>
+{
+  client.BaseAddress = new Uri("http://localhost:15672");
+  client.DefaultRequestHeaders.Authorization =
+    new AuthenticationHeaderValue("Basic",
+      Convert.ToBase64String(Encoding.UTF8.GetBytes("guest:guest")));
+});
 
 builder.Services.AddHealthChecks()
-  .AddAsyncCheck("rabbitmq-management", async ct =>
-  {
-    try
+  .Add(new HealthCheckRegistration(
+    "rabbitmq-management",
+    sp =>
     {
-      var response = await rabbitmqHealthClient.GetAsync(
-        "http://localhost:15672/api/health/checks/alarms", ct);
-      return response.IsSuccessStatusCode
-        ? HealthCheckResult.Healthy()
-        : HealthCheckResult.Unhealthy($"Status: {response.StatusCode}");
-    }
-    catch (Exception ex)
-    {
-      return HealthCheckResult.Unhealthy(ex.Message);
-    }
-  });
+      var factory = sp.GetRequiredService<IHttpClientFactory>();
+      return new RabbitMqManagementHealthCheck(factory, rabbitmqHealthClientName);
+    },
+    failureStatus: null,
+    tags: null));
 
 var rabbitmq = builder.AddContainer("rabbitmq", "rabbitmq", "3-management")
   .WithEndpoint(port: 5672, targetPort: 5672, name: "amqp", scheme: "tcp")
@@ -105,3 +103,23 @@ builder.AddProject<Projects.Hive_MicroServices_Demo_Job>("hive-microservices-dem
   .WithOtelCollector(otelCollector);
 
 builder.Build().Run();
+
+internal sealed class RabbitMqManagementHealthCheck(IHttpClientFactory factory, string clientName) : IHealthCheck
+{
+  public async Task<HealthCheckResult> CheckHealthAsync(
+    HealthCheckContext context, CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      using var client = factory.CreateClient(clientName);
+      var response = await client.GetAsync("/api/health/checks/alarms", cancellationToken);
+      return response.IsSuccessStatusCode
+        ? HealthCheckResult.Healthy()
+        : HealthCheckResult.Unhealthy($"Status: {response.StatusCode}");
+    }
+    catch (Exception ex)
+    {
+      return HealthCheckResult.Unhealthy(ex.Message);
+    }
+  }
+}
