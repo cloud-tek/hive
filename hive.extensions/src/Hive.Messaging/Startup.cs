@@ -1,7 +1,15 @@
 namespace Hive.Messaging;
 
+/// <summary>
+/// Extension methods for registering the Hive.Messaging extension on a microservice.
+/// </summary>
 public static class Startup
 {
+  /// <summary>
+  /// Adds full messaging support (sending and handling) to the microservice.
+  /// </summary>
+  /// <param name="service">The microservice to configure.</param>
+  /// <param name="configure">Action to configure the messaging builder.</param>
   public static IMicroService WithMessaging(
     this IMicroService service,
     Action<HiveMessagingBuilder> configure)
@@ -16,6 +24,11 @@ public static class Startup
     return service;
   }
 
+  /// <summary>
+  /// Adds send-only messaging support to the microservice (no queue listeners).
+  /// </summary>
+  /// <param name="service">The microservice core to configure.</param>
+  /// <param name="configure">Action to configure the send-only messaging builder.</param>
   public static IMicroServiceCore WithMessaging(
     this IMicroServiceCore service,
     Action<HiveMessagingSendBuilder> configure)

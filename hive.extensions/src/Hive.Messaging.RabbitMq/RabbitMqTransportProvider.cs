@@ -24,6 +24,7 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
     _builderOptions = builderOptions;
   }
 
+  /// <inheritdoc />
   public void ConfigureTransport(WolverineOptions opts, MessagingOptions options, IConfiguration configuration)
   {
     var rmqOptions = ResolveOptions(configuration);
@@ -52,6 +53,7 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
     }
   }
 
+  /// <inheritdoc />
   public void ListenToQueue(WolverineOptions opts, string queueName, string? brokerName,
     int? prefetchCount, int? listenerCount)
   {
@@ -76,6 +78,7 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
     }
   }
 
+  /// <inheritdoc />
   public void PublishToExchange<T>(WolverineOptions opts, string exchangeName, string? brokerName)
   {
     if (brokerName != null)
@@ -90,6 +93,7 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
     }
   }
 
+  /// <inheritdoc />
   public void PublishToQueue<T>(WolverineOptions opts, string queueName, string? brokerName)
   {
     if (brokerName != null)
@@ -104,6 +108,7 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
     }
   }
 
+  /// <inheritdoc />
   public IHealthChecksBuilder ConfigureHealthChecks(
     IHealthChecksBuilder builder, MessagingOptions options, IConfiguration configuration)
   {
@@ -143,6 +148,7 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
     return builder;
   }
 
+  /// <inheritdoc />
   public IEnumerable<string> Validate(MessagingOptions options, IConfiguration configuration)
   {
     var errors = new List<string>();

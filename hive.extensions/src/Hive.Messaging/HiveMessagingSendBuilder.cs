@@ -6,6 +6,9 @@ using Wolverine;
 
 namespace Hive.Messaging;
 
+/// <summary>
+/// Fluent builder for configuring Hive messaging with send-only capabilities.
+/// </summary>
 public class HiveMessagingSendBuilder
 {
   internal WolverineOptions WolverineOptions { get; }
@@ -23,6 +26,9 @@ public class HiveMessagingSendBuilder
     MessagingOptions = messagingOptions;
   }
 
+  /// <summary>
+  /// Configures the service to use the in-memory transport (Wolverine built-in).
+  /// </summary>
   public HiveMessagingSendBuilder UseInMemoryTransport()
   {
     MessagingOptions.Transport = MessagingTransport.InMemory;
@@ -30,6 +36,10 @@ public class HiveMessagingSendBuilder
     return this;
   }
 
+  /// <summary>
+  /// Configures message serialization format.
+  /// </summary>
+  /// <param name="configure">Action to configure serialization.</param>
   public HiveMessagingSendBuilder WithSerialization(Action<SerializationBuilder> configure)
   {
     var builder = new SerializationBuilder(WolverineOptions);
@@ -38,6 +48,10 @@ public class HiveMessagingSendBuilder
     return this;
   }
 
+  /// <summary>
+  /// Configures message sending (publish/send destinations).
+  /// </summary>
+  /// <param name="configure">Action to configure message senders.</param>
   public HiveMessagingSendBuilder WithSending(Action<MessageSenderBuilder> configure)
   {
     _deferredRegistrations.Add((opts, provider) =>
@@ -49,6 +63,10 @@ public class HiveMessagingSendBuilder
     return this;
   }
 
+  /// <summary>
+  /// Provides direct access to Wolverine options for advanced configuration.
+  /// </summary>
+  /// <param name="configure">Action to configure Wolverine options directly.</param>
   public HiveMessagingSendBuilder ConfigureWolverine(Action<WolverineOptions> configure)
   {
     EscapeHatchActions.Add(configure);

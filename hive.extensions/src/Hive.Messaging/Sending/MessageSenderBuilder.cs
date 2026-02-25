@@ -3,6 +3,9 @@ using Wolverine;
 
 namespace Hive.Messaging.Sending;
 
+/// <summary>
+/// Fluent builder for configuring message publish/send destinations.
+/// </summary>
 public sealed class MessageSenderBuilder
 {
   private readonly WolverineOptions _options;
@@ -15,6 +18,11 @@ public sealed class MessageSenderBuilder
     _transportProvider = transportProvider;
   }
 
+  /// <summary>
+  /// Begins configuration of a publish route for the specified message type.
+  /// </summary>
+  /// <typeparam name="T">The message type to publish.</typeparam>
+  /// <returns>A <see cref="PublishExpression{T}"/> for further configuration.</returns>
   public PublishExpression<T> Publish<T>()
   {
     return new PublishExpression<T>(this);
@@ -28,6 +36,10 @@ public sealed class MessageSenderBuilder
     }
   }
 
+  /// <summary>
+  /// Fluent expression for configuring a publish route for a specific message type.
+  /// </summary>
+  /// <typeparam name="T">The message type being published.</typeparam>
   public sealed class PublishExpression<T>
   {
     private readonly MessageSenderBuilder _builder;
@@ -38,12 +50,20 @@ public sealed class MessageSenderBuilder
       _builder = builder;
     }
 
+    /// <summary>
+    /// Specifies the named broker to publish to.
+    /// </summary>
+    /// <param name="brokerName">The broker name from configuration.</param>
     public PublishExpression<T> OnBroker(string brokerName)
     {
       _brokerName = brokerName;
       return this;
     }
 
+    /// <summary>
+    /// Routes the message type to the specified exchange.
+    /// </summary>
+    /// <param name="exchangeName">The exchange name to publish to.</param>
     public MessageSenderBuilder ToExchange(string exchangeName)
     {
       var broker = _brokerName;
@@ -58,6 +78,10 @@ public sealed class MessageSenderBuilder
       return _builder;
     }
 
+    /// <summary>
+    /// Routes the message type to the specified queue.
+    /// </summary>
+    /// <param name="queueName">The queue name to publish to.</param>
     public MessageSenderBuilder ToQueue(string queueName)
     {
       var broker = _brokerName;

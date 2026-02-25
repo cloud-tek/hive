@@ -4,11 +4,18 @@ using Wolverine;
 
 namespace Hive.Messaging.Middleware;
 
+/// <summary>
+/// Wolverine middleware that records handler duration and error metrics.
+/// </summary>
 public class MessagingHandlerMiddleware
 {
   private readonly Stopwatch _stopwatch = new();
   private TagList _tags;
 
+  /// <summary>
+  /// Called before the handler executes. Captures message metadata and starts timing.
+  /// </summary>
+  /// <param name="context">The Wolverine message context.</param>
   public void Before(IMessageContext context)
   {
     var envelope = context.Envelope;
@@ -21,6 +28,11 @@ public class MessagingHandlerMiddleware
     _stopwatch.Start();
   }
 
+  /// <summary>
+  /// Called after the handler completes (success or failure). Records metrics.
+  /// </summary>
+  /// <param name="context">The Wolverine message context.</param>
+  /// <param name="exception">The exception if the handler failed, or null on success.</param>
   public void Finally(IMessageContext context, Exception? exception)
   {
     _stopwatch.Stop();
