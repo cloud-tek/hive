@@ -14,6 +14,8 @@ public static class ReadinessMiddleware
   /// Checks the service readiness state before allowing message processing.
   /// Requires <see cref="IMicroService"/> (not <see cref="IMicroServiceCore"/>)
   /// because the <see cref="IMicroService.IsReady"/> property is only available on ASP.NET-based hosts.
+  /// Wolverine resolves the <paramref name="microService"/> parameter from DI;
+  /// <see cref="IMicroService"/> is registered as a singleton by <c>MicroService</c> during host startup.
   /// </summary>
   /// <param name="microService">The microservice instance to check readiness on.</param>
   /// <exception cref="ServiceNotReadyException">Thrown when the service is not ready.</exception>
