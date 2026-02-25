@@ -117,11 +117,16 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
     if (!string.IsNullOrEmpty(rmqOptions.ConnectionUri))
     {
       var uri = rmqOptions.ConnectionUri;
+      IConnection? connection = null;
       builder.AddRabbitMQ(
         factory: async _ =>
         {
-          var factory = new ConnectionFactory { Uri = new Uri(uri) };
-          return await factory.CreateConnectionAsync();
+          if (connection is not { IsOpen: true })
+          {
+            var factory = new ConnectionFactory { Uri = new Uri(uri) };
+            connection = await factory.CreateConnectionAsync();
+          }
+          return connection;
         },
         name: "rabbitmq");
     }
@@ -135,11 +140,16 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
       if (!string.IsNullOrEmpty(brokerRmq.ConnectionUri))
       {
         var brokerUri = brokerRmq.ConnectionUri;
+        IConnection? brokerConnection = null;
         builder.AddRabbitMQ(
           factory: async _ =>
           {
-            var factory = new ConnectionFactory { Uri = new Uri(brokerUri) };
-            return await factory.CreateConnectionAsync();
+            if (brokerConnection is not { IsOpen: true })
+            {
+              var factory = new ConnectionFactory { Uri = new Uri(brokerUri) };
+              brokerConnection = await factory.CreateConnectionAsync();
+            }
+            return brokerConnection;
           },
           name: $"rabbitmq:{name}");
       }
