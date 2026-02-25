@@ -54,9 +54,9 @@ hive.extensions/
 │   │   │   ├── RabbitMqOptions.cs
 │   │   │   └── MessagingOptionsValidator.cs
 │   │   ├── Middleware/
-│   │   │   ├── ReadinessGateMiddleware.cs
+│   │   │   ├── ReadinessMiddleware.cs
 │   │   │   ├── ServiceNotReadyException.cs
-│   │   │   └── MessagingHandlerMiddleware.cs
+│   │   │   └── MessageHandlerMiddleware.cs
 │   │   └── Telemetry/
 │   │       ├── MessagingMeter.cs
 │   │       ├── TelemetryMessageBus.cs
@@ -340,7 +340,7 @@ public abstract class HiveMessageHandler<TMessage, TResponse>
 
 Two Wolverine middlewares are registered in order via `opts.Policies.AddMiddleware<T>()`. They run for **every handler** in the pipeline — pure Wolverine handlers, `HiveMessageHandler<T>`, and `HiveMessageHandler<T, TResponse>` alike.
 
-**1. `ReadinessGateMiddleware`** — Short-circuit guard
+**1. `ReadinessMiddleware`** — Short-circuit guard
 
 - Checks `IMicroService.IsReady`
 - If `false`, increments `hive.messaging.gate.nacked` counter and **throws `ServiceNotReadyException`**
@@ -357,7 +357,7 @@ public sealed class ServiceNotReadyException : Exception
         : base($"Service '{serviceName}' is not ready to process messages") { }
 }
 
-public static class ReadinessGateMiddleware
+public static class ReadinessMiddleware
 {
     public static void Before(IMicroService microService)
     {
@@ -370,7 +370,7 @@ public static class ReadinessGateMiddleware
 }
 ```
 
-**2. `MessagingHandlerMiddleware`** — Telemetry and lifecycle hooks
+**2. `MessageHandlerMiddleware`** — Telemetry and lifecycle hooks
 
 - Starts a telemetry span with message type, queue, and handler tags
 - Records `hive.messaging.handler.duration` histogram
@@ -634,7 +634,7 @@ internal static class MessagingMeter
     public static readonly Counter<long> GateNacked =
         Meter.CreateCounter<long>(
             "hive.messaging.gate.nacked",
-            description: "Messages nacked by ReadinessGateMiddleware (IsReady == false)");
+            description: "Messages nacked by ReadinessMiddleware (IsReady == false)");
 }
 ```
 
@@ -669,9 +669,9 @@ Both `Wolverine`'s ActivitySource and `Hive.Messaging`'s Meter are registered. T
 sequenceDiagram
     participant Broker as RabbitMQ
     participant Wolverine as Wolverine Runtime
-    participant Gate as ReadinessGateMiddleware
+    participant Gate as ReadinessMiddleware
     participant Service as IMicroService
-    participant Middleware as MessagingHandlerMiddleware
+    participant Middleware as MessageHandlerMiddleware
     participant Handler as HiveMessageHandler<T>
     participant Outbox as Outbox (EF Core)
     participant Telemetry as Hive.Messaging Meter
@@ -782,7 +782,7 @@ This applies in two scenarios:
 
 When a service receives a shutdown signal (e.g., SIGTERM from Kubernetes):
 
-1. **`IsReady = false`** — The readiness probe fails; Kubernetes stops routing HTTP traffic. The `ReadinessGateMiddleware` throws `ServiceNotReadyException` on any newly delivered message. Wolverine's `PauseThenRequeue` error policy pauses each listener, preventing further delivery during the window before the drain completes.
+1. **`IsReady = false`** — The readiness probe fails; Kubernetes stops routing HTTP traffic. The `ReadinessMiddleware` throws `ServiceNotReadyException` on any newly delivered message. Wolverine's `PauseThenRequeue` error policy pauses each listener, preventing further delivery during the window before the drain completes.
 2. **Drain listeners** — Wolverine's listeners are drained (`DrainAsync()`); no further messages are dequeued from the broker.
 3. **Complete in-flight messages** — Handlers currently executing are allowed to finish within the shutdown timeout. These handlers were accepted while `IsReady` was still `true`.
 4. **Flush the outbox** — Any pending outbox messages are delivered before the process exits.
@@ -793,7 +793,7 @@ When a service receives a shutdown signal (e.g., SIGTERM from Kubernetes):
 sequenceDiagram
     participant K8s as Kubernetes
     participant Hive as Hive StopAsync()
-    participant Gate as ReadinessGateMiddleware
+    participant Gate as ReadinessMiddleware
     participant Wolverine as Wolverine Runtime
     participant Handlers as In-Flight Handlers
     participant Broker as RabbitMQ
@@ -822,7 +822,7 @@ sequenceDiagram
 
 Wolverine's built-in `IDurabilityAgent` handles the drain and outbox flush. Hive integrates this into its `StopAsync()` lifecycle by calling `DrainAsync()` on the Wolverine runtime. The `IsReady = false` assignment happens **before** the drain, creating a two-layer defense:
 
-1. **Middleware layer** — `ReadinessGateMiddleware` throws `ServiceNotReadyException` when `IsReady == false`. The `PauseThenRequeue` error policy pauses listeners and requeues the message. This covers the window between `IsReady = false` and `DrainAsync()` completing.
+1. **Middleware layer** — `ReadinessMiddleware` throws `ServiceNotReadyException` when `IsReady == false`. The `PauseThenRequeue` error policy pauses listeners and requeues the message. This covers the window between `IsReady = false` and `DrainAsync()` completing.
 2. **Transport layer** — `DrainAsync()` stops the broker from delivering further messages entirely.
 
 Handlers should respect the `CancellationToken` passed to `HandleAsync`. When the shutdown timeout is exceeded, the token is cancelled. Messages whose handlers did not complete are nacked and requeued by the broker for redelivery to another instance.
@@ -1023,8 +1023,8 @@ internal sealed class MessagingExtension : MessagingExtensionBase<MessagingExten
                 _configure(builder);
 
                 // Register Wolverine middlewares (order matters — gate runs first)
-                opts.Policies.AddMiddleware<ReadinessGateMiddleware>();
-                opts.Policies.AddMiddleware<MessagingHandlerMiddleware>();
+                opts.Policies.AddMiddleware<ReadinessMiddleware>();
+                opts.Policies.AddMiddleware<MessageHandlerMiddleware>();
 
                 // Readiness gate error policy — pause listener and requeue
                 opts.Policies.OnException<ServiceNotReadyException>()
@@ -1126,7 +1126,86 @@ public static class Startup
 | 10 | EF Core durability packaging | **Separate package** | `Hive.Messaging.EntityFrameworkCore` — users who don't need durability don't pull in EF Core. Follows the ecosystem convention (MassTransit, Wolverine). |
 | 11 | Message handling host restriction | **`IMicroService` only** | `.WithHandling()` requires `IMicroService` because it depends on `IsReady` lifecycle gating, Kubernetes readiness probes, and graceful shutdown (`DrainAsync`). `FunctionHost` (`IMicroServiceCore`) gets a restricted send-only builder (`HiveMessagingSendBuilder`). Enforced at compile time via separate overloads and builder types. |
 | 12 | Readiness gate nack mechanism | **`ServiceNotReadyException` + `PauseThenRequeue`** | Wolverine middlewares cannot directly nack a message — `HandlerContinuation.Stop` triggers an ACK, not a requeue. The middleware throws `ServiceNotReadyException`; Wolverine's error policy `OnException<ServiceNotReadyException>().PauseThenRequeue(5.Seconds())` pauses the listener and requeues the message. This cleanly separates the decision (middleware) from the consequence (error policy), and pausing the entire listener is the correct behavior when `IsReady == false`. |
-| 13 | Consumer concurrency configuration | **Global defaults + per-queue override** | `HandlingOptions` in JSON (`Hive:Messaging:Handling`) sets `PrefetchCount` and `ListenerCount` defaults for all listeners. Per-queue fluent overrides (`.Prefetch()`, `.ListenerCount()`, `.Sequential()`) win over global defaults. Follows the tiered configuration model (`IConfiguration < Fluent API`) established across the framework. `null` values defer to Wolverine's built-in defaults. |
+| 13 | Consumer concurrency configuration | **Global defaults + per-queue override + escape hatch** | `HandlingOptions` in JSON (`Hive:Messaging:Handling`) sets `PrefetchCount` and `ListenerCount` defaults for all listeners. Per-queue fluent overrides (`.Prefetch()`, `.ListenerCount()`, `.Sequential()`) win over global defaults. For advanced parallelism controls (circuit breakers, max parallel messages, batch processing), use `ConfigureWolverine()` — see Section 13.1. Follows the tiered configuration model (`IConfiguration < Fluent API`) established across the framework. `null` values defer to Wolverine's built-in defaults. |
+
+### 13.1 Advanced Configuration via `ConfigureWolverine()` Escape Hatch
+
+Hive.Messaging exposes `PrefetchCount`, `ListenerCount`, and `.Sequential()` as first-class configuration. For advanced parallelism, concurrency, and error-handling controls, use the `ConfigureWolverine()` escape hatch, which provides direct access to `WolverineOptions`.
+
+This is a deliberate design choice: Hive wraps the most common settings to keep the API simple, while `ConfigureWolverine()` gives full access to Wolverine's capabilities without Hive needing to mirror every option.
+
+#### Parallelism & Concurrency
+
+```csharp
+service.WithMessaging(messaging => messaging
+    .UseRabbitMq("amqp://localhost")
+    .WithHandling(h => h
+        .ListenToQueue("orders"))
+    .ConfigureWolverine(opts =>
+    {
+        // Limit the maximum number of messages processed in parallel per endpoint
+        opts.ListenToRabbitQueue("orders").MaximumParallelMessages(5);
+
+        // Configure buffering for bursty workloads
+        opts.ListenToRabbitQueue("orders").BufferedInMemory();
+    }));
+```
+
+#### Circuit Breaker
+
+```csharp
+service.WithMessaging(messaging => messaging
+    .UseRabbitMq("amqp://localhost")
+    .WithHandling(h => h.ListenToQueue("orders"))
+    .ConfigureWolverine(opts =>
+    {
+        // Pause the listener after repeated failures
+        opts.ListenToRabbitQueue("orders").CircuitBreaker(cb =>
+        {
+            cb.MinimumThreshold = 10;
+            cb.FailurePercentageThreshold = 20;
+            cb.PauseTime = 30.Seconds();
+            cb.TrackingPeriod = 1.Minutes();
+        });
+    }));
+```
+
+#### Error Policies & Retry Strategies
+
+```csharp
+service.WithMessaging(messaging => messaging
+    .UseRabbitMq("amqp://localhost")
+    .WithHandling(h => h.ListenToQueue("orders"))
+    .ConfigureWolverine(opts =>
+    {
+        // Retry with escalating cooldown
+        opts.Policies.OnException<TimeoutException>()
+            .RetryWithCooldown(50.Milliseconds(), 100.Milliseconds(), 250.Milliseconds());
+
+        // Move poison messages to the error queue
+        opts.Policies.OnException<InvalidOperationException>()
+            .MoveToErrorQueue();
+
+        // Requeue after a pause (useful for transient downstream failures)
+        opts.Policies.OnException<HttpRequestException>()
+            .PauseThenRequeue(5.Seconds());
+    }));
+```
+
+#### Execution Timeout
+
+```csharp
+service.WithMessaging(messaging => messaging
+    .UseRabbitMq("amqp://localhost")
+    .WithHandling(h => h.ListenToQueue("orders"))
+    .ConfigureWolverine(opts =>
+    {
+        // Cancel handler execution after 30 seconds
+        opts.DefaultExecutionTimeout = 30.Seconds();
+    }));
+```
+
+> **Note:** `ConfigureWolverine()` actions run after Hive's built-in configuration. When configuring specific endpoints (e.g., `opts.ListenToRabbitQueue("orders")`), ensure the queue name matches the one registered via `.WithHandling()`.
 
 ### Retry Builder API
 
@@ -1161,9 +1240,9 @@ Queue and exchange management (creation, DLQ bindings, TTL policies, flushing) i
 
 All tests use the in-memory transport (`UseInMemoryTransport()`) and Wolverine's test tracking (`WithTestTracking()`) unless stated otherwise. Tests requiring a real broker are marked as `[IntegrationTest]`.
 
-**Readiness and shutdown tests (14.1, 14.2):** These test the middleware's *decision logic* (nack vs pass-through) by asserting handler invocation counts and metric increments — not the actual broker requeue behavior. `ReadinessGateMiddleware` is a standalone class that can be unit tested directly with a mock `IMicroService`. The broker-level nack/requeue plumbing is Wolverine's responsibility and is covered by the end-to-end test 14.7 #5 (full shutdown under load) as an `[IntegrationTest]`.
+**Readiness and shutdown tests (14.1, 14.2):** These test the middleware's *decision logic* (nack vs pass-through) by asserting handler invocation counts and metric increments — not the actual broker requeue behavior. `ReadinessMiddleware` is a standalone class that can be unit tested directly with a mock `IMicroService`. The broker-level nack/requeue plumbing is Wolverine's responsibility and is covered by the end-to-end test 14.7 #5 (full shutdown under load) as an `[IntegrationTest]`.
 
-### 14.1 Readiness Gate (ReadinessGateMiddleware)
+### 14.1 Readiness Gate (ReadinessMiddleware)
 
 These tests verify that `IMicroService.IsReady` is the authoritative signal for message processing.
 
@@ -1257,7 +1336,7 @@ These tests verify that `IMicroService.IsReady` is the authoritative signal for 
 - Configuration options with FluentValidation
 - `HiveMessageHandler<T>` and `HiveMessageHandler<T, TResponse>` base classes
 - `MessagingMeter` with handler and send telemetry
-- `ReadinessGateMiddleware` + `MessagingHandlerMiddleware` (instruments all handlers)
+- `ReadinessMiddleware` + `MessageHandlerMiddleware` (instruments all handlers)
 - Graceful shutdown integration with Hive `StopAsync()` lifecycle
 - RabbitMQ health checks (primary + named brokers)
 - Tests: sections 14.1 (readiness gate), 14.2 (graceful shutdown), 14.3 (handler hooks), 14.4 (telemetry), 14.5 (configuration), 14.6 (health checks), 14.7 #1-2 (basic e2e)

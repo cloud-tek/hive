@@ -9,13 +9,13 @@ using Xunit;
 namespace Hive.Messaging.Tests;
 
 [Collection("MessagingMetrics")]
-public class MessagingHandlerMiddlewareTests : IDisposable
+public class MessageHandlerMiddlewareTests : IDisposable
 {
   private readonly MetricCollector<double> _durationCollector;
   private readonly MetricCollector<long> _countCollector;
   private readonly MetricCollector<long> _errorCollector;
 
-  public MessagingHandlerMiddlewareTests()
+  public MessageHandlerMiddlewareTests()
   {
     _durationCollector = new MetricCollector<double>(MessagingMeter.HandlerDuration);
     _countCollector = new MetricCollector<long>(MessagingMeter.HandlerCount);
@@ -26,10 +26,9 @@ public class MessagingHandlerMiddlewareTests : IDisposable
   [UnitTest]
   public void GivenEnvelope_WhenBeforeCalled_ThenNoExceptionIsThrown()
   {
-    var middleware = new MessagingHandlerMiddleware();
     var context = StubMessageContext.WithEnvelope("TestMessage", "queue://orders");
 
-    var act = () => middleware.Before(context);
+    var act = () => MessageHandlerMiddleware.Before(context);
 
     act.Should().NotThrow();
   }
@@ -38,11 +37,10 @@ public class MessagingHandlerMiddlewareTests : IDisposable
   [UnitTest]
   public void GivenSuccessfulHandling_WhenFinallyCalled_ThenHandlerCountIsIncremented()
   {
-    var middleware = new MessagingHandlerMiddleware();
     var context = StubMessageContext.WithEnvelope("TestMessage", "queue://orders");
 
-    middleware.Before(context);
-    middleware.Finally(context, exception: null);
+    var telemetry = MessageHandlerMiddleware.Before(context);
+    MessageHandlerMiddleware.Finally(telemetry, exception: null);
 
     _countCollector.GetMeasurementSnapshot().Should().ContainSingle()
       .Which.Value.Should().Be(1);
@@ -52,12 +50,11 @@ public class MessagingHandlerMiddlewareTests : IDisposable
   [UnitTest]
   public void GivenSuccessfulHandling_WhenFinallyCalled_ThenDurationIsRecorded()
   {
-    var middleware = new MessagingHandlerMiddleware();
     var context = StubMessageContext.WithEnvelope("TestMessage", "queue://orders");
 
-    middleware.Before(context);
+    var telemetry = MessageHandlerMiddleware.Before(context);
     Thread.Sleep(10);
-    middleware.Finally(context, exception: null);
+    MessageHandlerMiddleware.Finally(telemetry, exception: null);
 
     _durationCollector.GetMeasurementSnapshot().Should().ContainSingle()
       .Which.Value.Should().BeGreaterThan(0);
@@ -67,12 +64,11 @@ public class MessagingHandlerMiddlewareTests : IDisposable
   [UnitTest]
   public void GivenFailedHandling_WhenFinallyCalledWithException_ThenHandlerErrorsIsIncremented()
   {
-    var middleware = new MessagingHandlerMiddleware();
     var context = StubMessageContext.WithEnvelope("TestMessage", "queue://orders");
     var exception = new InvalidOperationException("test error");
 
-    middleware.Before(context);
-    middleware.Finally(context, exception);
+    var telemetry = MessageHandlerMiddleware.Before(context);
+    MessageHandlerMiddleware.Finally(telemetry, exception);
 
     var snapshot = _errorCollector.GetMeasurementSnapshot();
     snapshot.Should().ContainSingle();
@@ -84,11 +80,10 @@ public class MessagingHandlerMiddlewareTests : IDisposable
   [UnitTest]
   public void GivenFailedHandling_WhenFinallyCalledWithException_ThenHandlerCountIsNotIncremented()
   {
-    var middleware = new MessagingHandlerMiddleware();
     var context = StubMessageContext.WithEnvelope("TestMessage", "queue://orders");
 
-    middleware.Before(context);
-    middleware.Finally(context, new InvalidOperationException("fail"));
+    var telemetry = MessageHandlerMiddleware.Before(context);
+    MessageHandlerMiddleware.Finally(telemetry, new InvalidOperationException("fail"));
 
     _countCollector.GetMeasurementSnapshot().Should().BeEmpty();
   }

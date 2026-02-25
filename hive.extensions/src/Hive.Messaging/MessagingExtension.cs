@@ -38,8 +38,8 @@ internal sealed class MessagingExtension : MessagingExtensionBase<MessagingExten
         ValidateTransport(provider, options, configuration);
 
         // Middleware
-        opts.Policies.AddMiddleware(typeof(ReadinessGateMiddleware));
-        opts.Policies.AddMiddleware<MessagingHandlerMiddleware>();
+        opts.Policies.AddMiddleware(typeof(ReadinessMiddleware));
+        opts.Policies.AddMiddleware(typeof(MessageHandlerMiddleware));
 
         opts.Policies.OnException<ServiceNotReadyException>()
           .PauseThenRequeue(TimeSpan.FromSeconds(5));

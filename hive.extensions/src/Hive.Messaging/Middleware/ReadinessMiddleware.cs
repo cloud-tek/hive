@@ -5,7 +5,7 @@ namespace Hive.Messaging.Middleware;
 /// <summary>
 /// Wolverine middleware that rejects messages when the service is not ready.
 /// </summary>
-public static class ReadinessGateMiddleware
+public static class ReadinessMiddleware
 {
   /// <summary>
   /// Checks the service readiness state before allowing message processing.

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Hive.Messaging.Tests;
 
-public class ReadinessGateMiddlewareTests
+public class ReadinessMiddlewareTests
 {
   [Fact]
   [UnitTest]
@@ -16,7 +16,7 @@ public class ReadinessGateMiddlewareTests
     microService.IsStarted = true;
     microService.IsReady = true;
 
-    var act = () => ReadinessGateMiddleware.Before(microService);
+    var act = () => ReadinessMiddleware.Before(microService);
 
     act.Should().NotThrow();
   }
@@ -27,7 +27,7 @@ public class ReadinessGateMiddlewareTests
   {
     var microService = new MicroService("test-service");
 
-    var act = () => ReadinessGateMiddleware.Before(microService);
+    var act = () => ReadinessMiddleware.Before(microService);
 
     act.Should().Throw<ServiceNotReadyException>()
       .WithMessage("*test-service*not ready*");
@@ -43,7 +43,7 @@ public class ReadinessGateMiddlewareTests
 
     microService.IsReady = false;
 
-    var act = () => ReadinessGateMiddleware.Before(microService);
+    var act = () => ReadinessMiddleware.Before(microService);
 
     act.Should().Throw<ServiceNotReadyException>();
   }
@@ -55,7 +55,7 @@ public class ReadinessGateMiddlewareTests
     var microService = new MicroService("test-service");
     microService.IsReady = true;
 
-    var act = () => ReadinessGateMiddleware.Before(microService);
+    var act = () => ReadinessMiddleware.Before(microService);
 
     act.Should().Throw<ServiceNotReadyException>();
   }

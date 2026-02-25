@@ -35,5 +35,5 @@ internal static class MessagingMeter
   public static readonly Counter<long> GateNacked =
     Meter.CreateCounter<long>(
       "hive.messaging.gate.nacked",
-      description: "Messages nacked by ReadinessGateMiddleware (IsReady == false)");
+      description: "Messages nacked by ReadinessMiddleware (IsReady == false)");
 }
