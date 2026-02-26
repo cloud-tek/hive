@@ -45,20 +45,14 @@ public class ContextPropagationTests : IDisposable
 
     var service = new MicroService(serviceName, new NullLogger<IMicroService>())
       .InTestClass<ContextPropagationTests>()
-      .WithOpenTelemetry(
-        logging: builder =>
-        {
-          builder.AddInMemoryExporter(_exportedLogs);
-        },
-        tracing: builder =>
-        {
-          builder.AddAspNetCoreInstrumentation();
-          builder.AddInMemoryExporter(_exportedActivities);
-        });
+      .WithOpenTelemetry();
 
-    // Configure OpenTelemetryLoggerOptions to include formatted messages
     service.ConfigureServices((svc, cfg) =>
     {
+      svc.ConfigureOpenTelemetryLoggerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedLogs));
+      svc.ConfigureOpenTelemetryTracerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedActivities));
       svc.Configure<OpenTelemetryLoggerOptions>(options =>
       {
         options.IncludeFormattedMessage = true;
@@ -122,20 +116,14 @@ public class ContextPropagationTests : IDisposable
 
     var service = new MicroService(serviceName, new NullLogger<IMicroService>())
       .InTestClass<ContextPropagationTests>()
-      .WithOpenTelemetry(
-        logging: builder =>
-        {
-          builder.AddInMemoryExporter(_exportedLogs);
-        },
-        tracing: builder =>
-        {
-          builder.AddAspNetCoreInstrumentation();
-          builder.AddInMemoryExporter(_exportedActivities);
-        });
+      .WithOpenTelemetry();
 
-    // Configure OpenTelemetryLoggerOptions to include formatted messages
     service.ConfigureServices((svc, cfg) =>
     {
+      svc.ConfigureOpenTelemetryLoggerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedLogs));
+      svc.ConfigureOpenTelemetryTracerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedActivities));
       svc.Configure<OpenTelemetryLoggerOptions>(options =>
       {
         options.IncludeFormattedMessage = true;
@@ -206,20 +194,14 @@ public class ContextPropagationTests : IDisposable
 
     var service = new MicroService(serviceName, new NullLogger<IMicroService>())
       .InTestClass<ContextPropagationTests>()
-      .WithOpenTelemetry(
-        logging: builder =>
-        {
-          builder.AddInMemoryExporter(_exportedLogs);
-        },
-        tracing: builder =>
-        {
-          builder.AddAspNetCoreInstrumentation();
-          builder.AddInMemoryExporter(_exportedActivities);
-        });
+      .WithOpenTelemetry();
 
-    // Configure OpenTelemetryLoggerOptions to include formatted messages
     service.ConfigureServices((svc, cfg) =>
     {
+      svc.ConfigureOpenTelemetryLoggerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedLogs));
+      svc.ConfigureOpenTelemetryTracerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedActivities));
       svc.Configure<OpenTelemetryLoggerOptions>(options =>
       {
         options.IncludeFormattedMessage = true;
@@ -259,7 +241,8 @@ public class ContextPropagationTests : IDisposable
       "each request should generate a trace");
 
     var traceIds = _exportedActivities
-      .Where(a => a.DisplayName.Contains("GET") || a.OperationName.Contains("GET"))
+      .Where(a => a.Kind == ActivityKind.Server &&
+        (a.DisplayName.Contains("GET") || a.OperationName.Contains("GET")))
       .Select(a => a.TraceId)
       .ToList();
 
@@ -277,16 +260,18 @@ public class ContextPropagationTests : IDisposable
 
     var service = new MicroService(serviceName, new NullLogger<IMicroService>())
       .InTestClass<ContextPropagationTests>()
-      .WithOpenTelemetry(
-        tracing: builder =>
-        {
-          builder.AddAspNetCoreInstrumentation();
-          builder.AddInMemoryExporter(_exportedActivities);
-        })
-      .ConfigureApiPipeline(app =>
-      {
-        app.MapGet("/propagated", () => "OK");
-      });
+      .WithOpenTelemetry();
+
+    service.ConfigureServices((svc, _) =>
+    {
+      svc.ConfigureOpenTelemetryTracerProvider((_, builder) =>
+        builder.AddInMemoryExporter(_exportedActivities));
+    });
+
+    service.ConfigureApiPipeline(app =>
+    {
+      app.MapGet("/propagated", () => "OK");
+    });
 
     var config = new ConfigurationBuilder().Build();
     service.CancellationTokenSource.CancelAfter(10000);

@@ -11,6 +11,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\hive.microservices\src\Hive.MicroServices\Hive.MicroServices.csproj" />
+    <ProjectReference Include="..\..\..\hive.extensions\src\Hive.Messaging\Hive.Messaging.csproj" />
+    <ProjectReference Include="..\..\..\hive.extensions\src\Hive.Messaging.RabbitMq\Hive.Messaging.RabbitMq.csproj" />
+    <ProjectReference Include="..\..\..\hive.opentelemetry\src\Hive.OpenTelemetry\Hive.OpenTelemetry.csproj" />
+    <ProjectReference Include="..\Hive.MicroServices.Demo.Events\Hive.MicroServices.Demo.Events.csproj" />
   </ItemGroup>
 
 </Project>

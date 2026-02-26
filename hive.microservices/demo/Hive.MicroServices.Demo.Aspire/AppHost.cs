@@ -1,4 +1,9 @@
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using Hive.MicroServices.Demo.Aspire;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -34,15 +39,43 @@ var otelCollector = builder.AddContainer("otel-collector", "otel/opentelemetry-c
   .WithEnvironment("ASPIRE_ENDPOINT", dashboardEndpointForContainer)
   .WithEnvironment("ASPIRE_API_KEY", builder.Configuration["AppHost:OtlpApiKey"] ?? string.Empty);
 
+// RabbitMQ
+const string rabbitmqHealthClientName = "rabbitmq-health";
+builder.Services.AddHttpClient(rabbitmqHealthClientName, client =>
+{
+  client.BaseAddress = new Uri("http://localhost:15672");
+  client.DefaultRequestHeaders.Authorization =
+    new AuthenticationHeaderValue("Basic",
+      Convert.ToBase64String(Encoding.UTF8.GetBytes("guest:guest")));
+});
+
+builder.Services.AddHealthChecks()
+  .Add(new HealthCheckRegistration(
+    "rabbitmq-management",
+    sp =>
+    {
+      var factory = sp.GetRequiredService<IHttpClientFactory>();
+      return new RabbitMqManagementHealthCheck(factory, rabbitmqHealthClientName);
+    },
+    failureStatus: null,
+    tags: null));
+
+var rabbitmq = builder.AddContainer("rabbitmq", "rabbitmq", "3-management")
+  .WithEndpoint(port: 5672, targetPort: 5672, name: "amqp", scheme: "tcp")
+  .WithHttpEndpoint(port: 15672, targetPort: 15672, name: "management")
+  .WithHealthCheck("rabbitmq-management");
+
 // Default Service
 builder.AddProject<Projects.Hive_MicroServices_Demo>("hive-microservices-demo")
   .WithHttpHealthCheck("/status/readiness")
-  .WithOtelCollector(otelCollector);
+  .WithOtelCollector(otelCollector)
+  .WithRabbitMq(rabbitmq);
 
 // HTTP Services
 var apiControllers = builder.AddProject<Projects.Hive_MicroServices_Demo_ApiControllers>("hive-microservices-demo-apicontrollers")
   .WithHttpHealthCheck("/status/readiness")
-  .WithOtelCollector(otelCollector);
+  .WithOtelCollector(otelCollector)
+  .WithRabbitMq(rabbitmq);
 
 builder.AddProject<Projects.Hive_MicroServices_Demo_Api>("hive-microservices-demo-api")
   .WithHttpHealthCheck("/status/readiness")
@@ -70,3 +103,23 @@ builder.AddProject<Projects.Hive_MicroServices_Demo_Job>("hive-microservices-dem
   .WithOtelCollector(otelCollector);
 
 builder.Build().Run();
+
+internal sealed class RabbitMqManagementHealthCheck(IHttpClientFactory factory, string clientName) : IHealthCheck
+{
+  public async Task<HealthCheckResult> CheckHealthAsync(
+    HealthCheckContext context, CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      using var client = factory.CreateClient(clientName);
+      var response = await client.GetAsync("/api/health/checks/alarms", cancellationToken);
+      return response.IsSuccessStatusCode
+        ? HealthCheckResult.Healthy()
+        : HealthCheckResult.Unhealthy($"Status: {response.StatusCode}");
+    }
+    catch (Exception ex)
+    {
+      return HealthCheckResult.Unhealthy(ex.Message);
+    }
+  }
+}

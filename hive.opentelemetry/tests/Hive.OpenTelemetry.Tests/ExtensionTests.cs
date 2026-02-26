@@ -3,9 +3,6 @@ using Hive.MicroServices;
 using Hive.MicroServices.Extensions;
 using Hive.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Trace;
 using Xunit;
 
 namespace Hive.OpenTelemetry.Tests;
@@ -45,85 +42,14 @@ public class ExtensionTests
 
   [Fact]
   [UnitTest]
-  public void GivenWithOpenTelemetry_WhenCalledWithCustomLogging_ThenExtensionIsAdded()
+  public void GivenWithOpenTelemetry_WhenCalledWithAdditionalSources_ThenExtensionIsAdded()
   {
     // Arrange
     var service = new MicroService(ServiceName, new NullLogger<IMicroService>());
 
     // Act
     var result = service.WithOpenTelemetry(
-      logging: builder =>
-      {
-        // Custom logging configuration
-      });
-
-    // Assert
-    service.Extensions.Should().HaveCount(1);
-    service.Extensions.Should().ContainSingle(e => e is Extension);
-    result.Should().BeSameAs(service);
-  }
-
-  [Fact]
-  [UnitTest]
-  public void GivenWithOpenTelemetry_WhenCalledWithCustomTracing_ThenExtensionIsAdded()
-  {
-    // Arrange
-    var service = new MicroService(ServiceName, new NullLogger<IMicroService>());
-
-    // Act
-    var result = service.WithOpenTelemetry(
-      tracing: builder =>
-      {
-        // Custom tracing configuration
-      });
-
-    // Assert
-    service.Extensions.Should().HaveCount(1);
-    service.Extensions.Should().ContainSingle(e => e is Extension);
-    result.Should().BeSameAs(service);
-  }
-
-  [Fact]
-  [UnitTest]
-  public void GivenWithOpenTelemetry_WhenCalledWithCustomMetrics_ThenExtensionIsAdded()
-  {
-    // Arrange
-    var service = new MicroService(ServiceName, new NullLogger<IMicroService>());
-
-    // Act
-    var result = service.WithOpenTelemetry(
-      metrics: builder =>
-      {
-        // Custom metrics configuration
-      });
-
-    // Assert
-    service.Extensions.Should().HaveCount(1);
-    service.Extensions.Should().ContainSingle(e => e is Extension);
-    result.Should().BeSameAs(service);
-  }
-
-  [Fact]
-  [UnitTest]
-  public void GivenWithOpenTelemetry_WhenCalledWithAllCustomConfigurations_ThenExtensionIsAdded()
-  {
-    // Arrange
-    var service = new MicroService(ServiceName, new NullLogger<IMicroService>());
-
-    // Act
-    var result = service.WithOpenTelemetry(
-      logging: builder =>
-      {
-        // Custom logging configuration
-      },
-      tracing: builder =>
-      {
-        // Custom tracing configuration
-      },
-      metrics: builder =>
-      {
-        // Custom metrics configuration
-      });
+      additionalActivitySources: ["MyApp.Source1", "MyApp.Source2"]);
 
     // Assert
     service.Extensions.Should().HaveCount(1);

@@ -14,27 +14,19 @@ namespace Hive.OpenTelemetry;
 /// </summary>
 public class Extension : MicroServiceExtension<Extension>
 {
-  private readonly Action<LoggerProviderBuilder>? loggingOverride;
-  private readonly Action<TracerProviderBuilder>? tracingOverride;
-  private readonly Action<MeterProviderBuilder>? metricsOverride;
+  private readonly IReadOnlyList<string> _additionalActivitySources;
 
   /// <summary>
   /// Initializes a new instance of the OpenTelemetry extension
   /// </summary>
   /// <param name="service">The service host instance</param>
-  /// <param name="logging">Optional logging configuration override</param>
-  /// <param name="tracing">Optional tracing configuration override</param>
-  /// <param name="metrics">Optional metrics configuration override</param>
+  /// <param name="additionalActivitySources">Additional activity source names to subscribe to for tracing</param>
   public Extension(
     IMicroServiceCore service,
-    Action<LoggerProviderBuilder>? logging = null,
-    Action<TracerProviderBuilder>? tracing = null,
-    Action<MeterProviderBuilder>? metrics = null)
+    IEnumerable<string>? additionalActivitySources = null)
     : base(service)
   {
-    loggingOverride = logging;
-    tracingOverride = tracing;
-    metricsOverride = metrics;
+    _additionalActivitySources = additionalActivitySources?.ToList() ?? [];
 
     ConfigureActions.Add((svc, cfg) =>
     {
@@ -121,19 +113,11 @@ public class Extension : MicroServiceExtension<Extension>
     return resource;
   }
 
-  private void ConfigureLogging(
+  private static void ConfigureLogging(
     LoggerProviderBuilder builder,
     OpenTelemetryOptions options,
     string? otlpEndpoint)
   {
-    // If developer provided override, use it exclusively
-    if (loggingOverride != null)
-    {
-      loggingOverride(builder);
-      return;
-    }
-
-    // Otherwise use configuration-driven approach
     if (options.Logging.EnableConsoleExporter)
     {
       builder.AddConsoleExporter();
@@ -150,14 +134,22 @@ public class Extension : MicroServiceExtension<Extension>
     OpenTelemetryOptions options,
     string? otlpEndpoint)
   {
-    // If developer provided override, use it exclusively
-    if (tracingOverride != null)
+    // Auto-discover activity sources from sibling extensions
+    foreach (var provider in Service.Extensions.OfType<IActivitySourceProvider>())
     {
-      tracingOverride(builder);
-      return;
+      foreach (var source in provider.ActivitySourceNames)
+      {
+        builder.AddSource(source);
+      }
     }
 
-    // Otherwise use configuration-driven approach
+    // Subscribe to explicitly declared additional activity sources
+    foreach (var source in _additionalActivitySources)
+    {
+      builder.AddSource(source);
+    }
+
+    // Configuration-driven instrumentation
     if (options.Tracing.EnableAspNetCoreInstrumentation)
     {
       builder.AddAspNetCoreInstrumentation();
@@ -174,19 +166,11 @@ public class Extension : MicroServiceExtension<Extension>
     }
   }
 
-  private void ConfigureMetrics(
+  private static void ConfigureMetrics(
     MeterProviderBuilder builder,
     OpenTelemetryOptions options,
     string? otlpEndpoint)
   {
-    // If developer provided override, use it exclusively
-    if (metricsOverride != null)
-    {
-      metricsOverride(builder);
-      return;
-    }
-
-    // Otherwise use configuration-driven approach
     if (options.Metrics.EnableAspNetCoreInstrumentation)
     {
       builder.AddAspNetCoreInstrumentation();
