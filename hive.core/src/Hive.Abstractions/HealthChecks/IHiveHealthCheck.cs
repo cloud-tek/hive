@@ -1,9 +1,8 @@
 namespace Hive.HealthChecks;
 
 /// <summary>
-/// Interface for Hive health checks. Implementations are
-/// auto-discovered via Scrutor assembly scanning when
-/// <c>.WithHealthChecks()</c> is registered.
+/// Interface for Hive health checks. Health checks must be explicitly
+/// registered via <c>.WithHealthChecks(builder =&gt; builder.WithHealthCheck&lt;T&gt;())</c>.
 /// <para>
 /// Uses C# 11 static abstract members so that <see cref="ConfigureDefaults"/>
 /// can be called during ConfigureServices (before DI container is built)

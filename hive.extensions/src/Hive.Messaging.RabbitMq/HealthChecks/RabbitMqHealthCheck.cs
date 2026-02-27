@@ -85,8 +85,11 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAs
       },
       ct);
 
-    return result.Status == HealthStatus.Healthy
-      ? HealthCheckStatus.Healthy
-      : HealthCheckStatus.Unhealthy;
+    return result.Status switch
+    {
+      HealthStatus.Healthy => HealthCheckStatus.Healthy,
+      HealthStatus.Degraded => HealthCheckStatus.Degraded,
+      _ => HealthCheckStatus.Unhealthy
+    };
   }
 }

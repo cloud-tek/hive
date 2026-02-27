@@ -5,14 +5,15 @@ namespace Hive.HealthChecks;
 /// consults <see cref="IHealthCheckStateProvider.GetSnapshots"/> to determine
 /// the HTTP status code for the readiness probe.
 /// </summary>
-internal sealed class HealthCheckRegistry : IHealthCheckStateProvider
+internal sealed class HealthCheckRegistry : IHealthCheckStateProvider, IDisposable
 {
-  private readonly object _sync = new();
+  private readonly ReaderWriterLockSlim _lock = new();
   private readonly Dictionary<string, HealthCheckState> _states = new(StringComparer.OrdinalIgnoreCase);
 
   public void Register(string name, HiveHealthCheckOptions options)
   {
-    lock (_sync)
+    _lock.EnterWriteLock();
+    try
     {
       _states[name] = new HealthCheckState
       {
@@ -23,11 +24,16 @@ internal sealed class HealthCheckRegistry : IHealthCheckStateProvider
         SuccessThreshold = options.SuccessThreshold
       };
     }
+    finally
+    {
+      _lock.ExitWriteLock();
+    }
   }
 
   public void UpdateAndRecompute(string name, HealthCheckStatus status, TimeSpan duration, string? error)
   {
-    lock (_sync)
+    _lock.EnterWriteLock();
+    try
     {
       if (!_states.TryGetValue(name, out var state))
         return;
@@ -52,14 +58,28 @@ internal sealed class HealthCheckRegistry : IHealthCheckStateProvider
         state.IsPassingForReadiness = state.ConsecutiveFailures < state.FailureThreshold;
       }
     }
+    finally
+    {
+      _lock.ExitWriteLock();
+    }
   }
 
   public IReadOnlyList<HealthCheckStateSnapshot> GetSnapshots()
   {
-    lock (_sync)
+    _lock.EnterReadLock();
+    try
     {
       return _states.Values.Select(s => s.ToSnapshot()).ToList();
     }
+    finally
+    {
+      _lock.ExitReadLock();
+    }
+  }
+
+  public void Dispose()
+  {
+    _lock.Dispose();
   }
 
   private static bool IsPassing(HealthCheckStatus status, ReadinessThreshold threshold) => threshold switch
