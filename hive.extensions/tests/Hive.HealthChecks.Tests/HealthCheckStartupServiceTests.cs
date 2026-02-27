@@ -28,7 +28,7 @@ public class HealthCheckStartupServiceTests
     IEnumerable<HiveHealthCheck> checks,
     HealthCheckRegistry registry,
     HealthCheckConfiguration config)
-    => new(NullLoggerFactory.Instance, checks, registry, config);
+    => new(NullLoggerFactory.Instance, checks, registry, config, new HealthCheckStartupGate());
 
   public class Registration
   {

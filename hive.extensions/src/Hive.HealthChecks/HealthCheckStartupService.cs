@@ -15,69 +15,79 @@ internal sealed partial class HealthCheckStartupService : HostedStartupService<H
   private readonly IEnumerable<HiveHealthCheck> _checks;
   private readonly HealthCheckRegistry _registry;
   private readonly HealthCheckConfiguration _config;
+  private readonly HealthCheckStartupGate _gate;
 
   public HealthCheckStartupService(
     ILoggerFactory loggerFactory,
     IEnumerable<HiveHealthCheck> checks,
     HealthCheckRegistry registry,
-    HealthCheckConfiguration config)
+    HealthCheckConfiguration config,
+    HealthCheckStartupGate gate)
     : base(loggerFactory)
   {
     _checks = checks;
     _registry = registry;
     _config = config;
+    _gate = gate;
   }
 
   protected override async Task OnStartAsync(CancellationToken cancellationToken)
   {
-    // Initialize all checks in the registry and bind TOptions
-    foreach (var check in _checks)
+    try
     {
-      var checkType = check.GetType();
-      var options = ResolveOptions(checkType);
-      _registry.Register(check.Name, options);
-      BindCheckOptions(check, checkType);
-    }
-
-    // Evaluate blocking checks sequentially
-    foreach (var check in _checks)
-    {
-      var checkType = check.GetType();
-      var options = ResolveOptions(checkType);
-
-      if (!options.BlockReadinessProbeOnStartup)
-        continue;
-
-      using var activity = HealthCheckActivitySource.Source.StartActivity($"HealthCheck: {check.Name}");
-      var sw = Stopwatch.StartNew();
-      try
+      // Initialize all checks in the registry and bind TOptions
+      foreach (var check in _checks)
       {
-        var status = await check.EvaluateAsync(cancellationToken);
-        sw.Stop();
-        _registry.UpdateAndRecompute(check.Name, status, sw.Elapsed, null);
-        activity?.SetTag("healthcheck.status", status.ToString());
+        var checkType = check.GetType();
+        var options = ResolveOptions(checkType);
+        _registry.Register(check.Name, options);
+        BindCheckOptions(check, checkType);
+      }
 
-        if (status == HealthCheckStatus.Unhealthy)
+      // Evaluate blocking checks sequentially
+      foreach (var check in _checks)
+      {
+        var checkType = check.GetType();
+        var options = ResolveOptions(checkType);
+
+        if (!options.BlockReadinessProbeOnStartup)
+          continue;
+
+        using var activity = HealthCheckActivitySource.Source.StartActivity($"HealthCheck: {check.Name}");
+        var sw = Stopwatch.StartNew();
+        try
         {
-          activity?.SetStatus(ActivityStatusCode.Error, "Unhealthy during startup");
+          var status = await check.EvaluateAsync(cancellationToken);
+          sw.Stop();
+          _registry.UpdateAndRecompute(check.Name, status, sw.Elapsed, null);
+          activity?.SetTag("healthcheck.status", status.ToString());
+
+          if (status == HealthCheckStatus.Unhealthy)
+          {
+            activity?.SetStatus(ActivityStatusCode.Error, "Unhealthy during startup");
+            throw new InvalidOperationException(
+              $"Health check '{check.Name}' returned Unhealthy during startup.");
+          }
+        }
+        catch (InvalidOperationException)
+        {
+          throw; // Re-throw our own startup failure
+        }
+        catch (Exception ex)
+        {
+          sw.Stop();
+          _registry.UpdateAndRecompute(check.Name, HealthCheckStatus.Unhealthy, sw.Elapsed, ex.Message);
+          activity?.SetTag("healthcheck.status", HealthCheckStatus.Unhealthy.ToString());
+          activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+          LogCheckThrewDuringStartup(Logger, check.Name, ex);
           throw new InvalidOperationException(
-            $"Health check '{check.Name}' returned Unhealthy during startup.");
+            $"Health check '{check.Name}' failed during startup.", ex);
         }
       }
-      catch (InvalidOperationException)
-      {
-        throw; // Re-throw our own startup failure
-      }
-      catch (Exception ex)
-      {
-        sw.Stop();
-        _registry.UpdateAndRecompute(check.Name, HealthCheckStatus.Unhealthy, sw.Elapsed, ex.Message);
-        activity?.SetTag("healthcheck.status", HealthCheckStatus.Unhealthy.ToString());
-        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-        LogCheckThrewDuringStartup(Logger, check.Name, ex);
-        throw new InvalidOperationException(
-          $"Health check '{check.Name}' failed during startup.", ex);
-      }
+    }
+    finally
+    {
+      _gate.Signal();
     }
   }
 

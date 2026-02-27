@@ -39,8 +39,10 @@ public class HealthCheckBackgroundServiceTests
       // Register the check in registry first (startup service normally does this)
       registry.Register("Fake", config.ExplicitRegistrations[typeof(FakeHealthCheck)]);
 
+      var gate = new HealthCheckStartupGate();
+      gate.Signal();
       var service = new HealthCheckBackgroundService(
-        [check], registry, config, NullLogger<HealthCheckBackgroundService>.Instance);
+        [check], registry, config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
 
       using var cts = new CancellationTokenSource();
       // Cancel shortly after to stop the periodic loops
@@ -79,8 +81,10 @@ public class HealthCheckBackgroundServiceTests
       });
       registry.Register("Fake", options);
 
+      var gate = new HealthCheckStartupGate();
+      gate.Signal();
       var service = new HealthCheckBackgroundService(
-        [check], registry, config, NullLogger<HealthCheckBackgroundService>.Instance);
+        [check], registry, config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
 
       using var cts = new CancellationTokenSource();
       cts.CancelAfter(TimeSpan.FromSeconds(2));
@@ -117,8 +121,10 @@ public class HealthCheckBackgroundServiceTests
       });
       registry.Register("Fake", options);
 
+      var gate = new HealthCheckStartupGate();
+      gate.Signal();
       var service = new HealthCheckBackgroundService(
-        [check], registry, config, NullLogger<HealthCheckBackgroundService>.Instance);
+        [check], registry, config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
 
       using var cts = new CancellationTokenSource();
       cts.CancelAfter(TimeSpan.FromMilliseconds(500));
@@ -160,8 +166,10 @@ public class HealthCheckBackgroundServiceTests
         });
       registry.Register("Fake", new HiveHealthCheckOptions());
 
+      var gate = new HealthCheckStartupGate();
+      gate.Signal();
       var service = new HealthCheckBackgroundService(
-        [check], registry, config, NullLogger<HealthCheckBackgroundService>.Instance);
+        [check], registry, config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
 
       using var cts = new CancellationTokenSource();
       cts.CancelAfter(TimeSpan.FromMilliseconds(200));

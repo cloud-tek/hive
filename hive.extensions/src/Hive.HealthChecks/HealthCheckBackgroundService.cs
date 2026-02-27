@@ -14,22 +14,28 @@ internal sealed partial class HealthCheckBackgroundService : BackgroundService
   private readonly IEnumerable<HiveHealthCheck> _checks;
   private readonly HealthCheckRegistry _registry;
   private readonly HealthCheckConfiguration _config;
+  private readonly HealthCheckStartupGate _gate;
   private readonly ILogger<HealthCheckBackgroundService> _logger;
 
   public HealthCheckBackgroundService(
     IEnumerable<HiveHealthCheck> checks,
     HealthCheckRegistry registry,
     HealthCheckConfiguration config,
+    HealthCheckStartupGate gate,
     ILogger<HealthCheckBackgroundService> logger)
   {
     _checks = checks;
     _registry = registry;
     _config = config;
+    _gate = gate;
     _logger = logger;
   }
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
+    // Wait for startup service to complete registration and blocking evaluation
+    await _gate.WaitAsync(stoppingToken);
+
     // Evaluate all checks once eagerly so no check remains Unknown
     var initialTasks = _checks.Select(check =>
     {
