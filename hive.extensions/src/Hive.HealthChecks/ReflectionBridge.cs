@@ -10,12 +10,34 @@ internal static class ReflectionBridge
   private const string ConfigureMethod = "Configure";
 
   public static string GetCheckName(Type healthCheckType)
-    => (string)typeof(Invoker<>).MakeGenericType(healthCheckType)
-      .GetMethod(GetNameMethod)!.Invoke(null, null)!;
+  {
+    try
+    {
+      return (string)typeof(Invoker<>).MakeGenericType(healthCheckType)
+        .GetMethod(GetNameMethod)!.Invoke(null, null)!;
+    }
+    catch (Exception ex)
+    {
+      throw new InvalidOperationException(
+        $"Type '{healthCheckType.FullName}' must implement IHiveHealthCheck with " +
+        $"static abstract members 'CheckName' and 'ConfigureDefaults'.", ex);
+    }
+  }
 
   public static void InvokeConfigureDefaults(Type healthCheckType, HiveHealthCheckOptions options)
-    => typeof(Invoker<>).MakeGenericType(healthCheckType)
-      .GetMethod(ConfigureMethod)!.Invoke(null, [options]);
+  {
+    try
+    {
+      typeof(Invoker<>).MakeGenericType(healthCheckType)
+        .GetMethod(ConfigureMethod)!.Invoke(null, [options]);
+    }
+    catch (Exception ex)
+    {
+      throw new InvalidOperationException(
+        $"Type '{healthCheckType.FullName}' must implement IHiveHealthCheck with " +
+        $"static abstract members 'CheckName' and 'ConfigureDefaults'.", ex);
+    }
+  }
 
   private static class Invoker<T> where T : IHiveHealthCheck
   {

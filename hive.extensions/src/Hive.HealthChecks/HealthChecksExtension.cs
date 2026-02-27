@@ -42,9 +42,10 @@ internal sealed class HealthChecksExtension : MicroServiceExtension<HealthChecks
         svc.AddSingleton(typeof(HiveHealthCheck), checkType);
       }
 
-      // Register the registry and startup gate as singletons
+      // Register the registry, resolver, and startup gate as singletons
       svc.AddSingleton<HealthCheckRegistry>();
       svc.AddSingleton<IHealthCheckStateProvider>(sp => sp.GetRequiredService<HealthCheckRegistry>());
+      svc.AddSingleton<HealthCheckOptionsResolver>();
       svc.AddSingleton<HealthCheckStartupGate>();
 
       // Register startup and background services

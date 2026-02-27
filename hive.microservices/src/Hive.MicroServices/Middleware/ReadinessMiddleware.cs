@@ -40,12 +40,8 @@ public class ReadinessMiddleware
     if (context.Request.Method == "GET" && context.Request.Path == Endpoint)
     {
       var provider = context.RequestServices.GetService<IHealthCheckStateProvider>();
-      var healthChecksReady = provider is null
-        || provider.GetSnapshots()
-          .Where(s => s.AffectsReadiness)
-          .All(s => s.IsPassingForReadiness);
 
-      context.Response.StatusCode = service.IsReady && healthChecksReady ? 200 : 503;
+      context.Response.StatusCode = service.IsReady && AreHealthChecksReady(provider) ? 200 : 503;
       context.Response.ContentType = "application/json";
 
       var response = new ReadinessResponse(service, provider);
@@ -62,5 +58,15 @@ public class ReadinessMiddleware
     {
       context.Response.StatusCode = 503;
     }
+  }
+
+  private static bool AreHealthChecksReady(IHealthCheckStateProvider? provider)
+  {
+    if (provider is null)
+      return true;
+
+    return provider.GetSnapshots()
+      .Where(s => s.AffectsReadiness)
+      .All(s => s.IsPassingForReadiness);
   }
 }

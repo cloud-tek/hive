@@ -17,6 +17,10 @@ internal sealed class HealthCheckState
   public required int SuccessThreshold { get; init; }
   public int ConsecutiveFailures { get; set; }
   public int ConsecutiveSuccesses { get; set; }
+  /// <summary>
+  /// Defaults to true (fail-open) so that checks in Unknown state
+  /// don't block readiness until they've been evaluated.
+  /// </summary>
   public bool IsPassingForReadiness { get; set; } = true;
 
   public HealthCheckStateSnapshot ToSnapshot() => new(

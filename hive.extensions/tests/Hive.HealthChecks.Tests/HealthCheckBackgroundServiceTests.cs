@@ -42,7 +42,7 @@ public class HealthCheckBackgroundServiceTests
       var gate = new HealthCheckStartupGate();
       gate.Signal();
       var service = new HealthCheckBackgroundService(
-        [check], registry, config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
+        [check], registry, new HealthCheckOptionsResolver(config), config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
 
       using var cts = new CancellationTokenSource();
       // Cancel shortly after to stop the periodic loops
@@ -84,7 +84,7 @@ public class HealthCheckBackgroundServiceTests
       var gate = new HealthCheckStartupGate();
       gate.Signal();
       var service = new HealthCheckBackgroundService(
-        [check], registry, config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
+        [check], registry, new HealthCheckOptionsResolver(config), config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
 
       using var cts = new CancellationTokenSource();
       cts.CancelAfter(TimeSpan.FromSeconds(2));
@@ -124,7 +124,7 @@ public class HealthCheckBackgroundServiceTests
       var gate = new HealthCheckStartupGate();
       gate.Signal();
       var service = new HealthCheckBackgroundService(
-        [check], registry, config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
+        [check], registry, new HealthCheckOptionsResolver(config), config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
 
       using var cts = new CancellationTokenSource();
       cts.CancelAfter(TimeSpan.FromMilliseconds(500));
@@ -169,7 +169,7 @@ public class HealthCheckBackgroundServiceTests
       var gate = new HealthCheckStartupGate();
       gate.Signal();
       var service = new HealthCheckBackgroundService(
-        [check], registry, config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
+        [check], registry, new HealthCheckOptionsResolver(config), config, gate, NullLogger<HealthCheckBackgroundService>.Instance);
 
       using var cts = new CancellationTokenSource();
       cts.CancelAfter(TimeSpan.FromMilliseconds(200));

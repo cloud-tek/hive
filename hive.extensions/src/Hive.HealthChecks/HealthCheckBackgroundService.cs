@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +12,7 @@ internal sealed partial class HealthCheckBackgroundService : BackgroundService
 {
   private readonly IEnumerable<HiveHealthCheck> _checks;
   private readonly HealthCheckRegistry _registry;
+  private readonly HealthCheckOptionsResolver _resolver;
   private readonly HealthCheckConfiguration _config;
   private readonly HealthCheckStartupGate _gate;
   private readonly ILogger<HealthCheckBackgroundService> _logger;
@@ -20,12 +20,14 @@ internal sealed partial class HealthCheckBackgroundService : BackgroundService
   public HealthCheckBackgroundService(
     IEnumerable<HiveHealthCheck> checks,
     HealthCheckRegistry registry,
+    HealthCheckOptionsResolver resolver,
     HealthCheckConfiguration config,
     HealthCheckStartupGate gate,
     ILogger<HealthCheckBackgroundService> logger)
   {
     _checks = checks;
     _registry = registry;
+    _resolver = resolver;
     _config = config;
     _gate = gate;
     _logger = logger;
@@ -39,7 +41,7 @@ internal sealed partial class HealthCheckBackgroundService : BackgroundService
     // Evaluate all checks once eagerly so no check remains Unknown
     var initialTasks = _checks.Select(check =>
     {
-      var options = ResolveOptions(check.GetType());
+      var options = _resolver.Resolve(check.GetType());
       return EvaluateCheck(check, options, stoppingToken);
     });
     await Task.WhenAll(initialTasks);
@@ -52,23 +54,45 @@ internal sealed partial class HealthCheckBackgroundService : BackgroundService
   private async Task RunCheckLoop(HiveHealthCheck check, CancellationToken stoppingToken)
   {
     var checkType = check.GetType();
-    var options = ResolveOptions(checkType);
+    var options = _resolver.Resolve(checkType);
     var interval = options.Interval ?? _config.GlobalOptions.Interval;
 
     using var timer = new PeriodicTimer(interval);
+    var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
 
-    while (await timer.WaitForNextTickAsync(stoppingToken))
+    try
     {
-      await EvaluateCheck(check, options, stoppingToken);
+      while (await timer.WaitForNextTickAsync(stoppingToken))
+      {
+        timeoutCts.CancelAfter(options.Timeout);
+        await EvaluateCheckCore(check, options, timeoutCts, stoppingToken);
+
+        if (!timeoutCts.TryReset())
+        {
+          timeoutCts.Dispose();
+          timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+        }
+      }
+    }
+    finally
+    {
+      timeoutCts.Dispose();
     }
   }
 
   private async Task EvaluateCheck(
     HiveHealthCheck check, HiveHealthCheckOptions options, CancellationToken stoppingToken)
   {
-    using var activity = HealthCheckActivitySource.Source.StartActivity($"HealthCheck: {check.Name}");
     using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
     timeoutCts.CancelAfter(options.Timeout);
+    await EvaluateCheckCore(check, options, timeoutCts, stoppingToken);
+  }
+
+  private async Task EvaluateCheckCore(
+    HiveHealthCheck check, HiveHealthCheckOptions options,
+    CancellationTokenSource timeoutCts, CancellationToken stoppingToken)
+  {
+    using var activity = HealthCheckActivitySource.Source.StartActivity($"HealthCheck: {check.Name}");
 
     var sw = Stopwatch.StartNew();
     try
@@ -80,7 +104,8 @@ internal sealed partial class HealthCheckBackgroundService : BackgroundService
     }
     catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
     {
-      // Host is shutting down — don't log, don't update
+      // Host is shutting down — graceful cancellation, no action needed
+      return;
     }
     catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
     {
@@ -99,43 +124,6 @@ internal sealed partial class HealthCheckBackgroundService : BackgroundService
       activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
       LogCheckThrewDuringEvaluation(_logger, check.Name, ex);
     }
-  }
-
-  private HiveHealthCheckOptions ResolveOptions(Type checkType)
-  {
-    if (_config.ExplicitRegistrations.TryGetValue(checkType, out var explicitOptions))
-    {
-      ApplyConfigurationOverrides(checkType, explicitOptions);
-      return explicitOptions;
-    }
-
-    var options = new HiveHealthCheckOptions();
-    ReflectionBridge.InvokeConfigureDefaults(checkType, options);
-    ApplyConfigurationOverrides(checkType, options);
-    return options;
-  }
-
-  private void ApplyConfigurationOverrides(Type checkType, HiveHealthCheckOptions options)
-  {
-    var checkName = ReflectionBridge.GetCheckName(checkType);
-    var section = _config.Configuration.GetSection($"{HealthChecksOptions.SectionKey}:Checks:{checkName}");
-    if (!section.Exists())
-      return;
-
-    if (section[nameof(HiveHealthCheckOptions.Interval)] is { } intervalStr && int.TryParse(intervalStr, out var intervalSecs))
-      options.Interval = TimeSpan.FromSeconds(intervalSecs);
-    if (section[nameof(HiveHealthCheckOptions.AffectsReadiness)] is { } affectsStr && bool.TryParse(affectsStr, out var affects))
-      options.AffectsReadiness = affects;
-    if (section[nameof(HiveHealthCheckOptions.BlockReadinessProbeOnStartup)] is { } blockStr && bool.TryParse(blockStr, out var block))
-      options.BlockReadinessProbeOnStartup = block;
-    if (section[nameof(HiveHealthCheckOptions.ReadinessThreshold)] is { } thresholdStr && Enum.TryParse<ReadinessThreshold>(thresholdStr, true, out var threshold))
-      options.ReadinessThreshold = threshold;
-    if (section[nameof(HiveHealthCheckOptions.FailureThreshold)] is { } failStr && int.TryParse(failStr, out var fail))
-      options.FailureThreshold = fail;
-    if (section[nameof(HiveHealthCheckOptions.SuccessThreshold)] is { } successStr && int.TryParse(successStr, out var success))
-      options.SuccessThreshold = success;
-    if (section[nameof(HiveHealthCheckOptions.Timeout)] is { } timeoutStr && int.TryParse(timeoutStr, out var timeoutSecs))
-      options.Timeout = TimeSpan.FromSeconds(timeoutSecs);
   }
 
   [LoggerMessage(LogLevel.Warning, "Health check '{CheckName}' threw during evaluation")]

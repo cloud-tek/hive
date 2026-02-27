@@ -14,6 +14,7 @@ internal sealed partial class HealthCheckStartupService : HostedStartupService<H
 {
   private readonly IEnumerable<HiveHealthCheck> _checks;
   private readonly HealthCheckRegistry _registry;
+  private readonly HealthCheckOptionsResolver _resolver;
   private readonly HealthCheckConfiguration _config;
   private readonly HealthCheckStartupGate _gate;
 
@@ -21,12 +22,14 @@ internal sealed partial class HealthCheckStartupService : HostedStartupService<H
     ILoggerFactory loggerFactory,
     IEnumerable<HiveHealthCheck> checks,
     HealthCheckRegistry registry,
+    HealthCheckOptionsResolver resolver,
     HealthCheckConfiguration config,
     HealthCheckStartupGate gate)
     : base(loggerFactory)
   {
     _checks = checks;
     _registry = registry;
+    _resolver = resolver;
     _config = config;
     _gate = gate;
   }
@@ -39,7 +42,7 @@ internal sealed partial class HealthCheckStartupService : HostedStartupService<H
       foreach (var check in _checks)
       {
         var checkType = check.GetType();
-        var options = ResolveOptions(checkType);
+        var options = _resolver.Resolve(checkType);
         _registry.Register(check.Name, options);
         BindCheckOptions(check, checkType);
       }
@@ -48,7 +51,7 @@ internal sealed partial class HealthCheckStartupService : HostedStartupService<H
       foreach (var check in _checks)
       {
         var checkType = check.GetType();
-        var options = ResolveOptions(checkType);
+        var options = _resolver.Resolve(checkType);
 
         if (!options.BlockReadinessProbeOnStartup)
           continue;
@@ -89,44 +92,6 @@ internal sealed partial class HealthCheckStartupService : HostedStartupService<H
     {
       _gate.Signal();
     }
-  }
-
-  private HiveHealthCheckOptions ResolveOptions(Type checkType)
-  {
-    // Priority: explicit registration > IConfiguration > ConfigureDefaults > global defaults
-    if (_config.ExplicitRegistrations.TryGetValue(checkType, out var explicitOptions))
-    {
-      ApplyConfigurationOverrides(checkType, explicitOptions);
-      return explicitOptions;
-    }
-
-    var options = new HiveHealthCheckOptions();
-    ReflectionBridge.InvokeConfigureDefaults(checkType, options);
-    ApplyConfigurationOverrides(checkType, options);
-    return options;
-  }
-
-  private void ApplyConfigurationOverrides(Type checkType, HiveHealthCheckOptions options)
-  {
-    var checkName = ReflectionBridge.GetCheckName(checkType);
-    var section = _config.Configuration.GetSection($"{HealthChecksOptions.SectionKey}:Checks:{checkName}");
-    if (!section.Exists())
-      return;
-
-    if (section[nameof(HiveHealthCheckOptions.Interval)] is { } intervalStr && int.TryParse(intervalStr, out var intervalSecs))
-      options.Interval = TimeSpan.FromSeconds(intervalSecs);
-    if (section[nameof(HiveHealthCheckOptions.AffectsReadiness)] is { } affectsStr && bool.TryParse(affectsStr, out var affects))
-      options.AffectsReadiness = affects;
-    if (section[nameof(HiveHealthCheckOptions.BlockReadinessProbeOnStartup)] is { } blockStr && bool.TryParse(blockStr, out var block))
-      options.BlockReadinessProbeOnStartup = block;
-    if (section[nameof(HiveHealthCheckOptions.ReadinessThreshold)] is { } thresholdStr && Enum.TryParse<ReadinessThreshold>(thresholdStr, true, out var threshold))
-      options.ReadinessThreshold = threshold;
-    if (section[nameof(HiveHealthCheckOptions.FailureThreshold)] is { } failStr && int.TryParse(failStr, out var fail))
-      options.FailureThreshold = fail;
-    if (section[nameof(HiveHealthCheckOptions.SuccessThreshold)] is { } successStr && int.TryParse(successStr, out var success))
-      options.SuccessThreshold = success;
-    if (section[nameof(HiveHealthCheckOptions.Timeout)] is { } timeoutStr && int.TryParse(timeoutStr, out var timeoutSecs))
-      options.Timeout = TimeSpan.FromSeconds(timeoutSecs);
   }
 
   private void BindCheckOptions(HiveHealthCheck check, Type checkType)
