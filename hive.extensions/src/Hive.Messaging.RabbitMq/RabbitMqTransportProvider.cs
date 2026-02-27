@@ -2,8 +2,6 @@ using Hive.Messaging.Configuration;
 using Hive.Messaging.RabbitMq.Configuration;
 using Hive.Messaging.Transport;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using RabbitMQ.Client;
 using Wolverine;
 using Wolverine.RabbitMQ;
 
@@ -106,56 +104,6 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
       opts.PublishMessage<T>()
         .ToRabbitQueue(queueName);
     }
-  }
-
-  /// <inheritdoc />
-  public IHealthChecksBuilder ConfigureHealthChecks(
-    IHealthChecksBuilder builder, MessagingOptions options, IConfiguration configuration)
-  {
-    var rmqOptions = ResolveOptions(configuration);
-
-    if (!string.IsNullOrEmpty(rmqOptions.ConnectionUri))
-    {
-      var uri = rmqOptions.ConnectionUri;
-      IConnection? connection = null;
-      builder.AddRabbitMQ(
-        factory: async _ =>
-        {
-          if (connection is not { IsOpen: true })
-          {
-            var factory = new ConnectionFactory { Uri = new Uri(uri) };
-            connection = await factory.CreateConnectionAsync();
-          }
-          return connection;
-        },
-        name: "rabbitmq");
-    }
-
-    foreach (var (name, _) in options.NamedBrokers)
-    {
-      var brokerSection = configuration.GetSection($"{MessagingOptions.SectionKey}:NamedBrokers:{name}:RabbitMq");
-      var brokerRmq = new RabbitMqOptions();
-      brokerSection.Bind(brokerRmq);
-
-      if (!string.IsNullOrEmpty(brokerRmq.ConnectionUri))
-      {
-        var brokerUri = brokerRmq.ConnectionUri;
-        IConnection? brokerConnection = null;
-        builder.AddRabbitMQ(
-          factory: async _ =>
-          {
-            if (brokerConnection is not { IsOpen: true })
-            {
-              var factory = new ConnectionFactory { Uri = new Uri(brokerUri) };
-              brokerConnection = await factory.CreateConnectionAsync();
-            }
-            return brokerConnection;
-          },
-          name: $"rabbitmq:{name}");
-      }
-    }
-
-    return builder;
   }
 
   /// <inheritdoc />
