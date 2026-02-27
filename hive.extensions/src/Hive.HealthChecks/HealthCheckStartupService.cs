@@ -134,7 +134,9 @@ internal sealed partial class HealthCheckStartupService : HostedStartupService<H
 
         if (section.Exists())
         {
-          var optionsInstance = Activator.CreateInstance(optionsType)!;
+          var optionsInstance = Activator.CreateInstance(optionsType)
+            ?? throw new InvalidOperationException(
+              $"Failed to create options instance for health check '{checkName}' (type: {optionsType.FullName}).");
           Microsoft.Extensions.Configuration.ConfigurationBinder.Bind(section, optionsInstance);
 
           var optionsProp = baseType.GetProperty(nameof(HiveHealthCheck<object>.Options))!;

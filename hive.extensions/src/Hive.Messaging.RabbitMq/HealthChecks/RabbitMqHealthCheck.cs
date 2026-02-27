@@ -11,9 +11,10 @@ namespace Hive.Messaging.RabbitMq.HealthChecks;
 /// <c>HealthChecks.RabbitMQ.RabbitMQHealthCheck</c> and maps results
 /// to <see cref="HealthCheckStatus"/>.
 /// </summary>
-public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck
+public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAsyncDisposable
 {
   private readonly global::HealthChecks.RabbitMQ.RabbitMQHealthCheck _inner;
+  private IConnection? _cachedConnection;
 
   /// <inheritdoc />
   public static string CheckName => "RabbitMq";
@@ -35,17 +36,25 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck
       ?? throw new InvalidOperationException(
         $"RabbitMq health check requires '{MessagingOptions.SectionKey}:RabbitMq:ConnectionUri' to be configured.");
 
-    IConnection? cachedConnection = null;
-
     _inner = new global::HealthChecks.RabbitMQ.RabbitMQHealthCheck(serviceProvider, async _ =>
     {
-      if (cachedConnection is { IsOpen: true })
-        return cachedConnection;
+      if (_cachedConnection is { IsOpen: true })
+        return _cachedConnection;
+
+      if (_cachedConnection is not null)
+        await _cachedConnection.DisposeAsync();
 
       var factory = new ConnectionFactory { Uri = new Uri(connectionUri) };
-      cachedConnection = await factory.CreateConnectionAsync();
-      return cachedConnection;
+      _cachedConnection = await factory.CreateConnectionAsync();
+      return _cachedConnection;
     });
+  }
+
+  /// <inheritdoc />
+  public async ValueTask DisposeAsync()
+  {
+    if (_cachedConnection is not null)
+      await _cachedConnection.DisposeAsync();
   }
 
   /// <inheritdoc />
