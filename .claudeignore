@@ -1,4 +1,10 @@
 **/[Oo]bj/*
+**/[Bb]in/*
 results/*
+artifacts/*
 .nuke/temp/*
 .idea/*
+*.user
+*.DotSettings.user
+**/*.nupkg
+**/TestResults/*
