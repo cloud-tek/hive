@@ -14,6 +14,7 @@ namespace Hive.Messaging.RabbitMq.HealthChecks;
 public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAsyncDisposable
 {
   private readonly global::HealthChecks.RabbitMQ.RabbitMQHealthCheck _inner;
+  private readonly SemaphoreSlim _connectionLock = new(1, 1);
   private IConnection? _cachedConnection;
 
   /// <inheritdoc />
@@ -38,23 +39,39 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAs
 
     _inner = new global::HealthChecks.RabbitMQ.RabbitMQHealthCheck(serviceProvider, async _ =>
     {
-      if (_cachedConnection is { IsOpen: true })
+      await _connectionLock.WaitAsync();
+      try
+      {
+        if (_cachedConnection is { IsOpen: true })
+          return _cachedConnection;
+
+        if (_cachedConnection is not null)
+          await _cachedConnection.DisposeAsync();
+
+        var factory = new ConnectionFactory { Uri = new Uri(connectionUri) };
+        _cachedConnection = await factory.CreateConnectionAsync();
         return _cachedConnection;
-
-      if (_cachedConnection is not null)
-        await _cachedConnection.DisposeAsync();
-
-      var factory = new ConnectionFactory { Uri = new Uri(connectionUri) };
-      _cachedConnection = await factory.CreateConnectionAsync();
-      return _cachedConnection;
+      }
+      finally
+      {
+        _connectionLock.Release();
+      }
     });
   }
 
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
-    if (_cachedConnection is not null)
-      await _cachedConnection.DisposeAsync();
+    await _connectionLock.WaitAsync();
+    try
+    {
+      if (_cachedConnection is not null)
+        await _cachedConnection.DisposeAsync();
+    }
+    finally
+    {
+      _connectionLock.Dispose();
+    }
   }
 
   /// <inheritdoc />
