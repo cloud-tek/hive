@@ -1,0 +1,4 @@
+**/[Oo]bj/*
+results/*
+.nuke/temp/*
+.idea/*
