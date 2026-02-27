@@ -1,12 +1,11 @@
 using Hive.Messaging.Configuration;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Wolverine;
 
 namespace Hive.Messaging.Transport;
 
 /// <summary>
-/// Provides transport-specific Wolverine configuration, routing, health checks, and validation.
+/// Provides transport-specific Wolverine configuration, routing, and validation.
 /// Implemented by transport packages (e.g., Hive.Messaging.RabbitMq).
 /// </summary>
 public interface IMessagingTransportProvider
@@ -32,12 +31,6 @@ public interface IMessagingTransportProvider
   /// Publish a message type to a named queue (point-to-point).
   /// </summary>
   void PublishToQueue<T>(WolverineOptions opts, string queueName, string? brokerName);
-
-  /// <summary>
-  /// Register transport-specific health checks.
-  /// </summary>
-  IHealthChecksBuilder ConfigureHealthChecks(
-    IHealthChecksBuilder builder, MessagingOptions options, IConfiguration configuration);
 
   /// <summary>
   /// Validate transport-specific options. Returns validation error messages, or empty if valid.

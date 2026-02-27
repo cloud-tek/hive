@@ -1,4 +1,6 @@
+using Hive.HealthChecks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hive.Middleware;
@@ -37,10 +39,18 @@ public class ReadinessMiddleware
   {
     if (context.Request.Method == "GET" && context.Request.Path == Endpoint)
     {
-      context.Response.StatusCode = service.IsReady ? 200 : 503;
+      var provider = context.RequestServices.GetService<IHealthCheckStateProvider>();
+      var healthChecksReady = provider is null
+        || provider.GetSnapshots()
+          .Where(s => s.AffectsReadiness)
+          .All(s => s.IsPassingForReadiness);
+
+      context.Response.StatusCode = service.IsReady && healthChecksReady ? 200 : 503;
       context.Response.ContentType = "application/json";
 
-      await context.Response.WriteAsJsonAsync(new ReadinessResponse(service), Serialization.JsonOptions.DefaultIndented);
+      var response = new ReadinessResponse(service, provider);
+
+      await context.Response.WriteAsJsonAsync(response, Serialization.JsonOptions.DefaultIndented);
       return;
     }
 

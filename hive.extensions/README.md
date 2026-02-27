@@ -11,10 +11,12 @@ graph TB
         HTTPTesting[Hive.HTTP.Testing]
         Messaging[Hive.Messaging]
         MessagingRmq[Hive.Messaging.RabbitMq]
+        HealthChecks[Hive.HealthChecks]
     end
 
     subgraph Dependencies
         Abstractions[Hive.Abstractions]
+        MicroServices[Hive.MicroServices]
         Refit[Refit]
         Polly[Microsoft.Extensions.Http.Resilience]
         Wolverine[Wolverine]
@@ -31,11 +33,17 @@ graph TB
     Messaging --> MessagingRmq
     WolverineRmq --> MessagingRmq
 
+    Abstractions --> HealthChecks
+    MicroServices --> HealthChecks
+    HealthChecks -.-> MessagingRmq
+
     style HTTP fill:#e1f5ff,stroke:#01579b,stroke-width:3px
     style HTTPTesting fill:#b3e5fc,stroke:#0277bd
     style Messaging fill:#e1f5ff,stroke:#01579b,stroke-width:3px
     style MessagingRmq fill:#b3e5fc,stroke:#0277bd
+    style HealthChecks fill:#e1f5ff,stroke:#01579b,stroke-width:3px
     style Abstractions fill:#81d4fa,stroke:#0288d1
+    style MicroServices fill:#81d4fa,stroke:#0288d1
     style Refit fill:#e0e0e0,stroke:#757575
     style Polly fill:#e0e0e0,stroke:#757575
     style Wolverine fill:#e0e0e0,stroke:#757575
@@ -64,24 +72,33 @@ Opinionated messaging extension built on Wolverine. Provides a fluent builder AP
 
 RabbitMQ transport provider for Hive.Messaging. Bridges Hive configuration to Wolverine's RabbitMQ transport with support for named brokers, auto-provisioning, and health checks.
 
+### [Hive.HealthChecks](src/Hive.HealthChecks/)
+
+Application-level health check framework with threshold-based readiness gating, per-check timeouts, and distributed tracing. Provides a fluent builder API for registering health checks that influence Kubernetes readiness probes via configurable failure/success thresholds.
+
+[Read Full Documentation](src/Hive.HealthChecks/README.md)
+
 ## Module Structure
 
 ```
 hive.extensions/
 ├── src/
-│   ├── Hive.HTTP/                # HTTP client extension
-│   ├── Hive.HTTP.Testing/        # HTTP testing support
-│   ├── Hive.Messaging/           # Messaging extension (Wolverine)
-│   └── Hive.Messaging.RabbitMq/  # RabbitMQ transport provider
+│   ├── Hive.HealthChecks/         # Health check framework
+│   ├── Hive.HTTP/                 # HTTP client extension
+│   ├── Hive.HTTP.Testing/         # HTTP testing support
+│   ├── Hive.Messaging/            # Messaging extension (Wolverine)
+│   └── Hive.Messaging.RabbitMq/   # RabbitMQ transport provider
 └── tests/
-    ├── Hive.HTTP.Tests/          # HTTP test suite
-    └── Hive.Messaging.Tests/     # Messaging test suite
+    ├── Hive.HealthChecks.Tests/   # Health check test suite
+    ├── Hive.HTTP.Tests/           # HTTP test suite
+    └── Hive.Messaging.Tests/      # Messaging test suite
 ```
 
 ## Package Information
 
 | Package | Description | Key Dependencies |
 |---------|-------------|------------------|
+| `Hive.HealthChecks` | Threshold-based health checks with readiness gating and tracing | Hive.Abstractions, Hive.MicroServices |
 | `Hive.HTTP` | Typed HTTP clients with auth, resilience, and telemetry | Refit, Microsoft.Extensions.Http.Resilience |
 | `Hive.HTTP.Testing` | Test handler injection and mock responses | Hive.HTTP |
 | `Hive.Messaging` | Message handling and sending with readiness gating and telemetry | Wolverine |

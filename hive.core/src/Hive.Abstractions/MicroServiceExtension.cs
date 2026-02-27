@@ -65,16 +65,6 @@ public abstract class MicroServiceExtension
   }
 
   /// <summary>
-  /// Virtual method to override in order to configure custom healthchecks with the IHealthChecksBuilder
-  /// </summary>
-  /// <param name="builder"></param>
-  /// <returns>The IHealthChecksBuilder</returns>
-  public virtual IHealthChecksBuilder ConfigureHealthChecks(IHealthChecksBuilder builder)
-  {
-    return builder;
-  }
-
-  /// <summary>
   /// Virtual method to override in order to configure the IServiceCollection for the service
   /// </summary>
   /// <param name="services"></param>

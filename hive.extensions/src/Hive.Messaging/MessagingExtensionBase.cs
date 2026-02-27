@@ -11,15 +11,11 @@ namespace Hive.Messaging;
 internal abstract class MessagingExtensionBase<TSelf> : MicroServiceExtension<TSelf>, IActivitySourceProvider
   where TSelf : MessagingExtensionBase<TSelf>
 {
-  private MessagingOptions? _messagingOptions;
-  private IMessagingTransportProvider? _transportProvider;
-  private IConfiguration? _configuration;
-
   protected MessagingExtensionBase(IMicroServiceCore service) : base(service) { }
 
   public IEnumerable<string> ActivitySourceNames => ["Wolverine"];
 
-  protected void ConfigureWolverineCore(
+  protected static void ConfigureWolverineCore(
     IServiceCollection svc,
     IConfiguration configuration,
     IMicroServiceCore microservice,
@@ -29,9 +25,6 @@ internal abstract class MessagingExtensionBase<TSelf> : MicroServiceExtension<TS
     var options = new MessagingOptions();
     if (messagingSection.Exists())
       messagingSection.Bind(options);
-
-    _messagingOptions = options;
-    _configuration = configuration;
 
     svc.AddWolverine(opts =>
     {
@@ -48,7 +41,6 @@ internal abstract class MessagingExtensionBase<TSelf> : MicroServiceExtension<TS
 
       // Provider set explicitly by UseRabbitMq() or similar on the builder
       var provider = applyBuilder(opts, options);
-      _transportProvider = provider;
 
       // Apply transport configuration
       provider?.ConfigureTransport(opts, options, configuration);
@@ -57,13 +49,5 @@ internal abstract class MessagingExtensionBase<TSelf> : MicroServiceExtension<TS
     svc.Decorate<IMessageBus, TelemetryMessageBus>();
     svc.AddSingleton<WolverineSendActivityListener>();
     svc.AddHostedService(sp => sp.GetRequiredService<WolverineSendActivityListener>());
-  }
-
-  public override IHealthChecksBuilder ConfigureHealthChecks(IHealthChecksBuilder builder)
-  {
-    if (_transportProvider != null && _messagingOptions != null && _configuration != null)
-      _transportProvider.ConfigureHealthChecks(builder, _messagingOptions, _configuration);
-
-    return builder;
   }
 }
