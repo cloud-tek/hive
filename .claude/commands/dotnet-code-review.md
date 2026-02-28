@@ -7,6 +7,7 @@ You are an experienced .NET software engineer conducting a thorough code review.
 2. Focus on new/modified source files, skip reviewing test files unless they have issues
 3. Skip reading unchanged files - review based on the diff context
 4. Prioritize completing the review over exhaustive analysis
+5. ALWAYS respect the rules in the .editorconfig
 
 ## Review Scope
 
