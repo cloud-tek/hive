@@ -1,4 +1,5 @@
 using System.Collections;
+using Hive.Configuration;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,12 +46,7 @@ public class FunctionHost : IFunctionHost
 
     // Eagerly initialize ConfigurationRoot to eliminate temporal coupling
     // This ensures ConfigurationRoot is always available, even before RunAsync/InitializeAsync
-    ConfigurationRoot = new ConfigurationBuilder()
-      .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-      .AddJsonFile($"appsettings.{Environment}.json", optional: true)
-      .AddJsonFile("appsettings.shared.json", optional: true)
-      .AddEnvironmentVariables()
-      .Build();
+    ConfigurationRoot = ConfigurationBuilderFactory.CreateDefault(Environment).Build();
 
     // Core configuration - register the FunctionHost instance
     configureActions.Add((services, config) =>
@@ -163,10 +159,11 @@ public class FunctionHost : IFunctionHost
     // Load configuration (same pattern as MicroService)
     builder.ConfigureAppConfiguration((context, config) =>
     {
-      config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-      config.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true);
-      config.AddJsonFile("appsettings.shared.json", optional: true);
-      config.AddEnvironmentVariables();
+      config
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true)
+        .AddSharedConfiguration(context.HostingEnvironment.EnvironmentName)
+        .AddEnvironmentVariables();
     });
 
     // Configure Azure Functions Worker

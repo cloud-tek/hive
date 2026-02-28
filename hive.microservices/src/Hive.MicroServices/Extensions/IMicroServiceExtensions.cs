@@ -1,6 +1,5 @@
 using System.Reflection;
 using Hive.Extensions;
-using Hive.MicroServices.Middleware;
 using Hive.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -106,13 +105,6 @@ public static class IMicroServiceExtensions
       })
       .Configure(app =>
       {
-        // Configure request logging middleware if present
-        var lex = service.Extensions.SingleOrDefault(ex => ex is IHaveRequestLoggingMiddleware) as IHaveRequestLoggingMiddleware;
-        if (lex is not null && lex.ConfigureRequestLoggingMiddleware != null)
-        {
-          lex.ConfigureRequestLoggingMiddleware(app);
-        }
-
         // Run all pipeline configuration actions
         service.ConfigurePipelineActions.ForEach(action => action(app));
       });
@@ -135,11 +127,6 @@ public static class IMicroServiceExtensions
     }
 
     service.ConfigurePipelineActions.Add(MicroService.Middleware.MicroServiceLifecycleMiddlewares);
-
-    service.ConfigurePipelineActions.Add(app =>
-    {
-      app.UseMiddleware<TracingMiddleware>();
-    });
 
     return microservice;
   }

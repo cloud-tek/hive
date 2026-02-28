@@ -13,22 +13,24 @@ public static class Serialization
   /// </summary>
   public static class JsonOptions
   {
-#pragma warning disable CA221
+    private static readonly JsonSerializerOptions _defaultIndented = CreateDefaultIndented();
+
     /// <summary>
     /// The default serialization options
     /// </summary>
-    public static readonly JsonSerializerOptions DefaultIndented;
-#pragma warning restore CA221
+    public static JsonSerializerOptions DefaultIndented => _defaultIndented;
 
-    static JsonOptions()
+    private static JsonSerializerOptions CreateDefaultIndented()
     {
-      DefaultIndented = new JsonSerializerOptions()
+      var options = new JsonSerializerOptions()
       {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         WriteIndented = true
       };
-      DefaultIndented.Converters.Add(new JsonStringEnumConverter());
+      options.Converters.Add(new JsonStringEnumConverter());
+      options.MakeReadOnly();
+      return options;
     }
   }
 }

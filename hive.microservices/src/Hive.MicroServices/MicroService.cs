@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using Hive.Configuration;
 using Hive.Exceptions;
 using Hive.Extensions;
 using Microsoft.AspNetCore.Builder;
@@ -41,13 +42,7 @@ public partial class MicroService : MicroServiceBase, IMicroService
 
     // Eagerly initialize ConfigurationRoot to eliminate temporal coupling
     // This ensures ConfigurationRoot is always available, even before InitializeAsync
-    ConfigurationRoot = new ConfigurationBuilder()
-      .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-      .AddJsonFile($"appsettings.{Environment}.json", optional: true)
-      .AddJsonFile("shared.json", optional: true)
-      .AddJsonFile($"shared.{Environment}.json", optional: true)
-      .AddEnvironmentVariables()
-      .Build();
+    ConfigurationRoot = ConfigurationBuilderFactory.CreateDefault(Environment).Build();
 
     ConfigureActions.Add((svc, configuration) =>
     {
@@ -319,10 +314,9 @@ public partial class MicroService : MicroServiceBase, IMicroService
           else
           {
             cfg
-              .AddJsonFile("appsettings.json", optional: false)
+              .AddJsonFile("appsettings.json", optional: true)
               .AddJsonFile($"appsettings.{Environment}.json", optional: true)
-              .AddJsonFile("shared.json", optional: true)
-              .AddJsonFile($"shared.{Environment}.json", optional: true)
+              .AddSharedConfiguration(Environment)
               .AddEnvironmentVariables()
               .AddCommandLine(args);
           }
@@ -346,17 +340,6 @@ public partial class MicroService : MicroServiceBase, IMicroService
             })
             .Configure(app =>
             {
-              /* TODO:
-               var listener = new TestDiagnosticListener();
-               diagnosticListener.SubscribeWithAdapter(listener);
-               */
-
-              var lex = Extensions.SingleOrDefault(ex => ex is IHaveRequestLoggingMiddleware) as IHaveRequestLoggingMiddleware;
-              if (lex is not null && lex.ConfigureRequestLoggingMiddleware != null)
-              {
-                lex.ConfigureRequestLoggingMiddleware(app);
-              }
-
               ConfigurePipelineActions.ForEach(action => action(app));
             })
             .UseSetting(WebHostDefaults.ApplicationKey, MicroServiceEntrypointAssemblyProvider().FullName);
