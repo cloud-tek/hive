@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +54,7 @@ public static partial class ServiceCollectionExtensions
   /// <summary>
   /// Throws an <see cref="OptionsValidationException"/> with the collected validation errors.
   /// </summary>
+  [DoesNotReturn]
   private static void ThrowValidationErrors(string key, Type optionsType, IEnumerable<string> errors)
   {
     var errorList = errors.ToList();
@@ -83,7 +86,7 @@ public static partial class ServiceCollectionExtensions
     }
 
     ThrowValidationErrors(key, typeof(TOptions), errors);
-    return null!; // unreachable
+    throw new UnreachableException();
   }
 
   /// <summary>
@@ -113,7 +116,7 @@ public static partial class ServiceCollectionExtensions
     }
 
     ThrowValidationErrors(key, typeof(TOptions), errors);
-    return null; // unreachable
+    throw new UnreachableException();
   }
 
   /// <summary>
