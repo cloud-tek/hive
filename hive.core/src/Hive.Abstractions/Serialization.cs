@@ -16,8 +16,12 @@ public static class Serialization
     private static readonly JsonSerializerOptions _defaultIndented = CreateDefaultIndented();
 
     /// <summary>
-    /// The default serialization options
+    /// The default serialization options.
     /// </summary>
+    /// <remarks>
+    /// This instance is frozen via <see cref="JsonSerializerOptions.MakeReadOnly()"/> and is safe to share across threads.
+    /// Any attempt to mutate properties or converters will throw <see cref="InvalidOperationException"/>.
+    /// </remarks>
     public static JsonSerializerOptions DefaultIndented => _defaultIndented;
 
     private static JsonSerializerOptions CreateDefaultIndented()
