@@ -6,7 +6,7 @@ using FluentAssertions;
 using Hive.MicroServices.Api;
 using Hive.MicroServices.Extensions;
 using Hive.MicroServices.Testing;
-using Hive.Testing;
+using CloudTek.Testing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

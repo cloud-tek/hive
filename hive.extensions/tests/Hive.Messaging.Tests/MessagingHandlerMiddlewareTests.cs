@@ -2,7 +2,7 @@ using FluentAssertions;
 using Hive.Messaging.Middleware;
 using Hive.Messaging.Telemetry;
 using Hive.Messaging.Tests.TestFixtures;
-using Hive.Testing;
+using CloudTek.Testing;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Xunit;
 

@@ -8,8 +8,6 @@ namespace Hive.Testing;
 /// </summary>
 public static class ConfigurationExtensions
 {
-  private const string HiveLoggingLogzIoEnvVar = "Hive__Logging__LogzIo__Token";
-
   /// <summary>
   /// Adds the embedded configuration to the configuration builder
   /// </summary>
@@ -46,27 +44,6 @@ public static class ConfigurationExtensions
       { "Hive:Logging:Level", "Information" }
     });
 
-    return builder;
-  }
-
-  /// <summary>
-  /// Adds the test Logz.io configuration to the configuration builder
-  /// </summary>
-  /// <param name="builder"></param>
-  /// <returns><see cref="IConfigurationBuilder"/></returns>
-  /// <exception cref="ArgumentNullException">Thrown when the provided argument is null</exception>
-  public static IConfigurationBuilder UseTestLogzIoConfiguration(this IConfigurationBuilder builder)
-  {
-#pragma warning disable CA2208, MA0015
-    builder.AddInMemoryCollection(new Dictionary<string, string?>()
-    {
-      { "Hive:Logging:LogzIo:Region", "eu" },
-      {
-        "Hive:Logging:LogzIo:Token",
-        Environment.GetEnvironmentVariable(HiveLoggingLogzIoEnvVar) ?? throw new ArgumentNullException($"Missing environment variable {HiveLoggingLogzIoEnvVar}")
-      }
-    });
-#pragma warning restore CA2208, MA0015
     return builder;
   }
 }

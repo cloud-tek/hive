@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Hive.Testing;
+using CloudTek.Testing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
 using Xunit;

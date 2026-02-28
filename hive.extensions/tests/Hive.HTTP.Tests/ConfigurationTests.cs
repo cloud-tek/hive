@@ -2,6 +2,7 @@ using FluentAssertions;
 using Hive.HTTP.Testing;
 using Hive.MicroServices;
 using Hive.MicroServices.Testing;
+using CloudTek.Testing;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Hive.Testing;
+using CloudTek.Testing;
 using Microsoft.Extensions.Configuration;
 using OpenTelemetry.Exporter;
 using Xunit;

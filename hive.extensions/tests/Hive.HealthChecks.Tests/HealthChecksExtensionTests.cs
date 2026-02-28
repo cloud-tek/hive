@@ -2,7 +2,7 @@ using FluentAssertions;
 using Hive.HealthChecks;
 using Hive.HealthChecks.Tests.Fakes;
 using Hive.MicroServices;
-using Hive.Testing;
+using CloudTek.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;

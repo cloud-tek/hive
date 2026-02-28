@@ -1,6 +1,6 @@
 using FluentAssertions;
 using FluentValidation.TestHelper;
-using Hive.Testing;
+using CloudTek.Testing;
 using Xunit;
 
 namespace Hive.OpenTelemetry.Tests;

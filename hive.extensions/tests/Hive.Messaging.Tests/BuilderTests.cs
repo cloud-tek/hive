@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Hive.Messaging.Configuration;
-using Hive.Testing;
+using CloudTek.Testing;
 using Xunit;
 
 namespace Hive.Messaging.Tests;

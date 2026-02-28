@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Net.Http;
 using FluentAssertions;
-using Hive.Testing;
+using CloudTek.Testing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Xunit;

@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Hive.HealthChecks;
 using Hive.MicroServices;
-using Hive.Testing;
+using CloudTek.Testing;
 using Xunit;
 
 namespace Hive.HealthChecks.Tests;
