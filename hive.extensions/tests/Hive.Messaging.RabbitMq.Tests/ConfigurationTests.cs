@@ -1,8 +1,8 @@
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.Messaging.Configuration;
 using Hive.Messaging.RabbitMq;
 using Hive.Messaging.RabbitMq.Configuration;
-using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 

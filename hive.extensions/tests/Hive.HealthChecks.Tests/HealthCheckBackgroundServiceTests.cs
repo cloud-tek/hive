@@ -1,7 +1,7 @@
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.HealthChecks;
 using Hive.HealthChecks.Tests.Fakes;
-using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;

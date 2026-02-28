@@ -1,3 +1,4 @@
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.HTTP.Testing;
 using Hive.MicroServices;

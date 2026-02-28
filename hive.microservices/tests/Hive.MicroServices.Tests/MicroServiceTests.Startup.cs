@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.Extensions;
 using Hive.MicroServices.Api;

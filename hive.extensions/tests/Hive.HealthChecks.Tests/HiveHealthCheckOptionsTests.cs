@@ -1,6 +1,6 @@
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.HealthChecks;
-using Hive.Testing;
 using Xunit;
 
 namespace Hive.HealthChecks.Tests;

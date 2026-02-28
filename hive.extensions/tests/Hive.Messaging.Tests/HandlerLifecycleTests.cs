@@ -1,7 +1,7 @@
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.Messaging.Handling;
 using Hive.Messaging.Tests.TestFixtures;
-using Hive.Testing;
 using Xunit;
 
 namespace Hive.Messaging.Tests;

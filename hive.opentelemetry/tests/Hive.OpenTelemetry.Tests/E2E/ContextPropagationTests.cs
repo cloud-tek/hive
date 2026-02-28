@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net.Http;
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.MicroServices;
 using Hive.MicroServices.Api;
