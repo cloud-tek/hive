@@ -1,6 +1,6 @@
 using System.Net.Http;
-using FluentAssertions;
 using CloudTek.Testing;
+using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Xunit;
 

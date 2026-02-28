@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.MicroServices.Api;
 using Hive.MicroServices.Testing;
-using CloudTek.Testing;
 using Hive.Testing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

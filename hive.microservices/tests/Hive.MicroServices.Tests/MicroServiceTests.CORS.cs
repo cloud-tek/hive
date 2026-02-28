@@ -1,7 +1,7 @@
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.Configuration.CORS;
 using Hive.MicroServices.Extensions;
-using CloudTek.Testing;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;

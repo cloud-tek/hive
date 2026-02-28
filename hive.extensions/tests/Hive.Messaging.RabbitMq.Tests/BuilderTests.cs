@@ -1,7 +1,7 @@
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.Messaging.RabbitMq.Configuration;
 using Hive.Messaging.RabbitMq.Transport;
-using CloudTek.Testing;
 using Xunit;
 
 namespace Hive.Messaging.RabbitMq.Tests;

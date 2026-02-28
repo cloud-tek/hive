@@ -1,7 +1,7 @@
 using System.Diagnostics;
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.Messaging.Telemetry;
-using CloudTek.Testing;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Xunit;
 

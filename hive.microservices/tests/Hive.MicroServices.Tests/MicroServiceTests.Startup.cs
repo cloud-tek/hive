@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.Extensions;
 using Hive.MicroServices.Api;
@@ -7,7 +8,6 @@ using Hive.MicroServices.GraphQL;
 using Hive.MicroServices.Grpc;
 using Hive.MicroServices.Lifecycle;
 using Hive.MicroServices.Testing;
-using CloudTek.Testing;
 using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;

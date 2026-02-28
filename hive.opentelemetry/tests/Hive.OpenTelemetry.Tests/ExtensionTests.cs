@@ -1,7 +1,7 @@
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.MicroServices;
 using Hive.MicroServices.Extensions;
-using CloudTek.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
