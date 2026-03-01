@@ -4,6 +4,11 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <IsPackable>true</IsPackable>
+        <RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
+        <PackageId>Hive.OpenTelemetry</PackageId>
+        <PackageDescription>OpenTelemetry integration for Hive microservices</PackageDescription>
+        <Authors>cloud-tek</Authors>
     </PropertyGroup>
 
     <ItemGroup>

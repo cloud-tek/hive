@@ -28,7 +28,7 @@ Hive is a comprehensive .NET microservices framework that embraces:
 
 - **Extension-based architecture** - All features are implemented as extensions to the core `IMicroService` abstraction
 - **Configuration flexibility** - Pre-configuration and post-configuration patterns with validation
-- **Multiple hosting models** - REST APIs, GraphQL, gRPC, background jobs, and Azure Functions (planned)
+- **Multiple hosting models** - REST APIs, GraphQL, gRPC, background jobs, and Azure Functions
 - **Production-ready observability** - Built-in OpenTelemetry integration for logs, traces, and metrics
 - **Testing utilities** - Comprehensive testing support with xUnit extensions and TestServer integration
 - **Kubernetes-ready** - Built-in health probes and lifecycle management
@@ -88,6 +88,12 @@ graph TB
         OpenTelemetry[Hive.OpenTelemetry<br/>Logs, Traces, Metrics]
     end
 
+    subgraph "Extensions"
+        HTTP[Hive.HTTP<br/>Typed HTTP Clients]
+        Messaging[Hive.Messaging<br/>Wolverine Messaging]
+        HealthChecks[Hive.HealthChecks<br/>Readiness Gating]
+    end
+
     subgraph "Microservices Framework"
         MicroServices[Hive.MicroServices<br/>Core orchestration]
         Api[Hive.MicroServices.Api<br/>REST APIs]
@@ -110,11 +116,17 @@ graph TB
     MicroServices --> Grpc
     MicroServices --> Job
     MicroServices --> MSTesting
+    MicroServices --> HTTP
+    MicroServices --> Messaging
+    MicroServices --> HealthChecks
 
     style Abstractions fill:#e1f5ff,stroke:#01579b,stroke-width:3px
     style MicroServices fill:#81d4fa,stroke:#0277bd,stroke-width:2px
     style OpenTelemetry fill:#b3e5fc,stroke:#0288d1
     style Functions fill:#b3e5fc,stroke:#0288d1
+    style HTTP fill:#c8e6c9,stroke:#2e7d32
+    style Messaging fill:#c8e6c9,stroke:#2e7d32
+    style HealthChecks fill:#c8e6c9,stroke:#2e7d32
 ```
 
 ---
@@ -131,6 +143,19 @@ hive/
 │   │   └── Hive.Testing/              # Testing utilities
 │   └── tests/
 │       └── Hive.Abstractions.Tests/
+│
+├── hive.extensions/                    # Feature extensions
+│   ├── src/
+│   │   ├── Hive.HTTP/                 # Typed HTTP clients (Refit)
+│   │   ├── Hive.HTTP.Testing/         # HTTP testing utilities
+│   │   ├── Hive.Messaging/            # Messaging abstractions (Wolverine)
+│   │   ├── Hive.Messaging.RabbitMq/   # RabbitMQ transport
+│   │   └── Hive.HealthChecks/         # Threshold-based readiness gating
+│   └── tests/
+│       ├── Hive.HTTP.Tests/
+│       ├── Hive.Messaging.Tests/
+│       ├── Hive.Messaging.RabbitMq.Tests/
+│       └── Hive.HealthChecks.Tests/
 │
 ├── hive.microservices/                 # Microservices framework
 │   ├── demo/                           # Demo applications
@@ -152,7 +177,13 @@ hive/
 │   └── tests/
 │       └── Hive.OpenTelemetry.Tests/
 │
-├── hive.logging/                       # Legacy logging (being migrated)
+├── hive.functions/                     # Azure Functions integration
+│   ├── src/
+│   │   └── Hive.Functions/
+│   ├── demo/
+│   │   └── Hive.Functions.Demo/
+│   └── tests/
+│       └── Hive.Functions.Tests/
 │
 ├── Directory.Packages.props            # Centralized package versions
 ├── Directory.Build.props               # Global MSBuild properties
@@ -165,8 +196,10 @@ hive/
 
 Modules follow lowercase naming with dot separators:
 - ✅ `hive.core`
+- ✅ `hive.extensions`
 - ✅ `hive.microservices`
 - ✅ `hive.opentelemetry`
+- ✅ `hive.functions`
 
 Each module MUST follow the structure:
 ```
@@ -261,13 +294,33 @@ Foundation layer providing core abstractions and testing utilities.
 - [Hive.Testing](./hive.core/src/Hive.Testing/) - xUnit attributes, test extensions, port providers
 
 **Key Features:**
-- `IMicroService` interface
-- `MicroServiceExtension` base class
+- `IMicroServiceCore` and `IMicroService` interfaces
+- `MicroServiceExtension<T>` base class with compile-time safety
 - Pre/post configuration patterns with validation
-- Test categorization attributes ([UnitTest], [IntegrationTest], etc.)
-- `TestPortProvider` for integration testing
+- Test categorization attributes via CloudTek.Testing ([UnitTest], [IntegrationTest], etc.)
 
 📖 [Read Full Documentation](./hive.core/readme.md)
+
+---
+
+### [hive.extensions](./hive.extensions/)
+
+Feature extensions for messaging, HTTP clients, and health checks.
+
+**Packages:**
+- [Hive.HTTP](./hive.extensions/src/Hive.HTTP/) - Typed HTTP clients with Refit, resilience, and telemetry
+- [Hive.HTTP.Testing](./hive.extensions/src/Hive.HTTP.Testing/) - HTTP client testing utilities
+- [Hive.Messaging](./hive.extensions/src/Hive.Messaging/) - Messaging abstractions built on Wolverine
+- [Hive.Messaging.RabbitMq](./hive.extensions/src/Hive.Messaging.RabbitMq/) - RabbitMQ transport for Hive.Messaging
+- [Hive.HealthChecks](./hive.extensions/src/Hive.HealthChecks/) - Threshold-based readiness gating with background health monitoring
+
+**Key Features:**
+- Typed HTTP clients with authentication, circuit breakers, and telemetry
+- Wolverine-based messaging with readiness middleware
+- Health check registry with configurable thresholds and startup gating
+- Cross-extension tracing via `IActivitySourceProvider`
+
+📖 [Read Full Documentation](./hive.extensions/README.md)
 
 ---
 
@@ -401,6 +454,7 @@ Hive uses custom xUnit attributes for test categorization:
 ### Module Documentation
 
 - [hive.core/readme.md](./hive.core/readme.md) - Foundation layer documentation
+- [hive.extensions/README.md](./hive.extensions/README.md) - Extensions module (HTTP, Messaging, HealthChecks)
 - [hive.microservices/README.md](./hive.microservices/README.md) - Microservices framework guide
 - [hive.functions/README.md](./hive.functions/README.md) - Azure Functions integration guide
 - [hive.opentelemetry/README.md](./hive.opentelemetry/README.md) - OpenTelemetry integration guide
@@ -419,9 +473,9 @@ Hive uses custom xUnit attributes for test categorization:
 ### Creating a New Extension
 
 ```csharp
-public class MyExtension : MicroServiceExtension
+public class MyExtension : MicroServiceExtension<MyExtension>
 {
-    public MyExtension(IMicroService service) : base(service)
+    public MyExtension(IMicroServiceCore service) : base(service)
     {
         // Configure during construction
         ConfigureActions.Add((services, config) =>
@@ -430,24 +484,25 @@ public class MyExtension : MicroServiceExtension
         });
     }
 
-    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    public override IServiceCollection ConfigureServices(
+        IServiceCollection services, IMicroServiceCore microservice)
     {
         // Additional service configuration
+        return services;
     }
 
-    public override void Configure(IApplicationBuilder app)
+    public override IApplicationBuilder Configure(
+        IApplicationBuilder app, IMicroServiceCore microservice)
     {
         app.UseMiddleware<MyMiddleware>();
+        return app;
     }
 
-    public override void ConfigureEndpoints(IEndpointRouteBuilder endpoints)
+    public override IEndpointRouteBuilder ConfigureEndpoints(
+        IEndpointRouteBuilder builder)
     {
-        endpoints.MapGet("/my-endpoint", () => "Hello!");
-    }
-
-    public override void ConfigureHealthChecks(IHealthChecksBuilder healthChecks)
-    {
-        healthChecks.AddCheck<MyHealthCheck>("my-check");
+        builder.MapGet("/my-endpoint", () => "Hello!");
+        return builder;
     }
 }
 
