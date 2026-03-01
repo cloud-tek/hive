@@ -1,38 +1,51 @@
 ## Summary
 
-Replace `Hive.Testing` with the upstream `CloudTek.Testing` NuGet package (v10.0.1), eliminating 883 lines of duplicated test utility code.
+Remove dead code, redundant middleware, and duplicated patterns identified during a comprehensive codebase review.
 
 ### What changed
 
-- **Added** `CloudTek.Testing` v10.0.1 as a centrally-managed NuGet dependency
-- **Deleted 18 source files** from `Hive.Testing` — test attributes, discoverers, `SmartFact`/`SmartTheory`, `TestPortProvider`, `EnvironmentVariableScope`, `TestExecutionResolver`, enums, and internal constants (all now provided by `CloudTek.Testing`)
-- **Deleted `Hive.Testing.Tests`** project — tests for trait attributes and `SmartFact` are now owned by the upstream package
-- **Slimmed `Hive.Testing`** to a non-packable project containing only two Hive-specific extension classes:
-  - `ConfigurationExtensions` — `UseEmbeddedConfiguration()`, `UseDefaultLoggingConfiguration()`
-  - `MicroServiceTestExtensions` — `ShouldStart()`, `ShouldFailToStart()`
-- **Removed `UseTestLogzIoConfiguration()`** — LogzIo has been dropped
-- **Updated `using` statements** across 50 test files (`using Hive.Testing;` → `using CloudTek.Testing;`)
+**Dead code removal**
+- Deleted `IHaveRequestLoggingMiddleware` interface and all usage sites (Serilog logging module remnant)
+- Deleted `TracingMiddleware` — duplicates OpenTelemetry ASP.NET Core instrumentation and can cause orphaned activities
+- Deleted `MiddlewareDiagnosticListener` — never instantiated, uses `Console.WriteLine`
+- Deleted empty `IFunctionHostExtensions` placeholder class
+- Deleted `CompositeConfigurationException` — never thrown or caught
+- Removed `InternalsVisibleTo("Hive.Logging")` for the deleted logging module
+- Removed debug artifact `ConfigurePipelineActions.GetType()` no-op call
+- Removed dead `IHaveRequestLoggingMiddleware` checks in `MicroService.Configure()` and `ConfigureWebHost()`
+
+**Shared configuration factory**
+- Extracted `ConfigurationBuilderFactory` in `Hive.Abstractions` with `CreateDefault()` and `AddSharedConfiguration()` extension
+- Standardized shared config file name to `appsettings.shared.json` across `MicroService` and `FunctionHost`
+- Fixed `optional: true` vs `optional: false` inconsistency for `appsettings.json` in `MicroService.CreateHostBuilder`
+
+**Validation refactoring**
+- Refactored `ServiceCollectionExtensions.PreConfiguration` using strategy/delegate pattern
+- Extracted `PreConfigureValidatedOptionsCore` and `PreConfigureOptionalValidatedOptionsCore` private methods
+- Extracted `ValidateWithDataAnnotations` and `ValidateWithFluentValidation` strategy methods
+- Replaced 6 duplicated `switch (errors.Count)` blocks with a single `ThrowValidationErrors` helper
+
+**Other improvements**
+- Updated `UseDefaultLoggingConfiguration()` from stale `Hive:Logging:Level` to standard `Logging:LogLevel:Default`
+- Hardened `Serialization.JsonOptions.DefaultIndented` with `MakeReadOnly()` and property wrapper to prevent mutation
 
 ### Why
 
-`Hive.Testing` duplicated all shared test utilities already maintained in `CloudTek.Testing`. This consolidation:
-- Eliminates code duplication across repositories
-- Reduces maintenance burden (attribute/discoverer changes only need to happen in one place)
-- Gains the bonus `FeatureAttribute` for requirements traceability
+A principal-level codebase review identified dead code from the Serilog→OpenTelemetry migration, redundant tracing middleware, duplicated configuration loading patterns, and repeated validation error formatting. These changes reduce maintenance burden and improve code clarity without changing any runtime behavior.
 
 ### Impact
 
 | Metric | Value |
 |--------|-------|
-| Files deleted | 22 (18 source + 4 test project) |
-| Files modified | 52 (50 test files + csproj + Directory.Packages.props) |
-| Net lines | +55 / -883 |
-| `Hive.Testing` packable | No (was `true`, now `false`) |
+| Files deleted | 6 |
+| Files modified | 8 |
+| Files created | 1 (`ConfigurationBuilderFactory.cs`) |
+| Net lines | -236 (190 added / 426 removed) |
 
 ## Test plan
 
-- [x] `dotnet build Hive.sln` — 0 errors, 0 warnings
-- [x] `dotnet test Hive.sln` — 395 tests pass, 0 failures
-- [x] All `[UnitTest]`, `[IntegrationTest]`, `[SmartFact]`, `[SmartTheory]` attributes resolve from `CloudTek.Testing`
-- [x] `TestPortProvider` and `EnvironmentVariableScope` resolve from `CloudTek.Testing`
-- [x] `UseDefaultLoggingConfiguration()` and `ShouldStart()` still resolve from `Hive.Testing`
+- [x] `dotnet build Hive.sln` — 0 errors
+- [x] `dotnet test Hive.sln --filter "Category=UnitTests|Category=ModuleTests"` — 348 tests pass, 0 failures
+- [x] PreConfiguration tests (DataAnnotations, Delegate, FluentValidation, Optional) all pass with refactored validation
+- [x] MicroService startup/pipeline tests pass without TracingMiddleware
+- [x] FunctionHost tests pass with standardized config file names

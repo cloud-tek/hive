@@ -41,7 +41,7 @@ public static class ConfigurationExtensions
   {
     builder.AddInMemoryCollection(new Dictionary<string, string?>()
     {
-      { "Hive:Logging:Level", "Information" }
+      { "Logging:LogLevel:Default", "Information" }
     });
 
     return builder;
