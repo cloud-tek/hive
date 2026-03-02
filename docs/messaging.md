@@ -201,7 +201,27 @@ var service = new MicroService("gateway-service")
 
 #### How It Works Internally
 
-Hive maps named brokers to Wolverine's `BrokerName` + `AddNamedRabbitMqBroker()`:
+Hive maps named brokers to Wolverine's `BrokerName` + `AddNamedRabbitMqBroker()` through the `IMessagingTransportProvider` abstraction. Named broker options can be supplied via either the fluent API or JSON configuration — **fluent wins** when both are present.
+
+When `UseRabbitMq(brokerName, configure)` is called on the builder, the configured `RabbitMqOptions` are stored in `RabbitMqTransportProvider._namedBrokerOptions`. During transport configuration, the provider resolves options with fluent-first precedence:
+
+```csharp
+// RabbitMqTransportProvider resolves named broker options:
+// 1. Fluent API options (stored via AddNamedBrokerOptions)
+// 2. IConfiguration fallback (Hive:Messaging:NamedBrokers:{name}:RabbitMq)
+private RabbitMqOptions ResolveNamedBrokerOptions(string name, IConfiguration configuration)
+{
+    if (_namedBrokerOptions.TryGetValue(name, out var fluentOptions))
+        return fluentOptions;
+
+    var section = configuration.GetSection($"{MessagingOptions.SectionKey}:NamedBrokers:{name}:RabbitMq");
+    var options = new RabbitMqOptions();
+    section.Bind(options);
+    return options;
+}
+```
+
+This produces the Wolverine configuration:
 
 ```csharp
 // Primary (unnamed)
@@ -209,10 +229,9 @@ opts.UseRabbitMq(new Uri("amqp://internal-rabbit")).AutoProvision();
 
 // Named broker — Wolverine creates a separate connection
 var external = new BrokerName("external");
-opts.AddNamedRabbitMqBroker(external, factory =>
-{
-    factory.Uri = new Uri("amqp://partner-rabbit");
-});
+var namedBroker = opts.AddNamedRabbitMqBroker(external, f => f.Uri = new Uri("amqp://partner-rabbit"));
+if (brokerRmq.AutoProvision)
+    namedBroker.AutoProvision();
 
 // Endpoints bound to the named broker use its URI scheme
 opts.ListenToRabbitQueueOnNamedBroker(external, "partner-events");
@@ -220,7 +239,7 @@ opts.PublishMessage<PartnerNotification>()
     .ToRabbitExchangeOnNamedBroker(external, "notifications");
 ```
 
-Wolverine opens separate connections per named broker. Each broker maintains its own exchanges, queues, and bindings independently.
+Wolverine opens separate connections per named broker. Each broker maintains its own exchanges, queues, and bindings independently. `AutoProvision` is honored per named broker (not just the primary).
 
 ### 2.3 Azure Functions Support (Send-Only)
 
@@ -561,10 +580,10 @@ public class HandlingOptions
     public int? ListenerCount { get; set; }     // null = Wolverine default
 }
 
-public class NamedBrokerOptions
-{
-    public RabbitMqOptions RabbitMq { get; set; } = new();
-}
+// Marker class — transport-specific options are resolved by IMessagingTransportProvider
+// from either fluent API (stored in the provider) or IConfiguration fallback.
+// Fluent-defined options always take precedence over configuration.
+public class NamedBrokerOptions { }
 
 public class RabbitMqOptions
 {
@@ -644,6 +663,7 @@ internal static class MessagingMeter
 |-----|-------------|------------|
 | `service.name` | The Hive microservice name | All metrics |
 | `messaging.message.type` | Message CLR type name | All metrics |
+| `messaging.broker` | Broker identifier (`"primary"` for the unnamed broker, destination URI host for named brokers) | Handler metrics |
 | `messaging.destination` | Queue/exchange name | Send metrics |
 | `messaging.source` | Source queue name | Handler metrics |
 | `handler.type` | Handler CLR type name | Handler metrics |
@@ -831,17 +851,23 @@ Handlers should respect the `CancellationToken` passed to `HandleAsync`. When th
 
 ## 8. Health Checks
 
-The extension registers health checks via the Hive `ConfigureHealthChecks(IHealthChecksBuilder)` lifecycle method:
+The extension registers health checks for broker connectivity. Health checks affect the `/readiness` K8s probe — a service that cannot reach its broker should not receive traffic.
 
-- **Broker connectivity** — Verifies the RabbitMQ connection is alive. Fails the readiness probe if the broker is unreachable.
-- **Named broker connectivity** — Each named broker gets its own health check entry.
+- **Primary broker** — `RabbitMqHealthCheck` is registered automatically when messaging is configured with RabbitMQ. Check name: `RabbitMq`. Reads `ConnectionUri` from `IConfiguration`.
+- **Named brokers** — Each named broker gets its own `RabbitMqHealthCheck` instance. Check name follows the pattern `RabbitMq:{brokerName}` (e.g., `RabbitMq:external`). Registered by `IMessagingTransportProvider.RegisterNamedBrokerHealthChecks()` after transport configuration.
 
 ```csharp
 // Registered automatically by the extension. No user code needed.
-// Health check names follow the pattern: "rabbitmq" (primary), "rabbitmq:external" (named)
+// Health check names:
+//   "RabbitMq"          — primary broker
+//   "RabbitMq:external" — named broker "external"
 ```
 
-Health checks affect the `/readiness` K8s probe. A service that cannot reach its broker should not receive traffic.
+### Implementation
+
+`RabbitMqHealthCheck` wraps the upstream `HealthChecks.RabbitMQ.RabbitMQHealthCheck` and maps results to `HealthCheckStatus`. It maintains a cached RabbitMQ connection per check instance, protected by a `SemaphoreSlim`. The public constructor reads the connection URI from `IConfiguration`; an internal constructor accepts `connectionUri` and `checkName` directly for named broker instances.
+
+Named broker health checks are registered via `RabbitMqTransportProvider.RegisterNamedBrokerHealthChecks()`, which iterates `MessagingOptions.NamedBrokers`, resolves options (fluent-first, config-fallback), and registers a singleton `RabbitMqHealthCheck` per named broker. This is called from `MessagingExtensionBase.ConfigureWolverineCore()` after transport configuration completes.
 
 ---
 
@@ -934,64 +960,46 @@ The extension uses a polymorphic two-class design instead of a single class with
 
 #### MessagingExtensionBase.cs — Shared logic
 
+Transport configuration is delegated to `IMessagingTransportProvider` (implemented by `RabbitMqTransportProvider`). The provider handles primary and named broker setup, option resolution (fluent-first), validation, and health check registration.
+
 ```csharp
-internal abstract class MessagingExtensionBase<TSelf> : MicroServiceExtension<TSelf>
+internal abstract class MessagingExtensionBase<TSelf> : MicroServiceExtension<TSelf>, IActivitySourceProvider
     where TSelf : MessagingExtensionBase<TSelf>
 {
     protected MessagingExtensionBase(IMicroServiceCore service) : base(service) { }
 
-    protected static void ApplyConfiguration(WolverineOptions opts, MessagingOptions options)
-    {
-        // Transport
-        switch (options.Transport)
-        {
-            case MessagingTransport.RabbitMQ:
-                var rabbit = opts.UseRabbitMq(new Uri(options.RabbitMq.ConnectionUri!));
-                if (options.RabbitMq.AutoProvision) rabbit.AutoProvision();
-                break;
-            case MessagingTransport.InMemory:
-                opts.UseInMemoryTransport();
-                break;
-        }
+    public IEnumerable<string> ActivitySourceNames => ["Wolverine"];
 
-        // Named brokers
-        foreach (var (name, namedOptions) in options.NamedBrokers)
-        {
-            var broker = new BrokerName(name);
-            opts.AddNamedRabbitMqBroker(broker, f => f.Uri = new Uri(namedOptions.RabbitMq.ConnectionUri!));
-        }
-
-        // Handling defaults — applied to all listeners; per-queue fluent overrides win
-        opts.Policies.ConfigureListeners(listener =>
-        {
-            if (options.Handling.PrefetchCount.HasValue)
-                listener.PreFetchCount(options.Handling.PrefetchCount.Value);
-            if (options.Handling.ListenerCount.HasValue)
-                listener.ListenerCount(options.Handling.ListenerCount.Value);
-        });
-    }
-
-    protected void ConfigureWolverineCore(
+    protected static void ConfigureWolverineCore(
         IServiceCollection svc,
         IConfiguration configuration,
         IMicroServiceCore microservice,
-        Action<WolverineOptions, MessagingOptions> applyBuilder)
+        Func<WolverineOptions, MessagingOptions, IMessagingTransportProvider?> applyBuilder)
     {
         var messagingSection = configuration.GetSection(MessagingOptions.SectionKey);
         var options = new MessagingOptions();
         if (messagingSection.Exists())
             messagingSection.Bind(options);
 
+        IMessagingTransportProvider? transportProvider = null;
+
         svc.AddWolverine(opts =>
         {
             opts.ServiceName = microservice.Name;
 
-            // Apply IConfiguration defaults (transport, serialization, handling defaults)
-            ApplyConfiguration(opts, options);
+            var entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly != null)
+                opts.ApplicationAssembly = entryAssembly;
 
-            // Delegate to subclass for builder creation, fluent config, and middleware
-            applyBuilder(opts, options);
+            // Provider set by UseRabbitMq() or similar on the builder
+            transportProvider = applyBuilder(opts, options);
+
+            // Delegate transport configuration (primary + named brokers) to provider
+            transportProvider?.ConfigureTransport(opts, options, configuration);
         });
+
+        // Register health checks for named brokers (after transport config)
+        transportProvider?.RegisterNamedBrokerHealthChecks(svc, options, configuration);
 
         // Send-side telemetry — registered for both IMicroService and IMicroServiceCore
         svc.Decorate<IMessageBus, TelemetryMessageBus>();
