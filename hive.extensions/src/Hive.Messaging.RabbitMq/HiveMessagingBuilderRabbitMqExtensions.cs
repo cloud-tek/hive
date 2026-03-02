@@ -56,8 +56,12 @@ public static class HiveMessagingBuilderRabbitMqExtensions
   {
     var transportBuilder = new RabbitMqTransportBuilder();
     configure(transportBuilder);
-    builder.MessagingOptions.NamedBrokers[brokerName] = new NamedBrokerOptions();
+
     builder.TransportProvider ??= new RabbitMqTransportProvider();
+    if (builder.TransportProvider is RabbitMqTransportProvider provider)
+      provider.AddNamedBrokerOptions(brokerName, transportBuilder.Options);
+
+    builder.MessagingOptions.NamedBrokers[brokerName] = new NamedBrokerOptions();
     return builder;
   }
 }

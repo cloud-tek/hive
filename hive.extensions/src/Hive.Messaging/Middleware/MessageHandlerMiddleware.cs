@@ -24,10 +24,12 @@ public static class MessageHandlerMiddleware
   public static MessageTelemetryContext Before(IMessageContext context)
   {
     var envelope = context.Envelope;
+    var brokerName = envelope?.Destination?.Host is { Length: > 0 } host ? host : "primary";
     var tags = new TagList
     {
       { "messaging.message.type", envelope?.MessageType ?? "unknown" },
-      { "messaging.source", envelope?.Destination?.ToString() ?? "unknown" }
+      { "messaging.source", envelope?.Destination?.ToString() ?? "unknown" },
+      { "messaging.broker", brokerName }
     };
 
     return new MessageTelemetryContext(Stopwatch.StartNew(), tags);

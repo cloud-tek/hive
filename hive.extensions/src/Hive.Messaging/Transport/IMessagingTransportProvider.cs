@@ -1,5 +1,6 @@
 using Hive.Messaging.Configuration;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Wolverine;
 
 namespace Hive.Messaging.Transport;
@@ -36,4 +37,11 @@ public interface IMessagingTransportProvider
   /// Validate transport-specific options. Returns validation error messages, or empty if valid.
   /// </summary>
   IEnumerable<string> Validate(MessagingOptions options, IConfiguration configuration);
+
+  /// <summary>
+  /// Register health checks for named brokers. Default implementation does nothing.
+  /// </summary>
+  void RegisterNamedBrokerHealthChecks(
+    IServiceCollection services, MessagingOptions options, IConfiguration configuration)
+  { }
 }

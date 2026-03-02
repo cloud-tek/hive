@@ -1,7 +1,9 @@
 using Hive.Messaging.Configuration;
 using Hive.Messaging.RabbitMq.Configuration;
+using Hive.Messaging.RabbitMq.HealthChecks;
 using Hive.Messaging.Transport;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Wolverine;
 using Wolverine.RabbitMQ;
 
@@ -14,12 +16,18 @@ namespace Hive.Messaging.RabbitMq;
 public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
 {
   private readonly RabbitMqOptions? _builderOptions;
+  private readonly Dictionary<string, RabbitMqOptions> _namedBrokerOptions = new();
 
   internal RabbitMqTransportProvider() { }
 
   internal RabbitMqTransportProvider(RabbitMqOptions builderOptions)
   {
     _builderOptions = builderOptions;
+  }
+
+  internal void AddNamedBrokerOptions(string brokerName, RabbitMqOptions options)
+  {
+    _namedBrokerOptions[brokerName] = options;
   }
 
   /// <inheritdoc />
@@ -42,12 +50,12 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
     // Named brokers
     foreach (var (name, _) in options.NamedBrokers)
     {
-      var brokerSection = configuration.GetSection($"{MessagingOptions.SectionKey}:NamedBrokers:{name}:RabbitMq");
-      var brokerRmq = new RabbitMqOptions();
-      brokerSection.Bind(brokerRmq);
+      var brokerRmq = ResolveNamedBrokerOptions(name, configuration);
 
       var broker = new BrokerName(name);
-      opts.AddNamedRabbitMqBroker(broker, f => f.Uri = new Uri(brokerRmq.ConnectionUri!));
+      var namedBroker = opts.AddNamedRabbitMqBroker(broker, f => f.Uri = new Uri(brokerRmq.ConnectionUri!));
+      if (brokerRmq.AutoProvision)
+        namedBroker.AutoProvision();
     }
   }
 
@@ -122,9 +130,7 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
 
     foreach (var (name, _) in options.NamedBrokers)
     {
-      var brokerSection = configuration.GetSection($"{MessagingOptions.SectionKey}:NamedBrokers:{name}:RabbitMq");
-      var brokerRmq = new RabbitMqOptions();
-      brokerSection.Bind(brokerRmq);
+      var brokerRmq = ResolveNamedBrokerOptions(name, configuration);
 
       if (string.IsNullOrEmpty(brokerRmq.ConnectionUri))
         errors.Add($"ConnectionUri is required for named broker '{name}'");
@@ -135,12 +141,38 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
     return errors;
   }
 
+  /// <inheritdoc />
+  public void RegisterNamedBrokerHealthChecks(
+    IServiceCollection services, MessagingOptions options, IConfiguration configuration)
+  {
+    foreach (var (name, _) in options.NamedBrokers)
+    {
+      var brokerRmq = ResolveNamedBrokerOptions(name, configuration);
+      if (string.IsNullOrEmpty(brokerRmq.ConnectionUri))
+        continue;
+
+      var checkName = $"RabbitMq:{name}";
+      services.AddSingleton(sp => new RabbitMqHealthCheck(sp, brokerRmq.ConnectionUri, checkName));
+    }
+  }
+
   private RabbitMqOptions ResolveOptions(IConfiguration configuration)
   {
     if (_builderOptions != null)
       return _builderOptions;
 
     var section = configuration.GetSection($"{MessagingOptions.SectionKey}:RabbitMq");
+    var options = new RabbitMqOptions();
+    section.Bind(options);
+    return options;
+  }
+
+  private RabbitMqOptions ResolveNamedBrokerOptions(string name, IConfiguration configuration)
+  {
+    if (_namedBrokerOptions.TryGetValue(name, out var fluentOptions))
+      return fluentOptions;
+
+    var section = configuration.GetSection($"{MessagingOptions.SectionKey}:NamedBrokers:{name}:RabbitMq");
     var options = new RabbitMqOptions();
     section.Bind(options);
     return options;

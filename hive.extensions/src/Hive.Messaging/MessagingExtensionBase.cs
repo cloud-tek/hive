@@ -26,6 +26,8 @@ internal abstract class MessagingExtensionBase<TSelf> : MicroServiceExtension<TS
     if (messagingSection.Exists())
       messagingSection.Bind(options);
 
+    IMessagingTransportProvider? transportProvider = null;
+
     svc.AddWolverine(opts =>
     {
       opts.ServiceName = microservice.Name;
@@ -40,11 +42,14 @@ internal abstract class MessagingExtensionBase<TSelf> : MicroServiceExtension<TS
       }
 
       // Provider set explicitly by UseRabbitMq() or similar on the builder
-      var provider = applyBuilder(opts, options);
+      transportProvider = applyBuilder(opts, options);
 
       // Apply transport configuration
-      provider?.ConfigureTransport(opts, options, configuration);
+      transportProvider?.ConfigureTransport(opts, options, configuration);
     });
+
+    // Register health checks for named brokers
+    transportProvider?.RegisterNamedBrokerHealthChecks(svc, options, configuration);
 
     svc.Decorate<IMessageBus, TelemetryMessageBus>();
     svc.AddSingleton<WolverineSendActivityListener>();
