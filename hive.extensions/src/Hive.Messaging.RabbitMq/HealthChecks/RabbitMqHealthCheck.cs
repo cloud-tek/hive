@@ -17,9 +17,13 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAs
   private readonly SemaphoreSlim _connectionLock = new(1, 1);
   private readonly string _checkName;
   private IConnection? _cachedConnection;
+  private volatile bool _disposed;
 
   /// <inheritdoc />
   public static string CheckName => "RabbitMq";
+
+  /// <inheritdoc />
+  public override string Name => _checkName;
 
   /// <inheritdoc />
   public static void ConfigureDefaults(HiveHealthCheckOptions options)
@@ -46,6 +50,7 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAs
     _checkName = checkName;
     _inner = new global::HealthChecks.RabbitMQ.RabbitMQHealthCheck(serviceProvider, async _ =>
     {
+      ObjectDisposedException.ThrowIf(_disposed, this);
       await _connectionLock.WaitAsync();
       try
       {
@@ -69,16 +74,25 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAs
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
+    if (_disposed)
+      return;
+
+    _disposed = true;
     await _connectionLock.WaitAsync();
     try
     {
       if (_cachedConnection is not null)
+      {
         await _cachedConnection.DisposeAsync();
+        _cachedConnection = null;
+      }
     }
     finally
     {
-      _connectionLock.Dispose();
+      _connectionLock.Release();
     }
+
+    _connectionLock.Dispose();
   }
 
   /// <inheritdoc />

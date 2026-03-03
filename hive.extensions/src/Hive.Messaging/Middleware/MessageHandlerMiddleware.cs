@@ -11,6 +11,10 @@ namespace Hive.Messaging.Middleware;
 /// </summary>
 public static class MessageHandlerMiddleware
 {
+  // Wolverine named brokers encode the broker name in the destination URI host component.
+  // For the default (unnamed) broker, use a conventional label for telemetry grouping.
+  internal const string DefaultBrokerName = "primary";
+
   /// <summary>
   /// Per-message telemetry state passed through the Wolverine handler pipeline.
   /// </summary>
@@ -24,7 +28,7 @@ public static class MessageHandlerMiddleware
   public static MessageTelemetryContext Before(IMessageContext context)
   {
     var envelope = context.Envelope;
-    var brokerName = envelope?.Destination?.Host is { Length: > 0 } host ? host : "primary";
+    var brokerName = envelope?.Destination?.Host is { Length: > 0 } host ? host : DefaultBrokerName;
     var tags = new TagList
     {
       { "messaging.message.type", envelope?.MessageType ?? "unknown" },

@@ -1,3 +1,4 @@
+using Hive.HealthChecks;
 using Hive.Messaging.Configuration;
 using Hive.Messaging.RabbitMq.Configuration;
 using Hive.Messaging.RabbitMq.HealthChecks;
@@ -152,7 +153,8 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
         continue;
 
       var checkName = $"RabbitMq:{name}";
-      services.AddSingleton(sp => new RabbitMqHealthCheck(sp, brokerRmq.ConnectionUri, checkName));
+      services.AddSingleton<HiveHealthCheck>(sp =>
+        new RabbitMqHealthCheck(sp, brokerRmq.ConnectionUri, checkName));
     }
   }
 

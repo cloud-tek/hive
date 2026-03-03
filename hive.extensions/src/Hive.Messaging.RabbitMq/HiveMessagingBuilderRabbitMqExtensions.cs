@@ -58,9 +58,13 @@ public static class HiveMessagingBuilderRabbitMqExtensions
     configure(transportBuilder);
 
     builder.TransportProvider ??= new RabbitMqTransportProvider();
-    if (builder.TransportProvider is RabbitMqTransportProvider provider)
-      provider.AddNamedBrokerOptions(brokerName, transportBuilder.Options);
+    if (builder.TransportProvider is not RabbitMqTransportProvider provider)
+      throw new InvalidOperationException(
+        $"Cannot add RabbitMQ named broker '{brokerName}': the primary transport provider " +
+        $"is '{builder.TransportProvider.GetType().Name}', not RabbitMqTransportProvider. " +
+        $"Call .UseRabbitMq() before adding named brokers.");
 
+    provider.AddNamedBrokerOptions(brokerName, transportBuilder.Options);
     builder.MessagingOptions.NamedBrokers[brokerName] = new NamedBrokerOptions();
     return builder;
   }
