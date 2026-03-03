@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Hive.HealthChecks;
 using Hive.Messaging.Configuration;
 using Hive.Messaging.RabbitMq.Configuration;
@@ -17,7 +18,7 @@ namespace Hive.Messaging.RabbitMq;
 public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
 {
   private readonly RabbitMqOptions? _builderOptions;
-  private readonly Dictionary<string, RabbitMqOptions> _namedBrokerOptions = new();
+  private readonly ConcurrentDictionary<string, RabbitMqOptions> _namedBrokerOptions = new();
 
   internal RabbitMqTransportProvider() { }
 
@@ -169,6 +170,9 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
     return options;
   }
 
+  /// <summary>
+  /// Resolves named broker options. Fluent options take precedence over configuration.
+  /// </summary>
   private RabbitMqOptions ResolveNamedBrokerOptions(string name, IConfiguration configuration)
   {
     if (_namedBrokerOptions.TryGetValue(name, out var fluentOptions))
