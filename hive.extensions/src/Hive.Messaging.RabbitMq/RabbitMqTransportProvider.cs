@@ -37,6 +37,8 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
   {
     var rmqOptions = ResolveOptions(configuration);
 
+    // ConnectionUri is guaranteed non-null: Validate() runs before ConfigureTransport()
+    // and throws OptionsValidationException if ConnectionUri is missing or invalid.
     var rabbit = opts.UseRabbitMq(new Uri(rmqOptions.ConnectionUri!));
     if (rmqOptions.AutoProvision)
       rabbit.AutoProvision();
@@ -55,6 +57,7 @@ public sealed class RabbitMqTransportProvider : IMessagingTransportProvider
       var brokerRmq = ResolveNamedBrokerOptions(name, configuration);
 
       var broker = new BrokerName(name);
+      // ConnectionUri validated by Validate() — see above
       var namedBroker = opts.AddNamedRabbitMqBroker(broker, f => f.Uri = new Uri(brokerRmq.ConnectionUri!));
       if (brokerRmq.AutoProvision)
         namedBroker.AutoProvision();
