@@ -144,6 +144,101 @@ public class ConfigurationTests
 
   [Fact]
   [UnitTest]
+  public void GivenNamedBrokerViaFluentApi_WhenConnectionUriSet_ThenValidationSucceeds()
+  {
+    var config = new ConfigurationBuilder()
+      .AddInMemoryCollection(new Dictionary<string, string?>
+      {
+        ["Hive:Messaging:Transport"] = "RabbitMQ",
+        ["Hive:Messaging:RabbitMq:ConnectionUri"] = "amqp://localhost:5672"
+      })
+      .Build();
+
+    var provider = new RabbitMqTransportProvider();
+    provider.AddNamedBrokerOptions("secondary", new RabbitMqOptions
+    {
+      ConnectionUri = "amqp://secondary:5672"
+    });
+
+    var options = new MessagingOptions
+    {
+      Transport = MessagingTransport.RabbitMQ,
+      NamedBrokers = new Dictionary<string, NamedBrokerOptions>
+      {
+        ["secondary"] = new NamedBrokerOptions()
+      }
+    };
+
+    var errors = provider.Validate(options, config).ToList();
+
+    errors.Should().BeEmpty();
+  }
+
+  [Fact]
+  [UnitTest]
+  public void GivenNamedBrokerViaFluentApi_WhenConnectionUriMissing_ThenValidationFails()
+  {
+    var config = new ConfigurationBuilder()
+      .AddInMemoryCollection(new Dictionary<string, string?>
+      {
+        ["Hive:Messaging:Transport"] = "RabbitMQ",
+        ["Hive:Messaging:RabbitMq:ConnectionUri"] = "amqp://localhost:5672"
+      })
+      .Build();
+
+    var provider = new RabbitMqTransportProvider();
+    provider.AddNamedBrokerOptions("secondary", new RabbitMqOptions());
+
+    var options = new MessagingOptions
+    {
+      Transport = MessagingTransport.RabbitMQ,
+      NamedBrokers = new Dictionary<string, NamedBrokerOptions>
+      {
+        ["secondary"] = new NamedBrokerOptions()
+      }
+    };
+
+    var errors = provider.Validate(options, config).ToList();
+
+    errors.Should().NotBeEmpty();
+    errors.Should().Contain(e => e.Contains("ConnectionUri is required for named broker 'secondary'"));
+  }
+
+  [Fact]
+  [UnitTest]
+  public void GivenNamedBrokerViaFluent_WhenConfigAlsoPresent_ThenFluentWins()
+  {
+    var config = new ConfigurationBuilder()
+      .AddInMemoryCollection(new Dictionary<string, string?>
+      {
+        ["Hive:Messaging:Transport"] = "RabbitMQ",
+        ["Hive:Messaging:RabbitMq:ConnectionUri"] = "amqp://localhost:5672",
+        ["Hive:Messaging:NamedBrokers:secondary:RabbitMq:ConnectionUri"] = "amqp://config-host:5672"
+      })
+      .Build();
+
+    var provider = new RabbitMqTransportProvider();
+    provider.AddNamedBrokerOptions("secondary", new RabbitMqOptions
+    {
+      ConnectionUri = "amqp://fluent-host:5672"
+    });
+
+    var options = new MessagingOptions
+    {
+      Transport = MessagingTransport.RabbitMQ,
+      NamedBrokers = new Dictionary<string, NamedBrokerOptions>
+      {
+        ["secondary"] = new NamedBrokerOptions()
+      }
+    };
+
+    // Validation should succeed (fluent URI is valid)
+    var errors = provider.Validate(options, config).ToList();
+    errors.Should().BeEmpty();
+  }
+
+  [Fact]
+  [UnitTest]
   public void GivenJsonConfiguration_WhenBound_ThenOptionsArePopulated()
   {
     var config = new ConfigurationBuilder()

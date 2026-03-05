@@ -15,10 +15,15 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAs
 {
   private readonly global::HealthChecks.RabbitMQ.RabbitMQHealthCheck _inner;
   private readonly SemaphoreSlim _connectionLock = new(1, 1);
+  private readonly string _checkName;
   private IConnection? _cachedConnection;
+  private volatile bool _disposed;
 
   /// <inheritdoc />
   public static string CheckName => "RabbitMq";
+
+  /// <inheritdoc />
+  public override string Name => _checkName;
 
   /// <inheritdoc />
   public static void ConfigureDefaults(HiveHealthCheckOptions options)
@@ -32,13 +37,20 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAs
   /// The connection URI is read from <c>Hive:Messaging:RabbitMq:ConnectionUri</c>.
   /// </summary>
   public RabbitMqHealthCheck(IServiceProvider serviceProvider, IConfiguration configuration)
+    : this(serviceProvider,
+      configuration[$"{MessagingOptions.SectionKey}:RabbitMq:ConnectionUri"]
+        ?? throw new InvalidOperationException(
+          $"RabbitMq health check requires '{MessagingOptions.SectionKey}:RabbitMq:ConnectionUri' to be configured."),
+      CheckName)
   {
-    var connectionUri = configuration[$"{MessagingOptions.SectionKey}:RabbitMq:ConnectionUri"]
-      ?? throw new InvalidOperationException(
-        $"RabbitMq health check requires '{MessagingOptions.SectionKey}:RabbitMq:ConnectionUri' to be configured.");
+  }
 
+  internal RabbitMqHealthCheck(IServiceProvider serviceProvider, string connectionUri, string checkName)
+  {
+    _checkName = checkName;
     _inner = new global::HealthChecks.RabbitMQ.RabbitMQHealthCheck(serviceProvider, async _ =>
     {
+      ObjectDisposedException.ThrowIf(_disposed, this);
       await _connectionLock.WaitAsync();
       try
       {
@@ -62,16 +74,25 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAs
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
+    if (_disposed)
+      return;
+
+    _disposed = true;
     await _connectionLock.WaitAsync();
     try
     {
       if (_cachedConnection is not null)
+      {
         await _cachedConnection.DisposeAsync();
+        _cachedConnection = null;
+      }
     }
     finally
     {
-      _connectionLock.Dispose();
+      _connectionLock.Release();
     }
+
+    _connectionLock.Dispose();
   }
 
   /// <inheritdoc />
@@ -81,7 +102,7 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAs
       new HealthCheckContext
       {
         Registration = new HealthCheckRegistration(
-          CheckName, _inner, HealthStatus.Unhealthy, null)
+          _checkName, _inner, HealthStatus.Unhealthy, null)
       },
       ct);
 
