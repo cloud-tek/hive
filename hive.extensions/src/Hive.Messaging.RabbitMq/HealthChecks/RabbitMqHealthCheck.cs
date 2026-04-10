@@ -58,7 +58,10 @@ public sealed class RabbitMqHealthCheck : HiveHealthCheck, IHiveHealthCheck, IAs
           return _cachedConnection;
 
         if (_cachedConnection is not null)
+        {
           await _cachedConnection.DisposeAsync();
+          _cachedConnection = null;
+        }
 
         var factory = new ConnectionFactory { Uri = new Uri(connectionUri) };
         _cachedConnection = await factory.CreateConnectionAsync();
