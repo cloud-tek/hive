@@ -40,9 +40,13 @@ public static partial class ServiceCollectionExtensions
         return (IOptions<TOptions>)existingDescriptor.ImplementationInstance;
       }
 
-      // If registered with a factory or type, build temporary provider to resolve
-      // This ensures we return the actual registered instance
-      var serviceProvider = services.BuildServiceProvider();
+      // If registered with a factory or type, build temporary provider to resolve.
+      // This ensures we return the actual registered instance for idempotency when
+      // IOptions<T> was pre-registered via factory/type (not instance).
+      // Note: BuildServiceProvider in library code is generally discouraged, but throwing
+      // here would break valid scenarios (see PreConfigurationTests). The leak is bounded
+      // to at most once per options type at startup; using disposes the temporary provider.
+      using var serviceProvider = services.BuildServiceProvider();
       return serviceProvider.GetRequiredService<IOptions<TOptions>>();
     }
 
