@@ -100,9 +100,17 @@ public abstract class MicroServiceExtension<TExtension> : MicroServiceExtension,
 #pragma warning disable CA1000 // Do not declare static members on generic types - Required for IMicroServiceExtension interface
   public static TExtension Create(IMicroServiceCore service)
   {
-    return (TExtension)Activator.CreateInstance(typeof(TExtension), service)!
-           ?? throw new InvalidOperationException(
-             $"Failed to create instance of extension {typeof(TExtension).Name}");
+    try
+    {
+      return (TExtension)Activator.CreateInstance(typeof(TExtension), service)!;
+    }
+    catch (MissingMethodException ex)
+    {
+      throw new InvalidOperationException(
+        $"Extension {typeof(TExtension).Name} must declare a public constructor accepting " +
+        $"a single {nameof(IMicroServiceCore)} parameter: public {typeof(TExtension).Name}(IMicroServiceCore service)",
+        ex);
+    }
   }
 #pragma warning restore CA1000
 }
