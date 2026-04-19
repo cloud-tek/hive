@@ -112,13 +112,22 @@ internal sealed partial class HealthCheckStartupService : HostedStartupService<H
           // optionsType is TOptions from HiveHealthCheck<TOptions>, which is constrained to
           // `class, new()`. The compiler guarantees a public parameterless constructor exists,
           // so Activator.CreateInstance cannot throw MissingMethodException/MethodAccessException/
-          // TypeLoadException here. The only residual failure mode is the user's constructor
-          // throwing (wrapped in TargetInvocationException) — we intentionally let that bubble
-          // up unwrapped to preserve the original diagnostic instead of hiding it behind a
-          // generic "failed to create options instance" wrapper.
-          var optionsInstance = Activator.CreateInstance(optionsType)
-            ?? throw new InvalidOperationException(
-              $"Failed to create options instance for health check '{checkName}' (type: {optionsType.FullName}).");
+          // TypeLoadException here. We catch TargetInvocationException to unwrap and
+          // contextualize constructor failures with the health check name.
+          object optionsInstance;
+          try
+          {
+            optionsInstance = Activator.CreateInstance(optionsType)
+              ?? throw new InvalidOperationException(
+                $"Failed to create options instance for health check '{checkName}' (type: {optionsType.FullName}).");
+          }
+          catch (System.Reflection.TargetInvocationException ex) when (ex.InnerException != null)
+          {
+            throw new InvalidOperationException(
+              $"Health check options constructor for '{checkName}' (type: {optionsType.FullName}) threw an exception. " +
+              "Ensure the parameterless constructor completes successfully.",
+              ex.InnerException);
+          }
           Microsoft.Extensions.Configuration.ConfigurationBinder.Bind(section, optionsInstance);
 
           var optionsProp = baseType.GetProperty(nameof(HiveHealthCheck<object>.Options))!;

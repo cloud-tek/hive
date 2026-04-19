@@ -111,6 +111,19 @@ public abstract class MicroServiceExtension<TExtension> : MicroServiceExtension,
         $"a single {nameof(IMicroServiceCore)} parameter: public {typeof(TExtension).Name}(IMicroServiceCore service)",
         ex);
     }
+    catch (System.Reflection.TargetInvocationException ex) when (ex.InnerException != null)
+    {
+      throw new InvalidOperationException(
+        $"Constructor of extension {typeof(TExtension).Name} threw an exception.",
+        ex.InnerException);
+    }
+    catch (Exception ex) when (ex is MethodAccessException or TypeLoadException)
+    {
+      throw new InvalidOperationException(
+        $"Failed to create extension {typeof(TExtension).Name}. " +
+        "Ensure the type is public and accessible.",
+        ex);
+    }
   }
 #pragma warning restore CA1000
 }
