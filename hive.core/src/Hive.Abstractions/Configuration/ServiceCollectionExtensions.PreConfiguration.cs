@@ -34,20 +34,14 @@ public static partial class ServiceCollectionExtensions
 
     if (existingDescriptor != null)
     {
-      // If registered with an instance, return it
-      if (existingDescriptor.ImplementationInstance != null)
-      {
-        return (IOptions<TOptions>)existingDescriptor.ImplementationInstance;
-      }
+      if (existingDescriptor.ImplementationInstance is IOptions<TOptions> existing)
+        return existing;
 
-      // If registered with a factory or type, build temporary provider to resolve.
-      // This ensures we return the actual registered instance for idempotency when
-      // IOptions<T> was pre-registered via factory/type (not instance).
-      // Note: BuildServiceProvider in library code is generally discouraged, but throwing
-      // here would break valid scenarios (see PreConfigurationTests). The leak is bounded
-      // to at most once per options type at startup; using disposes the temporary provider.
-      using var serviceProvider = services.BuildServiceProvider();
-      return serviceProvider.GetRequiredService<IOptions<TOptions>>();
+      // Factory/type registration exists — can't resolve without BuildServiceProvider(),
+      // which is an anti-pattern in library code (double-initializes singletons, etc.).
+      // Return config-bound value for immediate use; the existing registration is
+      // preserved in the container and takes precedence at runtime.
+      return optionsInstance;
     }
 
     // Not registered yet, add it
