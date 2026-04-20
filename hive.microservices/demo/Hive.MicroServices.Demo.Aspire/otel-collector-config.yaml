@@ -1,0 +1,46 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  # Aspire Dashboard (env vars injected by AppHost via WithEnvironment)
+  otlp/aspire:
+    endpoint: ${env:ASPIRE_ENDPOINT}
+    headers:
+      x-otlp-api-key: ${env:ASPIRE_API_KEY}
+    tls:
+      insecure: true
+
+  # VictoriaMetrics — metrics on port 8428
+  otlphttp/victoriametrics:
+    endpoint: http://victoria-metrics:8428/opentelemetry
+    tls:
+      insecure: true
+
+  # VictoriaLogs — logs on port 9428
+  otlphttp/victorialogs:
+    endpoint: http://victoria-logs:9428/insert/opentelemetry
+    tls:
+      insecure: true
+
+  # VictoriaTraces — traces on port 10428
+  otlphttp/victoriatraces:
+    traces_endpoint: http://victoria-traces:10428/insert/opentelemetry/v1/traces
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [otlp/aspire, otlphttp/victoriatraces]
+    metrics:
+      receivers: [otlp]
+      exporters: [otlp/aspire, otlphttp/victoriametrics]
+    logs:
+      receivers: [otlp]
+      exporters: [otlp/aspire, otlphttp/victorialogs]

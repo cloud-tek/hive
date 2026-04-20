@@ -4,6 +4,7 @@ node_modules/
 
 [Bb]in/
 [Oo]bj/
+[Tt]mp/
 *.log
 *.DotSettings
 *.ncrunchproject

@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-// todo: replace hive.testing's attributes with cloudtek.testing after net8 TFM change
+
 namespace Hive.Abstractions.Tests.Configuration;
 
 public class ComplexOptions

@@ -1,18 +1,21 @@
-using Hive.Logging;
-using Hive.Logging.AppInsights;
-using Hive.Logging.LogzIo;
+using Hive.HealthChecks;
+using Hive.Messaging;
+using Hive.Messaging.RabbitMq;
+using Hive.Messaging.RabbitMq.HealthChecks;
 using Hive.MicroServices;
 using Hive.MicroServices.Api;
+using Hive.MicroServices.Demo.Events;
+using Hive.OpenTelemetry;
 
 var service = new MicroService("hive-microservices-apicontrollers-demo")
-        .WithLogging(log =>
-        {
-          log
-            .ToConsole()
-            .ToLogzIo()
-            .ToAppInsights();
-        })
-    .ConfigureServices((services, configuration) => { })
+    .WithOpenTelemetry()
+    .WithHealthChecks(checks => checks
+      .WithHealthCheck<RabbitMqHealthCheck>())
+    .WithMessaging(builder => builder
+      .UseRabbitMq()
+      .WithSending(s => s
+        .Publish<WeatherForecastRequestedEvent>()
+        .ToQueue("q.demo.weatherforecastrequests")))
     .ConfigureApiControllerPipeline()
     ;
 

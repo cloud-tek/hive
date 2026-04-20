@@ -1,3 +1,4 @@
+using Hive.MicroServices.Extensions;
 using Hive.MicroServices.Job.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -35,12 +36,14 @@ namespace Hive.MicroServices.Job
           .ConfigurePipelineActions.Add(app =>
           {
             app.UseRouting();
-            app.When(
-              () => microservice.Extensions.Any(x => x.Is<CORS.Extension>()),
-              (a) =>
-                {
-                  a.UseCors();
-                });
+
+            // Apply CORS middleware (uses default policy configured in Extension)
+            var corsExtension = microservice.Extensions.SingleOrDefault(x => x is CORS.Extension);
+            if (corsExtension is not null)
+            {
+              app.UseCors();
+            }
+
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
               {

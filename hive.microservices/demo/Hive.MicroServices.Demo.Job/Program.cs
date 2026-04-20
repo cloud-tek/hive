@@ -1,4 +1,5 @@
 using Hive.MicroServices;
+using Hive.MicroServices.Extensions;
 using Hive.MicroServices.Job;
 using Hive.MicroServices.Job.Demo.Services;
 

@@ -1,0 +1,85 @@
+name: release-notes
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  enhance-release-notes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Discover packable projects
+        id: discover
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION_CLEAN="${VERSION#v}"
+
+          echo "## 📦 Published Packages" > packages.md
+          echo "" >> packages.md
+          echo "The following packages were published to NuGet.org:" >> packages.md
+          echo "" >> packages.md
+
+          # Find all .csproj files marked as packable in src/ directories
+          PACKAGES=()
+          for proj in $(find . -name "*.csproj" -path "*/src/*" | sort); do
+            # Check if project is packable
+            if grep -q "<IsPackable>true</IsPackable>" "$proj"; then
+              # Extract package name (usually the project name)
+              pkg_name=$(basename "$proj" .csproj)
+              PACKAGES+=("$pkg_name")
+              echo "- [\`${pkg_name}\`](https://www.nuget.org/packages/${pkg_name}/${VERSION_CLEAN}) - \`${VERSION_CLEAN}\`" >> packages.md
+            fi
+          done
+
+          # If no packages found, add a note
+          if [ ${#PACKAGES[@]} -eq 0 ]; then
+            echo "*No packable projects found*" >> packages.md
+          fi
+
+          echo "" >> packages.md
+          echo "## 🔧 Installation" >> packages.md
+          echo "" >> packages.md
+          echo '```bash' >> packages.md
+          echo "# Install a specific package" >> packages.md
+          echo "dotnet add package <PackageName> --version ${VERSION_CLEAN}" >> packages.md
+          echo "" >> packages.md
+
+          # Add example with first package if available
+          if [ ${#PACKAGES[@]} -gt 0 ]; then
+            echo "# Example:" >> packages.md
+            echo "dotnet add package ${PACKAGES[0]} --version ${VERSION_CLEAN}" >> packages.md
+          fi
+
+          echo '```' >> packages.md
+
+          # Output for debugging
+          echo "Found ${#PACKAGES[@]} packable project(s)"
+          cat packages.md
+
+      - name: Append package info to release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+
+          # Get current release notes (auto-generated or manually written)
+          CURRENT_NOTES=$(gh release view "${VERSION}" --json body -q .body)
+
+          # Combine notes
+          echo "${CURRENT_NOTES}" > combined-notes.md
+          echo "" >> combined-notes.md
+          echo "---" >> combined-notes.md
+          echo "" >> combined-notes.md
+          cat packages.md >> combined-notes.md
+
+          # Update release with enhanced notes
+          gh release edit "${VERSION}" --notes-file combined-notes.md
+
+          echo "✅ Release notes updated successfully for ${VERSION}"

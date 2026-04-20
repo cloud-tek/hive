@@ -1,7 +1,6 @@
-using System;
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.Configuration;
-using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

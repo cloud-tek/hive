@@ -1,6 +1,7 @@
 using Hive;
 using Hive.MicroServices;
 using Hive.MicroServices.Demo.WeatherForecasting;
+using Hive.MicroServices.Extensions;
 using Hive.MicroServices.GraphQL;
 using Hive.MicroServices.GraphQL.Demo.Graph;
 using Microsoft.Extensions.Logging.Abstractions;

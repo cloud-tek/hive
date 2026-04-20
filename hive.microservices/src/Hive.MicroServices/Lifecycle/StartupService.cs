@@ -13,6 +13,7 @@ public class StartupService : IHostedService
   private readonly IHostApplicationLifetime lifetime;
   private readonly ILogger<StartupService> logger;
   private readonly IMicroService service;
+  private readonly IServiceProvider serviceProvider;
 
   /// <summary>
   /// Initializes a new instance of the <see cref="StartupService"/> class.
@@ -20,11 +21,13 @@ public class StartupService : IHostedService
   /// <param name="service"></param>
   /// <param name="lifetime"></param>
   /// <param name="logger"></param>
-  public StartupService(IMicroService service, IHostApplicationLifetime lifetime, ILogger<StartupService> logger)
+  /// <param name="serviceProvider"></param>
+  public StartupService(IMicroService service, IHostApplicationLifetime lifetime, ILogger<StartupService> logger, IServiceProvider serviceProvider)
   {
     this.service = service ?? throw new ArgumentNullException(nameof(service));
     this.lifetime = lifetime ?? throw new ArgumentNullException(nameof(lifetime));
     this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
   }
 
   /// <summary>
@@ -34,11 +37,26 @@ public class StartupService : IHostedService
   /// <returns><see cref="Task"/></returns>
   public Task StartAsync(CancellationToken cancellationToken)
   {
-#pragma warning disable AsyncFixer03
-    lifetime.ApplicationStarted.Register(async () => await ExecuteHostedStartupServices().ConfigureAwait(false));
+    lifetime.ApplicationStarted.Register(state =>
+    {
+      _ = Task.Run(async () =>
+      {
+        try
+        {
+          await ExecuteHostedStartupServices().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+          // Log the exception since fire-and-forget tasks don't propagate exceptions
+          logger.LogCriticalServiceFailedToStart(ex);
 
-    return Task.FromResult(0);
-#pragma warning restore AsyncFixer03
+          // Note: ExecuteHostedStartupServices already handles failures by stopping the application,
+          // but we log here as well to ensure the exception is visible in case of unexpected failures
+        }
+      });
+    }, null);
+
+    return Task.CompletedTask;
   }
 
   /// <summary>
@@ -54,7 +72,11 @@ public class StartupService : IHostedService
   private async Task ExecuteHostedStartupServices()
   {
     var svc = (MicroService)service;
-    var svcs = svc.Host.Services.GetServices<IHostedStartupService>();
+
+    // Use injected IServiceProvider instead of accessing svc.Host.Services
+    // to avoid async-over-sync pattern where Host.Services property access
+    // might block during startup initialization
+    var svcs = serviceProvider.GetServices<IHostedStartupService>();
 
     try
     {
@@ -70,6 +92,7 @@ public class StartupService : IHostedService
 
       svc.IsStarted = true;
       svc.IsReady = true;
+      await ((MicroServiceLifetime)svc.Lifetime).ServiceStartedTokenSource.CancelAsync();
     }
     catch (Exception ex)
     {

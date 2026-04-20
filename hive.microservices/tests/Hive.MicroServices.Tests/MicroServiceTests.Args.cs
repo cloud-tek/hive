@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
+using CloudTek.Testing;
 using FluentAssertions;
-using Hive.Testing;
+using Hive.MicroServices.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 

@@ -15,7 +15,6 @@ public partial class MicroService
     {
       ConfigureActions.Add((services, configuration) => extension.ConfigureServices(services, this));
       ConfigurePipelineActions.Add((app) => extension.Configure(app, this));
-      ConfigurePipelineActions.GetType();
     });
 
     return this;

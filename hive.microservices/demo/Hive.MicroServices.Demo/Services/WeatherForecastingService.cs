@@ -21,12 +21,19 @@ public class WeatherForecastingService : BackgroundService
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
-    while (!stoppingToken.IsCancellationRequested)
+    try
     {
-      var forecast = service.GetWeatherForecast();
+      while (!stoppingToken.IsCancellationRequested)
+      {
+        var forecast = service.GetWeatherForecast();
 
-      logger.LogInformation(forecast.ToString());
-      await Task.Delay(10.Seconds(), stoppingToken);
+        logger.LogInformation(forecast.ToString());
+        await Task.Delay(10.Seconds(), stoppingToken);
+      }
+    }
+    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+    {
+      // Normal shutdown
     }
   }
 }

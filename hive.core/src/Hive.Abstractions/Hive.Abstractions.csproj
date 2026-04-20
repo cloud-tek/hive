@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 		<RootNamespace>Hive</RootNamespace>
+		<IsPackable>true</IsPackable>
 		<RepositoryUrl>https://github.com/cloud-tek/hive</RepositoryUrl>
     <PackageId>Hive.Abstractions</PackageId>
     <PackageDescription>Base abstractions for Hive</PackageDescription>
@@ -22,10 +23,11 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-		<PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" />
 		<PackageReference Include="Microsoft.Extensions.Logging" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" />
 		<PackageReference Include="MiniValidation" />
 		<PackageReference Include="Scrutor" />
 	</ItemGroup>
+
+	<Import Project="$(MSBuildThisFileDirectory)..\..\..\Version.targets" />
 </Project>

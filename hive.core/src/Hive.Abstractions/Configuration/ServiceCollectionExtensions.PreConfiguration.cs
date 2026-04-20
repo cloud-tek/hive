@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +15,137 @@ namespace Hive.Configuration;
 public static partial class ServiceCollectionExtensions
 {
   private static readonly string[] DefaultOptionsValidationErrors = new[] { "Options validation failed" };
+
+  /// <summary>
+  /// Adds a singleton IOptions instance to the service collection if not already registered.
+  /// Returns the registered instance (either newly added or existing).
+  /// </summary>
+  private static IOptions<TOptions> AddOrGetSingletonOptions<TOptions>(
+    this IServiceCollection services,
+    TOptions options)
+    where TOptions : class
+  {
+    var optionsInstance = Options.Create(options);
+
+    // Check if IOptions<TOptions> is already registered
+    var existingDescriptor = services.FirstOrDefault(sd =>
+      sd.ServiceType == typeof(IOptions<TOptions>) &&
+      sd.Lifetime == ServiceLifetime.Singleton);
+
+    if (existingDescriptor != null)
+    {
+      if (existingDescriptor.ImplementationInstance is IOptions<TOptions> existing)
+        return existing;
+
+      // Factory/type registration exists — can't resolve without BuildServiceProvider(),
+      // which is an anti-pattern in library code (double-initializes singletons, etc.).
+      // Return config-bound value for immediate use; the existing registration is
+      // preserved in the container and takes precedence at runtime.
+      return optionsInstance;
+    }
+
+    // Not registered yet, add it
+    services.AddSingleton(optionsInstance);
+    return optionsInstance;
+  }
+
+  /// <summary>
+  /// Throws an <see cref="OptionsValidationException"/> with the collected validation errors.
+  /// </summary>
+  [DoesNotReturn]
+  private static void ThrowValidationErrors(string key, Type optionsType, IEnumerable<string> errors)
+  {
+    var errorList = errors.ToList();
+    if (errorList.Count == 0)
+    {
+      throw new InvalidOperationException("Validation failed with no errors returned");
+    }
+
+    throw new OptionsValidationException(key, optionsType, errorList);
+  }
+
+  /// <summary>
+  /// Core implementation for pre-configuring validated options from a required configuration section.
+  /// </summary>
+  private static IOptions<TOptions> PreConfigureValidatedOptionsCore<TOptions>(
+    IServiceCollection services,
+    IConfiguration configuration,
+    string key,
+    Func<TOptions, (bool IsValid, IEnumerable<string> Errors)> validate)
+    where TOptions : class, new()
+  {
+    var options = new TOptions();
+    configuration.GetExistingSection(key).Bind(options);
+
+    var (isValid, errors) = validate(options);
+    if (isValid)
+    {
+      return services.AddOrGetSingletonOptions(options);
+    }
+
+    ThrowValidationErrors(key, typeof(TOptions), errors);
+    throw new UnreachableException();
+  }
+
+  /// <summary>
+  /// Core implementation for pre-configuring validated options from an optional configuration section.
+  /// Returns null if the section doesn't exist.
+  /// </summary>
+  private static IOptions<TOptions>? PreConfigureOptionalValidatedOptionsCore<TOptions>(
+    IServiceCollection services,
+    IConfiguration configuration,
+    string key,
+    Func<TOptions, (bool IsValid, IEnumerable<string> Errors)> validate)
+    where TOptions : class, new()
+  {
+    var section = configuration.GetSection(key);
+    if (!section.Exists())
+    {
+      return null;
+    }
+
+    var options = new TOptions();
+    section.Bind(options);
+
+    var (isValid, errors) = validate(options);
+    if (isValid)
+    {
+      return services.AddOrGetSingletonOptions(options);
+    }
+
+    ThrowValidationErrors(key, typeof(TOptions), errors);
+    throw new UnreachableException();
+  }
+
+  /// <summary>
+  /// Creates a validation strategy using MiniValidator (DataAnnotations).
+  /// </summary>
+  private static (bool IsValid, IEnumerable<string> Errors) ValidateWithDataAnnotations<TOptions>(TOptions options)
+  {
+    if (MiniValidator.TryValidate(options, true, out var errors))
+    {
+      return (true, Enumerable.Empty<string>());
+    }
+
+    return (false, errors.SelectMany(x => x.Value));
+  }
+
+  /// <summary>
+  /// Creates a validation strategy using FluentValidation.
+  /// </summary>
+  private static (bool IsValid, IEnumerable<string> Errors) ValidateWithFluentValidation<TOptions, TValidator>(
+    TOptions options,
+    TValidator validator)
+    where TValidator : IValidator<TOptions>
+  {
+    var result = validator.Validate(options);
+    if (result.IsValid)
+    {
+      return (true, Enumerable.Empty<string>());
+    }
+
+    return (false, result.Errors.Select(x => x.ErrorMessage));
+  }
 
   /// <summary>
   /// Pre-configures TOptions
@@ -36,14 +169,11 @@ public static partial class ServiceCollectionExtensions
     var options = new TOptions();
     configuration.GetExistingSection(sectionKeyProvider()).Bind(options);
 
-    var optionsInstance = Options.Create(options);
-    services.AddSingleton(optionsInstance);
-
-    return optionsInstance;
+    return services.AddOrGetSingletonOptions(options);
   }
 
   /// <summary>
-  /// Pre-configures validated TOptions
+  /// Pre-configures validated TOptions using DataAnnotations (MiniValidator)
   /// </summary>
   /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
   /// <param name="services"></param>
@@ -61,43 +191,13 @@ public static partial class ServiceCollectionExtensions
     _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
     _ = sectionKeyProvider ?? throw new ArgumentNullException(nameof(sectionKeyProvider));
 
-    var options = new TOptions();
-    var key = sectionKeyProvider();
-
-    configuration.GetExistingSection(key)
-      .Bind(options);
-
-    if (MiniValidator.TryValidate(options, true, out var errors))
-    {
-      var optionsInstance = Options.Create(options);
-      services.AddSingleton(optionsInstance);
-
-      return optionsInstance;
-    }
-
-    switch (errors.Count)
-    {
-      case 1:
-        {
-          var error = errors.First();
-          throw new OptionsValidationException(
-            key,
-            typeof(TOptions),
-            error.Value);
-        }
-
-      case > 1:
-        throw new OptionsValidationException(
-          key,
-          typeof(TOptions),
-          errors.SelectMany(x => x.Value));
-      default:
-        throw new InvalidOperationException("Validation failed with no errors returned");
-    }
+    return PreConfigureValidatedOptionsCore<TOptions>(
+      services, configuration, sectionKeyProvider(),
+      ValidateWithDataAnnotations);
   }
 
   /// <summary>
-  /// Pre-configures validated TOptions
+  /// Pre-configures validated TOptions using a custom validation delegate
   /// </summary>
   /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
   /// <param name="services"></param>
@@ -118,28 +218,15 @@ public static partial class ServiceCollectionExtensions
     _ = sectionKeyProvider ?? throw new ArgumentNullException(nameof(sectionKeyProvider));
     _ = validate ?? throw new ArgumentNullException(nameof(validate));
 
-    var options = new TOptions();
-    var key = sectionKeyProvider();
-
-    configuration.GetExistingSection(key)
-      .Bind(options);
-
-    if (!validate(options))
-    {
-      throw new OptionsValidationException(
-        key,
-        typeof(TOptions),
-        DefaultOptionsValidationErrors);
-    }
-
-    var optionsInstance = Options.Create(options);
-    services.AddSingleton(optionsInstance);
-
-    return optionsInstance;
+    return PreConfigureValidatedOptionsCore<TOptions>(
+      services, configuration, sectionKeyProvider(),
+      opts => validate(opts)
+        ? (true, Enumerable.Empty<string>())
+        : (false, DefaultOptionsValidationErrors));
   }
 
   /// <summary>
-  /// Pre-configures validated TOptions
+  /// Pre-configures validated TOptions using FluentValidation (creates new validator instance)
   /// </summary>
   /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
   /// <typeparam name="TValidator">Type of validator used to validate the options</typeparam>
@@ -157,13 +244,12 @@ public static partial class ServiceCollectionExtensions
   {
     _ = services ?? throw new ArgumentNullException(nameof(services));
 
-    var validator = new TValidator();
-
-    return services.PreConfigureValidatedOptions<TOptions, TValidator>(configuration, validator, sectionKeyProvider);
+    return services.PreConfigureValidatedOptions<TOptions, TValidator>(
+      configuration, new TValidator(), sectionKeyProvider);
   }
 
   /// <summary>
-  /// Pre-configures validated TOptions
+  /// Pre-configures validated TOptions using a FluentValidation validator instance
   /// </summary>
   /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
   /// <typeparam name="TValidator">Type of validator used to validate the options</typeparam>
@@ -185,40 +271,120 @@ public static partial class ServiceCollectionExtensions
     _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
     _ = sectionKeyProvider ?? throw new ArgumentNullException(nameof(sectionKeyProvider));
 
-    var options = new TOptions();
-    var key = sectionKeyProvider();
+    return PreConfigureValidatedOptionsCore<TOptions>(
+      services, configuration, sectionKeyProvider(),
+      opts => ValidateWithFluentValidation(opts, validator));
+  }
 
-    configuration.GetExistingSection(key)
-      .Bind(options);
+  /// <summary>
+  /// Pre-configures validated TOptions from an optional configuration section using DataAnnotations.
+  /// Returns null if the section doesn't exist, allowing the caller to provide defaults.
+  /// </summary>
+  /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
+  /// <param name="services">The service collection</param>
+  /// <param name="configuration">The configuration</param>
+  /// <param name="sectionKeyProvider">Function that provides the configuration section key</param>
+  /// <returns><see cref="IOptions{TOptions}"/> if section exists and is valid, otherwise null</returns>
+  /// <exception cref="ArgumentNullException">When any of the provided arguments are null</exception>
+  /// <exception cref="OptionsValidationException">When section exists but validation fails</exception>
+  public static IOptions<TOptions>? PreConfigureOptionalValidatedOptions<TOptions>(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    Func<string> sectionKeyProvider)
+      where TOptions : class, new()
+  {
+    _ = services ?? throw new ArgumentNullException(nameof(services));
+    _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
+    _ = sectionKeyProvider ?? throw new ArgumentNullException(nameof(sectionKeyProvider));
 
-    var result = validator.Validate(options);
+    return PreConfigureOptionalValidatedOptionsCore<TOptions>(
+      services, configuration, sectionKeyProvider(),
+      ValidateWithDataAnnotations);
+  }
 
-    if (result.IsValid)
-    {
-      var optionsInstance = Options.Create(options);
-      services.AddSingleton(optionsInstance);
+  /// <summary>
+  /// Pre-configures validated TOptions from an optional configuration section using a delegate.
+  /// Returns null if the section doesn't exist, allowing the caller to provide defaults.
+  /// </summary>
+  /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
+  /// <param name="services">The service collection</param>
+  /// <param name="configuration">The configuration</param>
+  /// <param name="sectionKeyProvider">Function that provides the configuration section key</param>
+  /// <param name="validate">Validation function that returns true if valid</param>
+  /// <returns><see cref="IOptions{TOptions}"/> if section exists and is valid, otherwise null</returns>
+  /// <exception cref="ArgumentNullException">When any of the provided arguments are null</exception>
+  /// <exception cref="OptionsValidationException">When section exists but validation fails</exception>
+  public static IOptions<TOptions>? PreConfigureOptionalValidatedOptions<TOptions>(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    Func<string> sectionKeyProvider,
+    Func<TOptions, bool> validate)
+      where TOptions : class, new()
+  {
+    _ = services ?? throw new ArgumentNullException(nameof(services));
+    _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
+    _ = sectionKeyProvider ?? throw new ArgumentNullException(nameof(sectionKeyProvider));
+    _ = validate ?? throw new ArgumentNullException(nameof(validate));
 
-      return optionsInstance;
-    }
+    return PreConfigureOptionalValidatedOptionsCore<TOptions>(
+      services, configuration, sectionKeyProvider(),
+      opts => validate(opts)
+        ? (true, Enumerable.Empty<string>())
+        : (false, DefaultOptionsValidationErrors));
+  }
 
-    switch (result.Errors.Count)
-    {
-      case 1:
-        {
-          var error = result.Errors.First();
-          throw new OptionsValidationException(
-            key,
-            typeof(TOptions),
-            new[] { error.ErrorMessage });
-        }
+  /// <summary>
+  /// Pre-configures validated TOptions from an optional configuration section using FluentValidation.
+  /// Returns null if the section doesn't exist. Creates a new validator instance.
+  /// </summary>
+  /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
+  /// <typeparam name="TValidator">Type of FluentValidation validator</typeparam>
+  /// <param name="services">The service collection</param>
+  /// <param name="configuration">The configuration</param>
+  /// <param name="sectionKeyProvider">Function that provides the configuration section key</param>
+  /// <returns><see cref="IOptions{TOptions}"/> if section exists and is valid, otherwise null</returns>
+  /// <exception cref="ArgumentNullException">When any of the provided arguments are null</exception>
+  /// <exception cref="OptionsValidationException">When section exists but validation fails</exception>
+  public static IOptions<TOptions>? PreConfigureOptionalValidatedOptions<TOptions, TValidator>(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    Func<string> sectionKeyProvider)
+      where TOptions : class, new()
+      where TValidator : class, IValidator<TOptions>, new()
+  {
+    _ = services ?? throw new ArgumentNullException(nameof(services));
 
-      case > 1:
-        throw new OptionsValidationException(
-          key,
-          typeof(TOptions),
-          result.Errors.Select(x => x.ErrorMessage));
-      default:
-        throw new InvalidOperationException("Validation failed with no errors returned");
-    }
+    return services.PreConfigureOptionalValidatedOptions<TOptions, TValidator>(
+      configuration, new TValidator(), sectionKeyProvider);
+  }
+
+  /// <summary>
+  /// Pre-configures validated TOptions from an optional configuration section using a FluentValidation validator instance.
+  /// Returns null if the section doesn't exist.
+  /// </summary>
+  /// <typeparam name="TOptions">Type of <see cref="Options"/></typeparam>
+  /// <typeparam name="TValidator">Type of FluentValidation validator</typeparam>
+  /// <param name="services">The service collection</param>
+  /// <param name="configuration">The configuration</param>
+  /// <param name="validator">FluentValidation validator instance</param>
+  /// <param name="sectionKeyProvider">Function that provides the configuration section key</param>
+  /// <returns><see cref="IOptions{TOptions}"/> if section exists and is valid, otherwise null</returns>
+  /// <exception cref="ArgumentNullException">When any of the provided arguments are null</exception>
+  /// <exception cref="OptionsValidationException">When section exists but validation fails</exception>
+  public static IOptions<TOptions>? PreConfigureOptionalValidatedOptions<TOptions, TValidator>(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    TValidator validator,
+    Func<string> sectionKeyProvider)
+      where TOptions : class, new()
+      where TValidator : class, IValidator<TOptions>
+  {
+    _ = services ?? throw new ArgumentNullException(nameof(services));
+    _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
+    _ = sectionKeyProvider ?? throw new ArgumentNullException(nameof(sectionKeyProvider));
+
+    return PreConfigureOptionalValidatedOptionsCore<TOptions>(
+      services, configuration, sectionKeyProvider(),
+      opts => ValidateWithFluentValidation(opts, validator));
   }
 }

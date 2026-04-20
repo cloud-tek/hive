@@ -1,7 +1,6 @@
-using System.Collections.Generic;
+using CloudTek.Testing;
 using FluentAssertions;
 using Hive.Configuration;
-using Hive.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -21,7 +20,7 @@ public partial class PostConfigurationTests
     [UnitTest]
     public void
       GivenSimpleOptionsSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
-        string config, bool shouldBeValid, string? key, params string[] errors)
+        string config, bool shouldBeValid, string? key, params string[]? errors)
     {
       var cfg = GetConfigurationRoot(config);
 
@@ -44,7 +43,7 @@ public partial class PostConfigurationTests
       else
       {
         var tokens = new List<string>();
-        tokens.AddRange(errors);
+        tokens.AddRange(errors ?? []);
         var ex = action.Should().Throw<OptionsValidationException>();
         ex.And.Message.Should().Contain(key);
         ex.And.Message.Should().ContainAll(tokens.ToArray());
