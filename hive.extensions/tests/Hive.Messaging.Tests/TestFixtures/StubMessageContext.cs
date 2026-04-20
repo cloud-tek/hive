@@ -30,6 +30,8 @@ internal sealed class StubMessageContext : IMessageContext
   // IMessageBus members
   public string? TenantId { get; set; }
 
+  public string? UserName { get; set; }
+
   public ValueTask SendAsync<T>(T message, DeliveryOptions? options = null)
     => throw new NotImplementedException();
 
