@@ -53,7 +53,6 @@ public class FunctionHost : IFunctionHost
     {
       services.AddSingleton<IMicroServiceCore>(this);
       services.AddSingleton<IFunctionHost>(this);
-      services.AddApplicationInsightsTelemetryWorkerService();
     });
   }
 
