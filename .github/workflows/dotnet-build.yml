@@ -45,7 +45,7 @@ jobs:
       github.event_name == 'release'
     with:
       artifact-name: ${{ needs.build.outputs.artifact-name }}
-      artifact-path: 'packages/**/*.nupkg'
+      artifact-path: 'packages/*.nupkg'
       net-sdk-version: *net-sdk-version
       nuget-api-url: 'https://api.nuget.org/v3/index.json'
     secrets:
