@@ -49,4 +49,4 @@ jobs:
       net-sdk-version: *net-sdk-version
       nuget-api-url: 'https://api.nuget.org/v3/index.json'
     secrets:
-      NUGET_API_KEY:  '${{ secrets.NUGET_API_KEY }}'
+      NUGET_API_KEY:  '${{ secrets.NUGET_API_KEY_HIVE }}'
