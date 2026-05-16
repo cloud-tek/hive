@@ -186,6 +186,18 @@ public class FunctionHost : IFunctionHost
       {
         action(services, context.Configuration);
       }
+
+      // Apply deferred service configuration actions queued by each registered extension.
+      // Mirrors Hive.MicroServices.MicroService — extensions populate ConfigureActions
+      // from their constructors (e.g. Hive.OpenTelemetry.Extension); the host contract
+      // is to invoke them during DI build.
+      foreach (var extension in Extensions)
+      {
+        foreach (var action in extension.ConfigureActions)
+        {
+          action(services, context.Configuration);
+        }
+      }
     });
 
     return builder.Build();
