@@ -1,6 +1,10 @@
+using System.Reflection;
 using CloudTek.Testing;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using Xunit;
 
 namespace Hive.Functions.Tests;
@@ -172,6 +176,57 @@ public class FunctionHostTests
     act.Should().NotThrow<NullReferenceException>();
   }
 
+  [Fact]
+  [IntegrationTest]
+  public async Task Issue58_WithOpenTelemetry_OnFunctionHost_ShouldRegisterOpenTelemetryProviders()
+  {
+    // Issue #58 repro, lifted from the bug report:
+    //
+    //   var host = new FunctionHost("demo-functions")
+    //       .WithOpenTelemetry(additionalActivitySources: new[] { "My.App.ActivitySource" });
+    //   await host.RunAsync();
+    //
+    // RunAsync would launch the Functions worker; InitializeAsync drives the same
+    // CreateHostBuilder path, materialising the IServiceProvider without starting it.
+    var functionHost = new FunctionHost("demo-functions")
+      .WithOpenTelemetry(additionalActivitySources: new[] { "My.App.ActivitySource" });
+
+    var core = (IMicroServiceCore)functionHost;
+    await core.InitializeAsync();
+
+    var hostField = typeof(FunctionHost).GetField("host", BindingFlags.NonPublic | BindingFlags.Instance);
+    var iHost = (IHost?)hostField!.GetValue(functionHost);
+    iHost.Should().NotBeNull("InitializeAsync must build the underlying IHost");
+
+    iHost!.Services.GetService<TracerProvider>().Should().NotBeNull(
+      "WithOpenTelemetry must register a TracerProvider on the function host (issue #58)");
+    iHost.Services.GetService<MeterProvider>().Should().NotBeNull(
+      "WithOpenTelemetry must register a MeterProvider on the function host (issue #58)");
+
+    await functionHost.DisposeAsync();
+  }
+
+  [Fact]
+  [UnitTest]
+  public async Task FunctionHost_InitializeAsync_ShouldInvokeEachExtensionsConfigureActions()
+  {
+    // Pins the host contract: FunctionHost must walk Extensions[i].ConfigureActions
+    // during DI build, matching Hive.MicroServices.MicroService. See issue #58.
+    var marker = new SentinelMarker();
+    var functionHost = new FunctionHost("test-function");
+    var sentinel = new SentinelExtension(functionHost, marker);
+    functionHost.Extensions.Add(sentinel);
+
+    var core = (IMicroServiceCore)functionHost;
+    await core.InitializeAsync();
+
+    marker.CallbackInvoked.Should().BeTrue(
+      "FunctionHost must iterate Extensions[i].ConfigureActions during build (issue #58)");
+    marker.CapturedServices.Should().NotBeNull();
+
+    await functionHost.DisposeAsync();
+  }
+
   /// <summary>
   /// Test service for DI validation
   /// </summary>
@@ -186,6 +241,25 @@ public class FunctionHostTests
   {
     public TestExtension(IMicroServiceCore service) : base(service)
     {
+    }
+  }
+
+  private sealed class SentinelMarker
+  {
+    public bool CallbackInvoked { get; set; }
+    public IServiceCollection? CapturedServices { get; set; }
+  }
+
+  private sealed class SentinelExtension : MicroServiceExtension<SentinelExtension>
+  {
+    public SentinelExtension(IMicroServiceCore service, SentinelMarker marker)
+      : base(service)
+    {
+      ConfigureActions.Add((services, _) =>
+      {
+        marker.CallbackInvoked = true;
+        marker.CapturedServices = services;
+      });
     }
   }
 }
