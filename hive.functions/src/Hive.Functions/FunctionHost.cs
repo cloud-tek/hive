@@ -153,16 +153,13 @@ public class FunctionHost : IFunctionHost
 
   private IHost CreateHostBuilder()
   {
-    var builder = new HostBuilder();
+    var builder = Host.CreateDefaultBuilder(Args);
 
     // Load configuration (same pattern as MicroService)
     builder.ConfigureAppConfiguration((context, config) =>
     {
       config
-        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-        .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true)
-        .AddSharedConfiguration(context.HostingEnvironment.EnvironmentName)
-        .AddEnvironmentVariables();
+        .AddSharedConfiguration(context.HostingEnvironment.EnvironmentName);
     });
 
     // Configure Azure Functions Worker
