@@ -155,11 +155,17 @@ public class FunctionHost : IFunctionHost
   {
     var builder = Host.CreateDefaultBuilder(Args);
 
-    // Load configuration (same pattern as MicroService)
+    // Load configuration (same pattern as MicroService).
+    // Env vars + command line are explicitly re-added AFTER AddSharedConfiguration
+    // so they take highest precedence — Host.CreateDefaultBuilder registers them
+    // mid-pipeline; without re-adding them last, shared-config files would override
+    // env vars, breaking Hive's deployment-override invariant.
     builder.ConfigureAppConfiguration((context, config) =>
     {
       config
-        .AddSharedConfiguration(context.HostingEnvironment.EnvironmentName);
+        .AddSharedConfiguration(context.HostingEnvironment.EnvironmentName)
+        .AddEnvironmentVariables()
+        .AddCommandLine(Args);
     });
 
     // Configure Azure Functions Worker
