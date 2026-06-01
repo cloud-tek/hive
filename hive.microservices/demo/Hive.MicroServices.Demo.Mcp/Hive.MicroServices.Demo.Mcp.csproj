@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\hive.opentelemetry\src\Hive.OpenTelemetry\Hive.OpenTelemetry.csproj" />
     <ProjectReference Include="..\..\src\Hive.MicroServices.Mcp\Hive.MicroServices.Mcp.csproj" />
     <ProjectReference Include="..\Hive.MicroServices.Demo\Hive.MicroServices.Demo.csproj" />
   </ItemGroup>

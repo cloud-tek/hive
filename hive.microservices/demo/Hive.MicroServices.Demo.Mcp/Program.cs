@@ -1,12 +1,12 @@
-using Hive;
 using Hive.MicroServices;
 using Hive.MicroServices.Demo.WeatherForecasting;
 using Hive.MicroServices.Extensions;
 using Hive.MicroServices.Mcp;
 using Hive.MicroServices.Mcp.Demo.Tools;
-using Microsoft.Extensions.Logging.Abstractions;
+using Hive.OpenTelemetry;
 
-var service = new MicroService("hive-microservices-mcp-demo", new NullLogger<IMicroService>())
+var service = new MicroService("hive-microservices-mcp-demo")
+    .WithOpenTelemetry()
     .ConfigureServices((services, configuration) =>
     {
       services.AddSingleton<IWeatherForecastService, WeatherForecastService>();
