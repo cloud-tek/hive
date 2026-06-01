@@ -1,0 +1,15 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/draft/2025-06-18/mcp.json",
+  "servers": {
+    "hive-microservices-demo-mcp": {
+      "type": "http",
+      "url": "http://localhost:5190"
+    }
+  },
+  "mcpServers": {
+    "hive-microservices-demo-mcp": {
+      "type": "http",
+      "url": "http://localhost:5190"
+    }
+  }
+}
