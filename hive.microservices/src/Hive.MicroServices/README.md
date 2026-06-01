@@ -78,6 +78,7 @@ The framework supports multiple service types through pipeline modes:
 | `ApiControllers` | Traditional controller-based APIs | Legacy-compatible APIs |
 | `GraphQL` | GraphQL APIs via HotChocolate | GraphQL services |
 | `Grpc` | gRPC services (protobuf-first) | High-performance RPC |
+| `Mcp` | MCP servers via ModelContextProtocol.AspNetCore | LLM tool/data servers |
 | `Job` | Background worker services | Scheduled tasks, workers |
 | `None` | Basic service without HTTP | Console apps, utilities |
 
@@ -149,12 +150,14 @@ graph LR
     Api[API Extension]
     GraphQL[GraphQL Extension]
     Grpc[gRPC Extension]
+    Mcp[MCP Extension]
     Custom[Custom Extension]
 
     MicroServiceExtension --> OpenTelemetry
     MicroServiceExtension --> Api
     MicroServiceExtension --> GraphQL
     MicroServiceExtension --> Grpc
+    MicroServiceExtension --> Mcp
     MicroServiceExtension --> Custom
 
     style MicroServiceExtension fill:#e1f5ff
@@ -162,6 +165,7 @@ graph LR
     style Api fill:#81d4fa
     style GraphQL fill:#81d4fa
     style Grpc fill:#81d4fa
+    style Mcp fill:#81d4fa
     style Custom fill:#4fc3f7
 ```
 
@@ -375,6 +379,7 @@ var myService = microservice.ServiceProvider.GetRequiredService<IMyService>();
 - **[Hive.MicroServices.Api](../Hive.MicroServices.Api/)**: REST API extensions (Minimal APIs, Controllers)
 - **[Hive.MicroServices.GraphQL](../Hive.MicroServices.GraphQL/)**: GraphQL support
 - **[Hive.MicroServices.Grpc](../Hive.MicroServices.Grpc/)**: gRPC support
+- **[Hive.MicroServices.Mcp](../Hive.MicroServices.Mcp/)**: MCP (Model Context Protocol) server support
 - **[Hive.MicroServices.Job](../Hive.MicroServices.Job/)**: Background job support
 - **[Hive.MicroServices.Testing](../Hive.MicroServices.Testing/)**: Testing utilities
 - **[Hive.OpenTelemetry](../../hive.opentelemetry/)**: OpenTelemetry integration

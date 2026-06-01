@@ -28,7 +28,7 @@ Hive is a comprehensive .NET microservices framework that embraces:
 
 - **Extension-based architecture** - All features are implemented as extensions to the core `IMicroService` abstraction
 - **Configuration flexibility** - Pre-configuration and post-configuration patterns with validation
-- **Multiple hosting models** - REST APIs, GraphQL, gRPC, background jobs, and Azure Functions
+- **Multiple hosting models** - REST APIs, GraphQL, gRPC, MCP servers, background jobs, and Azure Functions
 - **Production-ready observability** - Built-in OpenTelemetry integration for logs, traces, and metrics
 - **Testing utilities** - Comprehensive testing support with xUnit extensions and TestServer integration
 - **Kubernetes-ready** - Built-in health probes and lifecycle management
@@ -58,6 +58,7 @@ Hive follows these core principles:
 - ✅ **REST APIs** - Minimal APIs and traditional MVC controllers
 - ✅ **GraphQL** - HotChocolate integration
 - ✅ **gRPC** - Standard protobuf-first and code-first approaches
+- ✅ **MCP** - Model Context Protocol servers via the official SDK (streamable HTTP transport)
 - ✅ **Background Jobs** - Worker services and scheduled tasks
 - ✅ **Azure Functions** - Azure Functions Worker integration ([docs](./hive.functions/README.md))
 
@@ -99,6 +100,7 @@ graph TB
         Api[Hive.MicroServices.Api<br/>REST APIs]
         GraphQL[Hive.MicroServices.GraphQL<br/>GraphQL APIs]
         Grpc[Hive.MicroServices.Grpc<br/>gRPC Services]
+        Mcp[Hive.MicroServices.Mcp<br/>MCP Servers]
         Job[Hive.MicroServices.Job<br/>Background Workers]
         MSTesting[Hive.MicroServices.Testing<br/>Integration Testing]
     end
@@ -114,6 +116,7 @@ graph TB
     MicroServices --> Api
     MicroServices --> GraphQL
     MicroServices --> Grpc
+    MicroServices --> Mcp
     MicroServices --> Job
     MicroServices --> MSTesting
     MicroServices --> HTTP
@@ -166,6 +169,7 @@ hive/
 │   │   ├── Hive.MicroServices.Api/    # REST API support
 │   │   ├── Hive.MicroServices.GraphQL/
 │   │   ├── Hive.MicroServices.Grpc/
+│   │   ├── Hive.MicroServices.Mcp/
 │   │   ├── Hive.MicroServices.Job/
 │   │   └── Hive.MicroServices.Testing/
 │   └── tests/
@@ -333,12 +337,13 @@ Comprehensive microservices framework with multiple hosting models.
 - [Hive.MicroServices.Api](./hive.microservices/src/Hive.MicroServices.Api/) - REST APIs
 - [Hive.MicroServices.GraphQL](./hive.microservices/src/Hive.MicroServices.GraphQL/) - GraphQL support
 - [Hive.MicroServices.Grpc](./hive.microservices/src/Hive.MicroServices.Grpc/) - gRPC services
+- [Hive.MicroServices.Mcp](./hive.microservices/src/Hive.MicroServices.Mcp/) - MCP (Model Context Protocol) servers
 - [Hive.MicroServices.Job](./hive.microservices/src/Hive.MicroServices.Job/) - Background workers
 - [Hive.MicroServices.Testing](./hive.microservices/src/Hive.MicroServices.Testing/) - TestServer integration
 
 **Key Features:**
 - Extension-based architecture
-- Multiple pipeline modes (Api, GraphQL, gRPC, Job)
+- Multiple pipeline modes (Api, GraphQL, gRPC, Mcp, Job)
 - Built-in CORS support with validation
 - Kubernetes probe endpoints
 - Lifecycle management (Initialize → Start → Stop → Dispose)
