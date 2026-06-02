@@ -18,6 +18,7 @@ graph TB
         Api[Hive.MicroServices.Api]
         GraphQL[Hive.MicroServices.GraphQL]
         Grpc[Hive.MicroServices.Grpc]
+        Mcp[Hive.MicroServices.Mcp]
         Job[Hive.MicroServices.Job]
     end
 
@@ -28,6 +29,7 @@ graph TB
     MicroServices -->|REST APIs| Api
     MicroServices -->|GraphQL| GraphQL
     MicroServices -->|gRPC| Grpc
+    MicroServices -->|MCP| Mcp
     MicroServices -->|Workers| Job
     MicroServices -.->|Test Support| HTesting
 
@@ -35,6 +37,7 @@ graph TB
     style Api fill:#b3e5fc,stroke:#0277bd
     style GraphQL fill:#b3e5fc,stroke:#0277bd
     style Grpc fill:#b3e5fc,stroke:#0277bd
+    style Mcp fill:#b3e5fc,stroke:#0277bd
     style Job fill:#b3e5fc,stroke:#0277bd
     style Testing fill:#81d4fa,stroke:#0288d1
 ```
@@ -103,6 +106,35 @@ gRPC service support with standard protobuf-first approach.
 - Streaming support
 
 **Use Cases:** High-performance RPC, inter-service communication, streaming services
+
+---
+
+#### [Hive.MicroServices.Mcp](src/Hive.MicroServices.Mcp/)
+
+Model Context Protocol (MCP) server support powered by the official `ModelContextProtocol.AspNetCore` SDK.
+
+**Capabilities:**
+- MCP server hosting over the streamable HTTP transport
+- Tools, prompts, and resources via the SDK's `IMcpServerBuilder`
+- Dependency-injected tool handlers
+- `MapMcp()` endpoint wired into the standard Hive pipeline (lifecycle middleware, CORS, authorization)
+
+**Configuration:**
+```csharp
+var microservice = new MicroService("my-mcp-service")
+    .ConfigureServices((services, configuration) =>
+    {
+        services.AddSingleton<IWeatherForecastService, WeatherForecastService>();
+    })
+    .ConfigureMcpPipeline(mcp =>
+    {
+        mcp.WithTools<WeatherForecastTool>();
+    });
+
+await microservice.RunAsync();
+```
+
+**Use Cases:** Exposing tools/data to LLM clients and agents, AI tool servers, agentic integrations
 
 ---
 
@@ -228,6 +260,7 @@ Each extension configures a specific pipeline mode:
 | **Api** | `ApiControllers` | Traditional MVC controller-based APIs |
 | **GraphQL** | `GraphQL` | GraphQL APIs via HotChocolate |
 | **Grpc** | `Grpc` | gRPC services (protobuf-first) |
+| **Mcp** | `Mcp` | MCP (Model Context Protocol) servers over streamable HTTP |
 | **Job** | `Job` | Background worker services |
 | - | `None` | Basic service without HTTP |
 
@@ -405,6 +438,7 @@ spec:
 See complete examples in the [demo/](demo/) folder:
 
 - **[Hive.MicroServices.Demo.Api](demo/Hive.MicroServices.Demo.Api/)**: REST API demo
+- **[Hive.MicroServices.Demo.Mcp](demo/Hive.MicroServices.Demo.Mcp/)**: MCP server demo (sample tool + `mcp.json` client config)
 - **[Hive.MicroServices.Demo.Aspire](demo/Hive.MicroServices.Demo.Aspire/)**: Aspire orchestration with all demos
 
 ### Running Demos
@@ -430,6 +464,7 @@ hive.microservices/
 │   ├── Hive.MicroServices.Api/       # REST API support
 │   ├── Hive.MicroServices.GraphQL/   # GraphQL support
 │   ├── Hive.MicroServices.Grpc/      # gRPC support
+│   ├── Hive.MicroServices.Mcp/       # MCP server support
 │   ├── Hive.MicroServices.Job/       # Background job support
 │   └── Hive.MicroServices.Testing/   # Testing utilities
 └── tests/                             # Test projects
@@ -446,6 +481,7 @@ hive.microservices/
 ### Optional Dependencies (via extensions)
 - HotChocolate (GraphQL)
 - Grpc.AspNetCore (gRPC)
+- ModelContextProtocol.AspNetCore (MCP)
 - OpenTelemetry (Observability)
 
 ## Related Projects
@@ -465,6 +501,7 @@ graph TB
     Api[Hive.MicroServices.Api]
     GraphQL[Hive.MicroServices.GraphQL]
     Grpc[Hive.MicroServices.Grpc]
+    Mcp[Hive.MicroServices.Mcp]
     Job[Hive.MicroServices.Job]
     MSTesting[Hive.MicroServices.Testing]
 
@@ -473,6 +510,7 @@ graph TB
     MicroServices --> Api
     MicroServices --> GraphQL
     MicroServices --> Grpc
+    MicroServices --> Mcp
     MicroServices --> Job
     MicroServices --> MSTesting
 
@@ -482,6 +520,7 @@ graph TB
     style Api fill:#4fc3f7
     style GraphQL fill:#4fc3f7
     style Grpc fill:#4fc3f7
+    style Mcp fill:#4fc3f7
     style Job fill:#4fc3f7
     style MSTesting fill:#29b6f6
 ```
@@ -521,6 +560,7 @@ All packages are published to NuGet:
 | `Hive.MicroServices.Api` | REST API support | ![NuGet](https://img.shields.io/nuget/v/Hive.MicroServices.Api) |
 | `Hive.MicroServices.GraphQL` | GraphQL support | ![NuGet](https://img.shields.io/nuget/v/Hive.MicroServices.GraphQL) |
 | `Hive.MicroServices.Grpc` | gRPC support | ![NuGet](https://img.shields.io/nuget/v/Hive.MicroServices.Grpc) |
+| `Hive.MicroServices.Mcp` | MCP server support | ![NuGet](https://img.shields.io/nuget/v/Hive.MicroServices.Mcp) |
 | `Hive.MicroServices.Job` | Background jobs | ![NuGet](https://img.shields.io/nuget/v/Hive.MicroServices.Job) |
 | `Hive.MicroServices.Testing` | Testing utilities | ![NuGet](https://img.shields.io/nuget/v/Hive.MicroServices.Testing) |
 

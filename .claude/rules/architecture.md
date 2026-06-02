@@ -23,6 +23,7 @@ The monorepo is organized into four main components:
    - `Hive.MicroServices.Api` - REST API support (minimal and controller-based)
    - `Hive.MicroServices.GraphQL` - GraphQL support via HotChocolate
    - `Hive.MicroServices.Grpc` - gRPC support (standard and code-first)
+   - `Hive.MicroServices.Mcp` - MCP (Model Context Protocol) server support via ModelContextProtocol.AspNetCore
    - `Hive.MicroServices.Job` - Background job/worker support
    - `demo/` - Reference implementations
 
@@ -133,6 +134,7 @@ The framework supports multiple service types through pipeline modes:
 - `ApiControllers` - Traditional controller-based APIs
 - `GraphQL` - GraphQL APIs (HotChocolate)
 - `Grpc` - gRPC services (standard protobuf-first)
+- `Mcp` - MCP (Model Context Protocol) servers (streamable HTTP)
 - `Job` - Background worker services
 - `None` - Basic service without HTTP
 
@@ -177,6 +179,7 @@ Hive.Abstractions (foundation)
             ├── Hive.MicroServices.Api
             ├── Hive.MicroServices.GraphQL
             ├── Hive.MicroServices.Grpc
+            ├── Hive.MicroServices.Mcp
             └── Hive.MicroServices.Job
 ```
 

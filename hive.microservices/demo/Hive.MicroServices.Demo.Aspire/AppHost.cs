@@ -97,6 +97,11 @@ builder.AddProject<Projects.Hive_MicroServices_Demo_GrpcCodeFirst>("hive-microse
   .WithHttpHealthCheck("/status/readiness")
   .WithOtelCollector(otelCollector);
 
+// MCP Services
+builder.AddProject<Projects.Hive_MicroServices_Demo_Mcp>("hive-microservices-demo-mcp")
+  .WithHttpHealthCheck("/status/readiness")
+  .WithOtelCollector(otelCollector);
+
 // Background Services
 builder.AddProject<Projects.Hive_MicroServices_Demo_Job>("hive-microservices-demo-job")
   .WithHttpHealthCheck("/status/readiness")

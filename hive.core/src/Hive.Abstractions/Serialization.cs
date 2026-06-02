@@ -33,7 +33,7 @@ public static class Serialization
         WriteIndented = true
       };
       options.Converters.Add(new JsonStringEnumConverter());
-      options.MakeReadOnly();
+      options.MakeReadOnly(populateMissingResolver: true);
       return options;
     }
   }

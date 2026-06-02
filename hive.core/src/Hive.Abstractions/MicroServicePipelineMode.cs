@@ -33,5 +33,10 @@ public enum MicroServicePipelineMode
   /// <summary>
   /// GRPC API(s)
   /// </summary>
-  Grpc
+  Grpc,
+
+  /// <summary>
+  /// Model Context Protocol (MCP) server(s)
+  /// </summary>
+  Mcp
 }
