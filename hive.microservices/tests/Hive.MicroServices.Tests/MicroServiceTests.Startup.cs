@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using CloudTek.Testing;
 using FluentAssertions;
+using Hive.Exceptions;
 using Hive.Extensions;
 using Hive.MicroServices.Api;
 using Hive.MicroServices.Extensions;
@@ -234,6 +235,42 @@ public partial class MicroServiceTests
 
       // Assert
       service.PipelineMode.Should().Be(MicroServicePipelineMode.Grpc);
+    }
+
+    [Fact]
+    [UnitTest]
+    public async Task GivenSingleArgCtorAndNoPipelineConfigured_WhenRunAsyncIsInvoked_ThenReturnsMinusOneWithoutNullReferenceException()
+    {
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
+
+      var service = new MicroService(ServiceName)
+        .InTestClass<MicroServiceTests>();
+
+      service.CancellationTokenSource.CancelAfter(1000);
+
+      // Act
+      var result = await service.RunAsync(config);
+
+      // Assert
+      result.Should().Be(-1);
+    }
+
+    [Fact]
+    [UnitTest]
+    public async Task GivenSingleArgCtorAndNoPipelineConfigured_WhenStartAsyncIsInvoked_ThenThrowsConfigurationException()
+    {
+      // Arrange
+      var config = new ConfigurationBuilder().Build();
+
+      var service = new MicroService(ServiceName)
+        .InTestClass<MicroServiceTests>();
+
+      await service.InitializeAsync(config);
+
+      // Act & Assert
+      await service.Invoking(s => s.StartAsync())
+        .Should().ThrowAsync<ConfigurationException>();
     }
   }
 }
