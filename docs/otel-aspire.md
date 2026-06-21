@@ -3,7 +3,7 @@
 **Status**: Implemented
 **Date**: 2026-02-20
 **Author**: Architecture Team
-**Supersedes**: ASPIRE_INTEGRATION_DESIGN.md Phase 5 (VictoriaMetrics Integration)
+**Supersedes**: design/aspire_integration_design.md Phase 5 (VictoriaMetrics Integration)
 
 ---
 
@@ -250,4 +250,4 @@ No changes are required to `Hive.OpenTelemetry`. The extension resolves a single
 - [.NET Aspire Telemetry](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/telemetry)
 - [dotnet/aspire#11298 — OTEL_EXPORTER_OTLP_ENDPOINT override issue](https://github.com/dotnet/aspire/issues/11298)
 - [open-telemetry/opentelemetry-dotnet#4043 — Multiple exporter configuration](https://github.com/open-telemetry/opentelemetry-dotnet/issues/4043)
-- [Aspire Integration Design](ASPIRE_INTEGRATION_DESIGN.md)
+- [Aspire Integration Design](design/aspire_integration_design.md)

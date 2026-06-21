@@ -630,7 +630,7 @@ The demo includes:
 
 ## Design Documents
 
-- [HIVE_FUNCTIONS_DESIGN.md](../HIVE_FUNCTIONS_DESIGN.md) - Original design document and architecture decisions
+- [hive_functions_design.md](../docs/design/hive_functions_design.md) - Original design document and architecture decisions
 
 ---
 

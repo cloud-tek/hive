@@ -696,11 +696,11 @@ builder.AddProject<Projects.Hive_MicroServices_Demo_Api>("demo-api")
 - [.NET Aspire Documentation](https://learn.microsoft.com/en-us/dotnet/aspire/)
 - [VictoriaMetrics Documentation](https://docs.victoriametrics.com/)
 - [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/)
-- Hive OpenTelemetry: [Hive.OpenTelemetry/Extension.cs](../hive.opentelemetry/src/Hive.OpenTelemetry/Extension.cs)
+- Hive OpenTelemetry: [Hive.OpenTelemetry/Extension.cs](../../hive.opentelemetry/src/Hive.OpenTelemetry/Extension.cs)
 
 ### Related Design Documents
-- [Hive Functions Design](HIVE_FUNCTIONS_DESIGN.md)
-- [CORS Extraction Analysis](CORS_EXTRACTION_ANALYSIS.md)
+- [Hive Functions Design](hive_functions_design.md)
+- [CORS Extraction Analysis](cors_extraction_analysis.md)
 
 ---
 
