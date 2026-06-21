@@ -393,7 +393,7 @@ Azure Functions integration following the same extension pattern.
 - Automatic Application Insights integration
 
 📖 [Read Full Documentation](./hive.functions/README.md)
-📖 [Read Design Document](./HIVE_FUNCTIONS_DESIGN.md)
+📖 [Read Design Document](./docs/design/hive_functions_design.md)
 
 ---
 
@@ -467,8 +467,8 @@ Hive uses custom xUnit attributes for test categorization:
 
 ### Design Documents
 
-- [HIVE_FUNCTIONS_DESIGN.md](./HIVE_FUNCTIONS_DESIGN.md) - Azure Functions integration design (Draft)
-- [CORS_EXTRACTION_ANALYSIS.md](./CORS_EXTRACTION_ANALYSIS.md) - CORS abstraction analysis
+- [hive_functions_design.md](./docs/design/hive_functions_design.md) - Azure Functions integration design (Draft)
+- [cors_extraction_analysis.md](./docs/design/cors_extraction_analysis.md) - CORS abstraction analysis
 - [hive.opentelemetry/CONFIGURATION_STRATEGY.md](./hive.opentelemetry/CONFIGURATION_STRATEGY.md) - OpenTelemetry configuration strategy
 
 ---

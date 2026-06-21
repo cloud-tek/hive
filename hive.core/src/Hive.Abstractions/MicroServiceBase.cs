@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Hive;
 
@@ -44,7 +45,7 @@ public abstract class MicroServiceBase
   /// <summary>
   /// The IMicroservice's logger
   /// </summary>
-  public ILogger<IMicroService> Logger { get; set; } = default!;
+  public ILogger<IMicroService> Logger { get; set; } = NullLogger<IMicroService>.Instance;
 
   /// <summary>
   /// The IMicroservice's environment

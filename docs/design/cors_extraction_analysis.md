@@ -15,7 +15,7 @@ This is cleaner than creating a separate module and follows the existing pattern
 
 ## Current State
 
-**Location:** [hive.microservices/src/Hive.MicroServices/CORS/](hive.microservices/src/Hive.MicroServices/CORS/)
+**Location:** [hive.microservices/src/Hive.MicroServices/CORS/](../../hive.microservices/src/Hive.MicroServices/CORS/)
 
 **Components:**
 - ✅ `Options.cs` - Configuration model (100% portable)
@@ -236,9 +236,9 @@ Same configuration works for both:
 
 ## Related Documentation
 
-- [HIVE_FUNCTIONS_DESIGN.md](HIVE_FUNCTIONS_DESIGN.md) - Full Azure Functions integration design
-- [HIVE_FUNCTIONS_DESIGN.md#11](HIVE_FUNCTIONS_DESIGN.md#11-cors-module-extraction-analysis) - Detailed CORS extraction analysis
-- [hive.microservices/src/Hive.MicroServices/CORS/README.md](hive.microservices/src/Hive.MicroServices/CORS/README.md) - Current CORS documentation
+- [hive_functions_design.md](hive_functions_design.md) - Full Azure Functions integration design
+- [hive_functions_design.md#11](hive_functions_design.md#11-cors-module-extraction-analysis) - Detailed CORS extraction analysis
+- [hive.microservices/src/Hive.MicroServices/CORS/README.md](../../hive.microservices/src/Hive.MicroServices/CORS/README.md) - Current CORS documentation
 
 ---
 
