@@ -573,3 +573,9 @@ All packages are published to NuGet:
 ## Contributing
 
 This is part of the Hive monorepo. For contribution guidelines, see the [main repository](https://github.com/cloud-tek/hive).
+
+## See also
+
+- [Full documentation index](../docs/README.md) — design docs, topic guides, build reference, and all package READMEs
+- [Getting started guide](../docs/getting-started.md) — step-by-step first service walkthrough
+- [Build & CI reference](../docs/build.md) — `cloudtek-build` targets and `dotnet` CLI equivalents

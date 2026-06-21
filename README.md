@@ -448,6 +448,8 @@ Hive uses custom xUnit attributes for test categorization:
 
 ## Documentation
 
+For the full documentation index — design docs, topic guides, build reference, and all package READMEs — see **[docs/README.md](./docs/README.md)**.
+
 ### Project Documentation
 
 - [CLAUDE.md](./CLAUDE.md) - Comprehensive project guide for Claude Code
