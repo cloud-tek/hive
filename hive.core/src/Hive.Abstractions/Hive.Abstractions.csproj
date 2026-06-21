@@ -15,6 +15,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Hive.Abstractions.Tests" />
+    <InternalsVisibleTo Include="Hive.MicroServices" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="FluentValidation" />
 		<PackageReference Include="Microsoft.AspNetCore.MiddlewareAnalysis" />

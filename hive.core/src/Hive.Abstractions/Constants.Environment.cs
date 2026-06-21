@@ -34,6 +34,11 @@ public static partial class Constants
       /// The DOTNET_RUNNING_IN_CONTAINER environment variable
       /// </summary>
       public const string DotNetRunningInContainer = "DOTNET_RUNNING_IN_CONTAINER";
+
+      /// <summary>
+      /// The DOTNET_ENVIRONMENT environment variable
+      /// </summary>
+      public const string RuntimeEnvironment = "DOTNET_ENVIRONMENT";
     }
 
     /// <summary>
