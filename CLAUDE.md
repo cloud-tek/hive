@@ -74,7 +74,7 @@ This repository uses centralized package management (`ManagePackageVersionsCentr
 - All package versions are defined in `Directory.Packages.props`
 - Projects reference packages WITHOUT version numbers
 - `Directory.Build.props` sets global properties (target framework: net10.0)
-- Custom MSBuild SDK: `CloudTek.Sdk` (version 10.0.0-beta.5)
+- Custom MSBuild SDK: `CloudTek.Sdk` (version 10.0.0)
 
 When adding a new package:
 1. Add the `<PackageVersion>` entry to `Directory.Packages.props`
