@@ -53,6 +53,40 @@ Hive uses a two-tier interface hierarchy to support different hosting models:
 - Functions execution: `RunAsync(CancellationToken) → Task`
 - Use when: Building Azure Functions with Hive framework
 
+## Internal Pipeline State & the `(MicroService)` Downcast Convention
+
+`MicroService` is the **sole concrete implementation** of `IMicroService`. The fluent
+configuration extension methods (`ConfigureApiPipeline`, `ConfigureGraphQLPipeline`,
+`ConfigureGrpcPipeline`, `ConfigureMcpPipeline`, `ConfigureJob`,
+`ConfigureDefaultServicePipeline`, `MapEndpoints`, …) accumulate work into **internal**
+list-of-actions state on `MicroService`:
+
+- `internal List<Action<IServiceCollection, IConfiguration>> ConfigureActions`
+- `internal List<Action<IApplicationBuilder>> ConfigurePipelineActions`
+- `internal List<Action<IEndpointRouteBuilder>> MapEndpointActions`
+
+Because these lists are framework-internal, the extension methods reach them via a
+**`(MicroService)microservice` downcast** from the public `IMicroService` parameter. This is
+the **deliberate, framework-wide idiom** (used at ~11 sites across every pipeline-mode
+extension and the core helpers), not an oversight.
+
+**This is intentional — do not "fix" it.** Reviewers (human or automated) sometimes flag the
+downcast as an LSP violation. The alternatives are worse for this codebase:
+
+- **Lifting the lists onto `IMicroService`** leaks mutable, framework-internal plumbing onto a
+  public, Kubernetes-facing interface — an ISP/encapsulation violation.
+- **Introducing an `IMicroServiceInternal` seam** is unwarranted churn for a sole-implementation
+  framework (YAGNI); `InternalsVisibleTo` plus the single-implementation reality already provide
+  the needed guarantees.
+
+Internal helpers that consume this state (e.g. `DrainCustomEndpoints(this IEndpointRouteBuilder,
+MicroService)`) likewise take the **concrete `MicroService`** type by design, since they read
+internal members. No per-site explanatory comment is expected — this convention is the
+explanation.
+
+**Revisit trigger:** if a *second* concrete `IMicroService` implementation is ever introduced,
+re-evaluate this convention (an internal interface seam would then become justified).
+
 ## Extension Pattern
 
 All framework features are implemented as extensions inheriting from `MicroServiceExtension<T>`. Extensions participate in the service lifecycle through:

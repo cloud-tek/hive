@@ -1,3 +1,4 @@
+using Hive.Exceptions;
 using Hive.MicroServices.Extensions;
 using Hive.MicroServices.Job.Services;
 using Microsoft.AspNetCore.Builder;
@@ -17,6 +18,16 @@ namespace Hive.MicroServices.Job
     /// <param name="microservice"></param>
     /// <returns><see cref="IMicroService"/></returns>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null</exception>
+    /// <remarks>
+    /// Sets <see cref="MicroServicePipelineMode.None"/> on the service (worker/job intent). Pipeline mode
+    /// is set once; calling a second <c>Configure*Pipeline</c> method on the same instance throws
+    /// <see cref="InvalidOperationException"/> with message <c>"MicroService PipelineMode is already set"</c>.
+    /// Job (worker) services cannot serve custom HTTP routes: if <c>MapEndpoints(...)</c> has been called on
+    /// the service, the pipeline throws <see cref="Hive.Exceptions.ConfigurationException"/> at startup with
+    /// message <c>"Hive.MicroServices.Job (worker) services cannot expose custom HTTP endpoints via MapEndpoints.
+    /// Remove the MapEndpoints call, or select an HTTP pipeline mode (e.g. ConfigureApiPipeline /
+    /// ConfigureGraphQLPipeline)."</c>
+    /// </remarks>
     public static IMicroService ConfigureJob(this IMicroService microservice)
     {
       _ = microservice ?? throw new ArgumentNullException(nameof(microservice));
@@ -35,6 +46,11 @@ namespace Hive.MicroServices.Job
           .ConfigureExtensions()
           .ConfigurePipelineActions.Add(app =>
           {
+            if (service.MapEndpointActions.Count > 0)
+            {
+              throw new ConfigurationException(Constants.Errors.MapEndpointsJobForbidden);
+            }
+
             app.UseRouting();
 
             // Apply CORS middleware (uses default policy configured in Extension)

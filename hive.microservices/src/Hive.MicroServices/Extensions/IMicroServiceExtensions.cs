@@ -148,6 +148,15 @@ public static class IMicroServiceExtensions
   /// </summary>
   /// <param name="microservice"></param>
   /// <returns><see cref="IMicroService"/></returns>
+  /// <remarks>
+  /// Sets <see cref="MicroServicePipelineMode.None"/> on the service (bare service without an application
+  /// request-processing mode). Pipeline mode is set once; calling a second <c>Configure*Pipeline</c> method
+  /// on the same instance throws <see cref="InvalidOperationException"/> with message
+  /// <c>"MicroService PipelineMode is already set"</c>. Auxiliary HTTP routes can be added via
+  /// <c>MapEndpoints(...)</c> and are served before the built-in 404 catch-all, inside the same routing
+  /// and authorization envelope. This is the only <c>None</c>-mode pipeline that accepts
+  /// <c>MapEndpoints</c>; <c>ConfigureJob</c> (which also sets <c>None</c>) rejects custom routes at startup.
+  /// </remarks>
   public static IMicroService ConfigureDefaultServicePipeline(this IMicroService microservice)
   {
     var service = (MicroService)microservice;
@@ -173,6 +182,7 @@ public static class IMicroServiceExtensions
           app.UseAuthorization();
           app.UseEndpoints(endpoints =>
               {
+                endpoints.DrainCustomEndpoints(service);
                 endpoints.MapGet("/*", (ctx) =>
                     {
                       ctx.Response.StatusCode = 404;

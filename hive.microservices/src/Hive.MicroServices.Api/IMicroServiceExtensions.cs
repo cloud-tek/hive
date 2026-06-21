@@ -17,6 +17,14 @@ namespace Hive.MicroServices.Api
     /// <param name="microservice"></param>
     /// <param name="action"></param>
     /// <returns><see cref="IMicroService"/></returns>
+    /// <remarks>
+    /// Sets <see cref="MicroServicePipelineMode.Api"/> on the service. Pipeline mode is set once;
+    /// calling a second <c>Configure*Pipeline</c> method on the same instance throws
+    /// <see cref="InvalidOperationException"/> with message <c>"MicroService PipelineMode is already set"</c>.
+    /// Auxiliary HTTP routes (control-plane endpoints, webhooks, admin actions) can be added alongside
+    /// the primary routes via <c>MapEndpoints(...)</c>, and they share this mode's routing, CORS, and
+    /// authorization envelope.
+    /// </remarks>
     public static IMicroService ConfigureApiPipeline(this IMicroService microservice, Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> action)
     {
       var service = (MicroService)microservice;
@@ -33,6 +41,14 @@ namespace Hive.MicroServices.Api
     /// </summary>
     /// <param name="microservice"></param>
     /// <returns><see cref="IMicroService"/></returns>
+    /// <remarks>
+    /// Sets <see cref="MicroServicePipelineMode.ApiControllers"/> on the service. Pipeline mode is set once;
+    /// calling a second <c>Configure*Pipeline</c> method on the same instance throws
+    /// <see cref="InvalidOperationException"/> with message <c>"MicroService PipelineMode is already set"</c>.
+    /// Auxiliary HTTP routes (control-plane endpoints, webhooks, admin actions) can be added alongside
+    /// the controller routes via <c>MapEndpoints(...)</c>, and they share this mode's routing, CORS, and
+    /// authorization envelope.
+    /// </remarks>
     public static IMicroService ConfigureApiControllerPipeline(this IMicroService microservice)
     {
       var service = (MicroService)microservice;
@@ -85,7 +101,11 @@ namespace Hive.MicroServices.Api
             }
 
             app.UseAuthorization();
-            app.UseEndpoints(endpointBuilder);
+            app.UseEndpoints(endpoints =>
+            {
+              endpointBuilder(endpoints);
+              endpoints.DrainCustomEndpoints(service);
+            });
           });
 
       return microservice;

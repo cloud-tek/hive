@@ -17,6 +17,14 @@ namespace Hive.MicroServices.Grpc
     /// <param name="microservice"></param>
     /// <param name="endpointsBuilder"></param>
     /// <returns><see cref="IMicroService"/></returns>
+    /// <remarks>
+    /// Sets <see cref="MicroServicePipelineMode.Grpc"/> on the service. Pipeline mode is set once;
+    /// calling a second <c>Configure*Pipeline</c> method on the same instance throws
+    /// <see cref="InvalidOperationException"/> with message <c>"MicroService PipelineMode is already set"</c>.
+    /// Auxiliary HTTP routes (control-plane endpoints, webhooks, admin actions) can be added alongside
+    /// the gRPC services via <c>MapEndpoints(...)</c>; they share this mode's routing, CORS, and
+    /// authorization envelope, and are registered before the mode's catch-all fallback route.
+    /// </remarks>
     public static IMicroService ConfigureGrpcPipeline(this IMicroService microservice, Action<IEndpointRouteBuilder> endpointsBuilder)
     {
       return microservice.ConfigureGrpcPipelineInternal(endpointsBuilder, configureGrpc: (services) => services.AddGrpc());
@@ -28,6 +36,14 @@ namespace Hive.MicroServices.Grpc
     /// <param name="microservice"></param>
     /// <param name="endpointsBuilder"></param>
     /// <returns><see cref="IMicroService"/></returns>
+    /// <remarks>
+    /// Sets <see cref="MicroServicePipelineMode.Grpc"/> on the service using the protobuf-net code-first
+    /// gRPC variant. Pipeline mode is set once; calling a second <c>Configure*Pipeline</c> method on the
+    /// same instance throws <see cref="InvalidOperationException"/> with message
+    /// <c>"MicroService PipelineMode is already set"</c>. Auxiliary HTTP routes can be added alongside
+    /// the gRPC services via <c>MapEndpoints(...)</c>, sharing this mode's routing, CORS, and
+    /// authorization envelope.
+    /// </remarks>
     public static IMicroService ConfigureCodeFirstGrpcPipeline(this IMicroService microservice, Action<IEndpointRouteBuilder> endpointsBuilder)
     {
       return microservice.ConfigureGrpcPipelineInternal(endpointsBuilder, configureGrpc: (services) => services.AddCodeFirstGrpc());
@@ -69,6 +85,7 @@ namespace Hive.MicroServices.Grpc
             app.UseEndpoints(endpoints =>
               {
                 endpointsBuilder(endpoints);
+                endpoints.DrainCustomEndpoints(service);
                 endpoints.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
               });
           });

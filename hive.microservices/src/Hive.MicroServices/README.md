@@ -373,6 +373,73 @@ await microservice.InitializeAsync(config);
 var myService = microservice.ServiceProvider.GetRequiredService<IMyService>();
 ```
 
+## Constraints & Gotchas
+
+### One pipeline per service
+
+Pipeline modes are **mutually exclusive**. `PipelineMode` is set-once; calling a second `Configure*Pipeline`
+method on the same `MicroService` instance immediately throws:
+
+```
+InvalidOperationException: "MicroService PipelineMode is already set"
+```
+
+Starting a service without any pipeline call throws:
+
+```
+ConfigurationException: "No pipeline has been configured. Aborting"
+```
+
+### Choosing a pipeline mode
+
+| Method | Mode set | Use when |
+|---|---|---|
+| `ConfigureApiPipeline(endpoints => ...)` | `Api` | Minimal APIs (modern REST) |
+| `ConfigureApiControllerPipeline()` | `ApiControllers` | Controller-based REST APIs |
+| `ConfigureGraphQLPipeline(schema => ...)` | `GraphQL` | GraphQL APIs via HotChocolate |
+| `ConfigureGrpcPipeline(endpoints => ...)` | `Grpc` | Protobuf-first gRPC services |
+| `ConfigureCodeFirstGrpcPipeline(endpoints => ...)` | `Grpc` | Code-first gRPC services |
+| `ConfigureMcpPipeline(server => ...)` | `Mcp` | MCP servers (LLM tool/data servers) |
+| `ConfigureJob()` | `None` | Background workers, no HTTP application surface |
+| `ConfigureDefaultServicePipeline()` | `None` | Bare services with optional auxiliary HTTP routes |
+
+### The `MapEndpoints` seam
+
+`MapEndpoints(routes => ...)` adds auxiliary HTTP routes (control-plane endpoints, webhooks, admin actions)
+**alongside** any HTTP pipeline mode. Custom routes share the mode's `UseRouting → (UseCors) → UseAuthorization → UseEndpoints` envelope — authorization and CORS apply consistently, and mode endpoints are registered first.
+
+```csharp
+new MicroService("my-mcp-server")
+    .ConfigureMcpPipeline(server => server.WithTools<MyTools>())
+    .MapEndpoints(routes => routes.MapPost("/admin/flush", () => Results.Ok()));
+```
+
+`MapEndpoints` works with `Api`, `ApiControllers`, `GraphQL`, `Grpc`, `Mcp`, and `ConfigureDefaultServicePipeline`.
+It does **not** work with `ConfigureJob`: if any `MapEndpoints` calls are recorded, the Job pipeline throws
+`ConfigurationException` at startup:
+
+```
+"Hive.MicroServices.Job (worker) services cannot expose custom HTTP endpoints via MapEndpoints.
+Remove the MapEndpoints call, or select an HTTP pipeline mode (e.g. ConfigureApiPipeline / ConfigureGraphQLPipeline)."
+```
+
+See [custom_endpoints_seam_design.md](../../../../docs/design/custom_endpoints_seam_design.md) for the design rationale.
+
+### CORS is `IMicroService`-only
+
+The `CORS.Extension` (`WithCORS()`) requires an ASP.NET Core host (`IMicroService`). Its factory method
+`Extension.Create(...)` throws `InvalidOperationException` if the host is not an `IMicroService` — it cannot
+be used with `IFunctionHost` or other non-ASP.NET hosting models.
+
+### OpenTelemetry configuration
+
+`WithOpenTelemetry()` configures logging, tracing, and metrics via the `OpenTelemetry` configuration section
+in `IConfiguration`. Instrumentation (ASP.NET Core, HTTP client, runtime) and exporters (console, OTLP) are
+controlled by `appsettings.json` options — not by builder lambdas. The OTLP endpoint is resolved from
+`OpenTelemetry:Otlp:Endpoint` first, then from the `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable.
+Activity sources from sibling extensions that implement `IActivitySourceProvider` (e.g. `Hive.Messaging`) are
+discovered and subscribed to automatically.
+
 ## Related Libraries
 
 - **[Hive.Abstractions](../../hive.core/src/Hive.Abstractions/)**: Core abstractions and interfaces

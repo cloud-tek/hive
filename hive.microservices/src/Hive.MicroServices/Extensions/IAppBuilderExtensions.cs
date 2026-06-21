@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 
 namespace Hive.MicroServices.Extensions;
 
@@ -7,6 +8,19 @@ namespace Hive.MicroServices.Extensions;
 /// </summary>
 public static class IAppBuilderExtensions
 {
+  /// <summary>
+  /// Drains all custom endpoint mapping actions registered via <c>MapEndpoints</c> onto the given <see cref="IEndpointRouteBuilder"/>.
+  /// </summary>
+  /// <param name="endpoints">The endpoint route builder</param>
+  /// <param name="service">The microservice whose <c>MapEndpointActions</c> are drained</param>
+  internal static void DrainCustomEndpoints(this IEndpointRouteBuilder endpoints, MicroService service)
+  {
+    foreach (var map in service.MapEndpointActions)
+    {
+      map(endpoints);
+    }
+  }
+
   /// <summary>
   /// Executes the action if the predicate is true
   /// </summary>
