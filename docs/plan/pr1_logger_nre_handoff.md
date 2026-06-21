@@ -53,6 +53,27 @@ Both use the single-arg ctor `new MicroService(ServiceName)` with no pipeline co
 - Tests: `--filter FullyQualifiedName~MicroServiceTests.Startup` → **11 passed, 0 failed**
   (9 pre-existing + 2 new).
 
+## CI / dependency note
+
+The initial CI run failed in `cloudtek-build`'s `OutdatedCheck` (not the code) — a
+time-based check that fails when newer NuGet versions exist upstream. `main` would fail it
+too today; new upstream releases landed after the last green build. Format/style/analyzer
+checks all passed. Decompiling `cloudtek-build` confirmed `OutdatedCheck` has no
+per-package exclusion (pinning only exempts the *beta* check), so the outdated packages
+were updated to restore CI:
+
+| Package(s) | From | To |
+|------------|------|----|
+| `Microsoft.AspNetCore.MiddlewareAnalysis`, `Mvc.Testing`, `TestHost` + the `Microsoft.Extensions.*` 10.0.x family | 10.0.8 | 10.0.9 |
+| `ModelContextProtocol.AspNetCore` | 1.3.0 | 1.4.0 |
+| `HotChocolate.AspNetCore` | 16.0.* | 16.2.* (16.2.2) |
+| `Refit`, `Refit.HttpClientFactory` | 10.1.6 | 11.2.0 (major) |
+
+Verified: full solution build succeeds; `Hive.HTTP.Tests` 15/15 (Refit 11 OK);
+`Hive.MicroServices.Tests` 45/45; `dotnet-outdated` reports 0 outdated under the CI filter.
+Pre-existing, unrelated: a High-severity transitive `MessagePack` advisory in the Aspire
+**demo** project (not addressed here).
+
 ## Notes / scope boundaries
 
 - The catch blocks were intentionally left unchanged — the base default makes them safe.
