@@ -17,6 +17,14 @@ public static class IMicroServiceExtensions
   /// <param name="microservice"></param>
   /// <param name="schemaBuilder"></param>
   /// <returns><see cref="IMicroService"/></returns>
+  /// <remarks>
+  /// Sets <see cref="MicroServicePipelineMode.GraphQL"/> on the service. Pipeline mode is set once;
+  /// calling a second <c>Configure*Pipeline</c> method on the same instance throws
+  /// <see cref="InvalidOperationException"/> with message <c>"MicroService PipelineMode is already set"</c>.
+  /// Auxiliary HTTP routes (control-plane endpoints, webhooks, admin actions) can be added alongside
+  /// the GraphQL endpoint via <c>MapEndpoints(...)</c>, and they share this mode's routing, CORS, and
+  /// authorization envelope.
+  /// </remarks>
   public static IMicroService ConfigureGraphQLPipeline(this IMicroService microservice, Action<IRequestExecutorBuilder> schemaBuilder)
   {
     var service = (MicroService)microservice;
