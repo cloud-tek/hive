@@ -33,6 +33,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="cors-config-01.json.cs" />
     <EmbeddedResource Include="cors-config-01.json" />
     <EmbeddedResource Include="cors-config-02.json" />

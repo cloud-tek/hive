@@ -43,6 +43,11 @@ public enum MicroServiceLogEventId
   ServiceStartupCriticalFailure = 110,
 
   /// <summary>
+  /// ASPNETCORE_ENVIRONMENT and DOTNET_ENVIRONMENT are set to conflicting values
+  /// </summary>
+  EnvironmentVariableConflict = 111,
+
+  /// <summary>
   /// A hosted startup service has completed
   /// </summary>
   HostedStartupServiceCompleted = 120,

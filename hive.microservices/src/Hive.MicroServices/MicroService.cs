@@ -122,6 +122,16 @@ public partial class MicroService : MicroServiceBase, IMicroService
   {
     Activity.DefaultIdFormat = ActivityIdFormat.W3C;
 
+    EnvironmentVariables.TryGetValue(Constants.EnvironmentVariables.DotNet.Environment, out var aspNetCoreEnv);
+    EnvironmentVariables.TryGetValue(Constants.EnvironmentVariables.DotNet.RuntimeEnvironment, out var dotNetEnv);
+
+    var conflictMessage = EnvironmentVariableConflictDetector.Detect(aspNetCoreEnv, dotNetEnv);
+    if (conflictMessage != null)
+    {
+      Logger.LogEnvironmentVariableConflict(conflictMessage);
+      throw new ConfigurationException(conflictMessage);
+    }
+
     if (ExternalHostFactory != null)
     {
       var config = configuration ?? new ConfigurationBuilder().Build();
