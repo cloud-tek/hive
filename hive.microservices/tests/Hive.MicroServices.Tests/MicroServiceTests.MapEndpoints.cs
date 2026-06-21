@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CloudTek.Testing;
 using FluentAssertions;
 using Hive.Exceptions;
+using Hive.MicroServices.Api;
 using Hive.MicroServices.Extensions;
 using Hive.MicroServices.GraphQL;
 using Hive.MicroServices.Grpc;
@@ -423,6 +424,64 @@ public partial class MicroServiceTests
       // Assert — no exception; service starts
       await act.Should().NotThrowAsync();
       await microservice.StopAsync();
+    }
+
+    // ─── Integration: ApiControllers + custom route coexist ──────────────────
+
+    [Fact]
+    [IntegrationTest]
+    public async Task GivenApiControllerPipelineWithMapEndpoints_WhenRequesting_ThenControllerAndCustomRouteCoexist()
+    {
+      // Arrange
+      using var scope = EnvironmentVariableScope.Create(
+        Constants.EnvironmentVariables.DotNet.Environment, "Development");
+
+      var config = new ConfigurationBuilder().Build();
+
+      // ConfigureTestHost does not propagate WebHostDefaults.ApplicationKey (unlike RunAsync), so
+      // AddControllers() falls back to the test-runner entry assembly instead of the test project.
+      // We explicitly register the test assembly as an application part to make PingController discoverable.
+      await using var microservice = new MicroService(ServiceName, new NullLogger<IMicroService>())
+        .InTestClass<MicroServiceTests>()
+        .ConfigureServices((services, _) =>
+        {
+          services.AddControllers()
+            .AddApplicationPart(typeof(MicroServiceTests).Assembly);
+        })
+        .ConfigureApiControllerPipeline()
+        .MapEndpoints(routes =>
+        {
+          routes.MapGet("/admin/ping", () => Results.Ok(new { ping = "pong" }));
+        })
+        .ConfigureTestHost();
+
+      await microservice.InitializeAsync(config);
+      await microservice.StartAsync();
+
+      try
+      {
+        var server = ((MicroService)microservice).Host.GetTestServer();
+        var client = server.CreateClient();
+
+        // Act — controller route must respond
+        var controllerResponse = await client.GetAsync("/api/ping");
+
+        // Act — custom MapEndpoints route must also respond
+        var customResponse = await client.GetAsync("/admin/ping");
+
+        // Assert — both routes return 200
+        controllerResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var controllerContent = await controllerResponse.Content.ReadAsStringAsync();
+        controllerContent.Should().Contain("pong");
+
+        customResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var customContent = await customResponse.Content.ReadAsStringAsync();
+        customContent.Should().Contain("pong");
+      }
+      finally
+      {
+        await microservice.StopAsync();
+      }
     }
 
     // ─── Helper types ─────────────────────────────────────────────────────────
