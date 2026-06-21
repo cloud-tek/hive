@@ -173,6 +173,7 @@ public static class IMicroServiceExtensions
           app.UseAuthorization();
           app.UseEndpoints(endpoints =>
               {
+                endpoints.DrainCustomEndpoints(service);
                 endpoints.MapGet("/*", (ctx) =>
                     {
                       ctx.Response.StatusCode = 404;

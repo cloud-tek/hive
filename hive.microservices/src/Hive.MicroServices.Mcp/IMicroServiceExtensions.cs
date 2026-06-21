@@ -52,6 +52,7 @@ public static class IMicroServiceExtensions
       app.UseEndpoints(endpoints =>
         {
           endpoints.MapMcp();
+          endpoints.DrainCustomEndpoints(service);
         });
     });
 

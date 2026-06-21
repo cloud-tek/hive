@@ -85,7 +85,11 @@ namespace Hive.MicroServices.Api
             }
 
             app.UseAuthorization();
-            app.UseEndpoints(endpointBuilder);
+            app.UseEndpoints(endpoints =>
+            {
+              endpointBuilder(endpoints);
+              endpoints.DrainCustomEndpoints(service);
+            });
           });
 
       return microservice;

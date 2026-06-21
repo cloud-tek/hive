@@ -5,6 +5,7 @@ using Hive.Exceptions;
 using Hive.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -103,6 +104,12 @@ public partial class MicroService : MicroServiceBase, IMicroService
   /// The microservice's list of actions executed during the pipeline configuration phase against the <see cref="IApplicationBuilder"/>
   /// </summary>
   internal List<Action<IApplicationBuilder>> ConfigurePipelineActions { get; } = new List<Action<IApplicationBuilder>>();
+
+  /// <summary>
+  /// The microservice's list of auxiliary endpoint mapping actions, drained by each HTTP mode's <c>UseEndpoints</c> block.
+  /// Populated by <see cref="IMicroServiceMapEndpointsExtensions.MapEndpoints"/>.
+  /// </summary>
+  internal List<Action<IEndpointRouteBuilder>> MapEndpointActions { get; } = new();
 
   internal Func<Assembly> MicroServiceEntrypointAssemblyProvider { get; set; } = () => Assembly.GetEntryAssembly()!;
 

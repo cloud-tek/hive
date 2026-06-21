@@ -59,6 +59,7 @@ public static class IMicroServiceExtensions
       app.UseEndpoints(endpoints =>
         {
           endpoints.MapGraphQL("/graphql");
+          endpoints.DrainCustomEndpoints(service);
         });
     });
 

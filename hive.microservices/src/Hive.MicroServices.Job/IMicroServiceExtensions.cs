@@ -1,3 +1,4 @@
+using Hive.Exceptions;
 using Hive.MicroServices.Extensions;
 using Hive.MicroServices.Job.Services;
 using Microsoft.AspNetCore.Builder;
@@ -35,6 +36,11 @@ namespace Hive.MicroServices.Job
           .ConfigureExtensions()
           .ConfigurePipelineActions.Add(app =>
           {
+            if (service.MapEndpointActions.Count > 0)
+            {
+              throw new ConfigurationException(Constants.Errors.MapEndpointsJobForbidden);
+            }
+
             app.UseRouting();
 
             // Apply CORS middleware (uses default policy configured in Extension)

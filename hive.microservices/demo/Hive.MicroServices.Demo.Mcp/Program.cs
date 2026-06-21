@@ -14,6 +14,13 @@ var service = new MicroService("hive-microservices-mcp-demo")
     .ConfigureMcpPipeline(mcp =>
     {
       mcp.WithTools<WeatherForecastTool>();
+    })
+    .MapEndpoints(routes =>
+    {
+      // Custom admin endpoint sharing the same DI singleton as WeatherForecastTool.
+      // Demonstrates that MapEndpoints routes run inside the same routing/auth envelope.
+      routes.MapGet("/admin/forecast/summary", (IWeatherForecastService svc) =>
+        Results.Ok(new { count = svc.GetWeatherForecast().Count() }));
     });
 
 await service.RunAsync();
