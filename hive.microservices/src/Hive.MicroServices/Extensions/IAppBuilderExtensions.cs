@@ -13,8 +13,14 @@ public static class IAppBuilderExtensions
   /// </summary>
   /// <param name="endpoints">The endpoint route builder</param>
   /// <param name="service">The microservice whose <c>MapEndpointActions</c> are drained</param>
+  /// <remarks>
+  /// Draining in <see cref="MicroServicePipelineMode.Job"/> mode throws <see cref="Hive.Exceptions.ConfigurationException"/>
+  /// before any mapping action runs.
+  /// </remarks>
   internal static void DrainCustomEndpoints(this IEndpointRouteBuilder endpoints, MicroService service)
   {
+    service.ThrowIfCustomEndpointsForbidden();
+
     foreach (var map in service.MapEndpointActions)
     {
       map(endpoints);

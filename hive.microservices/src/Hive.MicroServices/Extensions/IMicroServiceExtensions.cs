@@ -154,8 +154,8 @@ public static class IMicroServiceExtensions
   /// on the same instance throws <see cref="InvalidOperationException"/> with message
   /// <c>"MicroService PipelineMode is already set"</c>. Auxiliary HTTP routes can be added via
   /// <c>MapEndpoints(...)</c> and are served before the built-in 404 catch-all, inside the same routing
-  /// and authorization envelope. This is the only <c>None</c>-mode pipeline that accepts
-  /// <c>MapEndpoints</c>; <c>ConfigureJob</c> (which also sets <c>None</c>) rejects custom routes at startup.
+  /// and authorization envelope. Default is the <c>None</c> pipeline and accepts
+  /// <c>MapEndpoints</c>; <c>ConfigureJob</c> sets <see cref="MicroServicePipelineMode.Job"/> and rejects custom routes at startup.
   /// </remarks>
   public static IMicroService ConfigureDefaultServicePipeline(this IMicroService microservice)
   {

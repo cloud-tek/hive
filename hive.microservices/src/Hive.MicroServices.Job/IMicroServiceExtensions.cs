@@ -1,4 +1,3 @@
-using Hive.Exceptions;
 using Hive.MicroServices.Extensions;
 using Hive.MicroServices.Job.Services;
 using Microsoft.AspNetCore.Builder;
@@ -19,7 +18,7 @@ namespace Hive.MicroServices.Job
     /// <returns><see cref="IMicroService"/></returns>
     /// <exception cref="ArgumentNullException">Thrown when any of the provided arguments are null</exception>
     /// <remarks>
-    /// Sets <see cref="MicroServicePipelineMode.None"/> on the service (worker/job intent). Pipeline mode
+    /// Sets <see cref="MicroServicePipelineMode.Job"/> on the service (worker/job intent). Pipeline mode
     /// is set once; calling a second <c>Configure*Pipeline</c> method on the same instance throws
     /// <see cref="InvalidOperationException"/> with message <c>"MicroService PipelineMode is already set"</c>.
     /// Job (worker) services cannot serve custom HTTP routes: if <c>MapEndpoints(...)</c> has been called on
@@ -46,10 +45,7 @@ namespace Hive.MicroServices.Job
           .ConfigureExtensions()
           .ConfigurePipelineActions.Add(app =>
           {
-            if (service.MapEndpointActions.Count > 0)
-            {
-              throw new ConfigurationException(Constants.Errors.MapEndpointsJobForbidden);
-            }
+            service.ThrowIfCustomEndpointsForbidden();
 
             app.UseRouting();
 
@@ -67,7 +63,7 @@ namespace Hive.MicroServices.Job
               });
           });
 
-      service.PipelineMode = MicroServicePipelineMode.None;
+      service.PipelineMode = MicroServicePipelineMode.Job;
 
       return microservice;
     }
