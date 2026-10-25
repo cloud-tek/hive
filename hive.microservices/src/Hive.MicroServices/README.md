@@ -126,10 +126,7 @@ await microservice.RunAsync(config);
 
 ```csharp
 var microservice = new MicroService("my-service")
-    .WithOpenTelemetry(
-        logging: builder => { /* configure logging */ },
-        tracing: builder => { /* configure tracing */ }
-    )
+    .WithOpenTelemetry()
     .RegisterExtension<MyCustomExtension>()
     .ConfigureApiPipeline(endpoints =>
     {

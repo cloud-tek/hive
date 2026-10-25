@@ -672,14 +672,18 @@ internal static class MessagingMeter
 ### 4.4 OpenTelemetry Integration
 
 ```csharp
-// In the consuming service's OpenTelemetry setup
-service.WithOpenTelemetry(
-    tracing: t => t.AddSource("Wolverine"),      // Wolverine's built-in traces
-    metrics: m => m.AddMeter("Hive.Messaging")   // Hive's business metrics
-);
+// Wolverine traces are exported automatically
+service.WithOpenTelemetry();
 ```
 
-Both `Wolverine`'s ActivitySource and `Hive.Messaging`'s Meter are registered. The user gets transport-level detail from Wolverine and business-level metrics from Hive.
+`Hive.Messaging` implements `IActivitySourceProvider` (`ActivitySourceNames => ["Wolverine"]`), so `WithOpenTelemetry()` subscribes to Wolverine's ActivitySource without further setup and the user gets transport-level traces.
+
+The `Hive.Messaging` meter is **not** subscribed automatically. To export the business-level metrics, add the meter through the standard OpenTelemetry SDK hook:
+
+```csharp
+service.ConfigureServices((services, _) =>
+    services.ConfigureOpenTelemetryMeterProvider((_, metrics) => metrics.AddMeter("Hive.Messaging")));
+```
 
 ---
 

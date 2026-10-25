@@ -520,9 +520,7 @@ await functionHost.RunAsync();
 
 ```csharp
 var functionHost = new FunctionHost("my-function")
-  .WithOpenTelemetry(
-    logging: builder => builder.AddConsole(),
-    tracing: builder => { /* custom tracing */ })
+  .WithOpenTelemetry()
   .RegisterExtension<MyCustomExtension>()
   .RegisterExtension<AnotherExtension>()
   .ConfigureServices((services, config) =>

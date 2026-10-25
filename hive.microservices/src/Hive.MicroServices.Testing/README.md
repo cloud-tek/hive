@@ -308,10 +308,7 @@ public async Task GivenExtension_WhenStarted_ThenExtensionIsActive()
     var config = new ConfigurationBuilder().Build();
 
     await using var microservice = new MicroService("test-service")
-        .WithOpenTelemetry(
-            logging: builder => { /* test logging config */ },
-            tracing: builder => { /* test tracing config */ }
-        )
+        .WithOpenTelemetry()
         .ConfigureApiPipeline(endpoints =>
         {
             endpoints.MapGet("/", () => "Hello");
