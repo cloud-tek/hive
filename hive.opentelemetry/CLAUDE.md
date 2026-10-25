@@ -20,18 +20,14 @@ Following the repository structure policy, all tests are located within the modu
 
 Tests for the `WithOpenTelemetry` extension method registration:
 
-- [x] Verify extension is properly added to service.Extensions collection
-- [x] Verify extension is of type `Hive.OpenTelemetry.Extension`
+- [x] Verify extension is added to service.Extensions
 - [x] Verify fluent API returns the IMicroService instance for chaining
-- [x] Verify custom environment variable name can be passed
-- [x] Verify custom logging configuration parameter
-- [x] Verify custom tracing configuration parameter
-- [x] Verify custom metrics configuration parameter
-- [x] Verify all custom configurations together
-- [x] Verify multiple extension registrations
-- [x] Verify extension chaining with other service configurations
+- [x] Verify called with `additionalActivitySources` adds the extension
+- [x] Verify called with no parameters adds the extension
+- [x] Verify called multiple times adds multiple extensions
+- [x] Verify chained with other extensions adds all
 
-**Status:** 9/9 tests passing
+**Status:** 6/6 tests passing
 
 ---
 
@@ -81,7 +77,7 @@ Tests for OpenTelemetry resource attribute configuration:
 
 **File:** `LoggingConfigurationTests.cs`
 
-#### Default logging configuration (no custom action)
+#### Default logging configuration (configuration-driven)
 
 - [x] Verify console exporter is enabled by default
 - [x] Verify console exporter can be explicitly enabled
@@ -100,20 +96,13 @@ Tests for OpenTelemetry resource attribute configuration:
 - [x] Verify service works without any OTLP endpoint (console only)
 - [x] Verify empty configuration endpoint falls back to environment variable
 
-#### Custom logging configuration
-
-- [x] Verify custom `Action<LoggerProviderBuilder>` parameter is accepted (tested in ExtensionTests)
-- [x] Verify custom configuration is applied
-- [x] Verify custom configuration completely overrides IConfiguration
-- [x] Verify service starts with custom logging and no exporters
-
 #### Combined configuration
 
 - [x] Verify both console and OTLP can be enabled simultaneously
 - [x] Verify console disabled with OTLP enabled
 - [x] Verify full logging configuration with all settings
 
-**Status:** 19/19 tests passing
+**Status:** 16/16 tests passing
 
 ---
 
@@ -121,7 +110,7 @@ Tests for OpenTelemetry resource attribute configuration:
 
 **File:** `TracingConfigurationTests.cs`
 
-#### Default tracing configuration (no custom action)
+#### Default tracing configuration (configuration-driven)
 
 - [x] Verify default instrumentations are enabled
 - [x] Verify ASP.NET Core instrumentation can be explicitly enabled
@@ -146,13 +135,12 @@ Tests for OpenTelemetry resource attribute configuration:
 - [x] Verify service works without any OTLP endpoint
 - [x] Verify empty configuration endpoint falls back to environment variable
 
-#### Custom tracing configuration
+#### Additional activity sources and additive SDK configuration
 
-- [x] Verify custom `Action<TracerProviderBuilder>` parameter is accepted (tested in ExtensionTests)
-- [x] Verify custom configuration is applied
-- [x] Verify custom configuration completely overrides IConfiguration
-- [x] Verify service starts with custom tracing and no instrumentations
-- [x] Verify custom tracing with custom activity source
+- [x] Verify `additionalActivitySources` are accepted (GivenAdditionalActivitySources_WhenServiceStarts_ThenServiceStartsSuccessfully)
+- [x] Verify additive `ConfigureOpenTelemetryTracerProvider` adds a custom source without replacing default instrumentation (E2E/AdditiveProviderConfigurationTests)
+
+Custom SDK configuration is additive and never overrides IConfiguration-driven defaults.
 
 #### Combined configuration
 
@@ -162,7 +150,7 @@ Tests for OpenTelemetry resource attribute configuration:
 - [x] Verify full tracing configuration with all settings
 - [x] Verify tracing with resource attributes
 
-**Status:** 25/25 tests passing
+**Status:** 22/22 tests passing
 
 ---
 
@@ -170,7 +158,7 @@ Tests for OpenTelemetry resource attribute configuration:
 
 **File:** `MetricsConfigurationTests.cs`
 
-#### Default metrics configuration (no custom action)
+#### Default metrics configuration (configuration-driven)
 
 - [x] Verify default instrumentations are enabled
 - [x] Verify ASP.NET Core instrumentation can be explicitly enabled
@@ -197,13 +185,7 @@ Tests for OpenTelemetry resource attribute configuration:
 - [x] Verify service works without any OTLP endpoint
 - [x] Verify empty configuration endpoint falls back to environment variable
 
-#### Custom metrics configuration
-
-- [x] Verify custom `Action<MeterProviderBuilder>` parameter is accepted (tested in ExtensionTests)
-- [x] Verify custom configuration is applied
-- [x] Verify custom configuration completely overrides IConfiguration
-- [x] Verify service starts with custom metrics and no instrumentations
-- [x] Verify custom metrics with custom meter
+Additive `ConfigureOpenTelemetryMeterProvider` customisation is supported by the SDK but is not covered by a test.
 
 #### Combined configuration
 
@@ -215,7 +197,7 @@ Tests for OpenTelemetry resource attribute configuration:
 - [x] Verify metrics with resource attributes
 - [x] Verify two instrumentations enabled (ASP.NET Core + HTTP Client)
 
-**Status:** 29/29 tests passing
+**Status:** 25/25 tests passing
 
 ---
 
@@ -355,7 +337,7 @@ Tests for invalid configuration scenarios:
 
 ### 12. End-to-End Observability Tests ✅ IMPLEMENTED
 
-**File:** `E2E/TraceEmissionTests.cs`, `E2E/MetricsEmissionTests.cs`, `E2E/LogEmissionTests.cs`, `E2E/ResourceCorrelationTests.cs`, `E2E/ContextPropagationTests.cs`
+**File:** `E2E/TraceEmissionTests.cs`, `E2E/MetricsEmissionTests.cs`, `E2E/LogEmissionTests.cs`, `E2E/ResourceCorrelationTests.cs`, `E2E/ContextPropagationTests.cs`, `E2E/AdditiveProviderConfigurationTests.cs`
 
 Integration tests for actual telemetry emission using OpenTelemetry's InMemoryExporter:
 
@@ -389,6 +371,9 @@ Integration tests for actual telemetry emission using OpenTelemetry's InMemoryEx
 - [x] Verify configured resource attributes are applied
 - [x] Verify service instance ID is consistent
 
+#### Additive Provider Configuration Tests (1 test)
+- [x] Verify additive `ConfigureOpenTelemetryTracerProvider` exports a custom activity source
+
 #### Context Propagation Tests (4 tests)
 - [x] Verify trace context is present on logs (TraceId correlation)
 - [x] Verify nested activities share the same TraceId in logs
@@ -402,7 +387,7 @@ Integration tests for actual telemetry emission using OpenTelemetry's InMemoryEx
 - Configures `OpenTelemetryLoggerOptions.IncludeFormattedMessage = true` for log assertion
 - E2ETestBase provides helper methods for common test setup
 
-**Status:** 26/26 tests passing
+**Status:** 27/27 tests passing
 
 ---
 
@@ -459,23 +444,23 @@ dotnet test --filter FullyQualifiedName~ExtensionTests.GivenWithOpenTelemetry_Wh
 
 | Category | File | Tests Planned | Tests Implemented | Status |
 |----------|------|---------------|-------------------|--------|
-| 1. Extension Registration | `ExtensionTests.cs` | 9 | 9 | ✅ Complete |
+| 1. Extension Registration | `ExtensionTests.cs` | 6 | 6 | ✅ Complete |
 | 2. Configuration Loading | `ConfigurationTests.cs` | 7 | 7 | ✅ Complete |
 | 3. Resource Configuration | `ResourceConfigurationTests.cs` | 6 | 6 | ✅ Complete |
-| 4. Logging Configuration | `LoggingConfigurationTests.cs` | 19 | 19 | ✅ Complete |
-| 5. Tracing Configuration | `TracingConfigurationTests.cs` | 25 | 25 | ✅ Complete |
-| 6. Metrics Configuration | `MetricsConfigurationTests.cs` | 29 | 29 | ✅ Complete |
+| 4. Logging Configuration | `LoggingConfigurationTests.cs` | 16 | 16 | ✅ Complete |
+| 5. Tracing Configuration | `TracingConfigurationTests.cs` | 22 | 22 | ✅ Complete |
+| 6. Metrics Configuration | `MetricsConfigurationTests.cs` | 25 | 25 | ✅ Complete |
 | 7. Environment Variables | `*ConfigurationTests.cs` | 12 | 12 | ✅ Complete |
 | 8. Service Lifecycle | `ConfigurationTests.cs` + planned | 11 | 5 | 🔄 Partial |
 | 9. Configuration Sections | `ConfigurationSectionTests.cs` | 29 | 29 | ✅ Complete |
 | 10. Pipeline Compatibility | `MicroServiceTests.PipelineModes.cs` | 7 | 1 | 🔄 Partial |
 | 11. Error Handling | `OpenTelemetryTests.ErrorHandling.cs` | 5 | 0 | ⏳ Planned |
-| 12. E2E Observability | `E2E/*.cs` | 26 | 26 | ✅ Complete |
+| 12. E2E Observability | `E2E/*.cs` | 27 | 27 | ✅ Complete |
 | 13. Demo Validation | Demo project tests | 4 | 0 | 📋 Optional |
 
-**Total:** 195 tests planned (185 mandatory + 10 optional), 170 implemented (92.0% complete)
+**Total:** 177 tests planned (173 mandatory + 4 optional), 156 implemented (90.2% of mandatory)
 
-**Explicit Tests Passing:** 149 (9 Extension + 6 Configuration + 6 Resource + 19 Logging + 25 Tracing + 29 Metrics + 29 ConfigSection + 26 E2E)
+**Explicit Tests Passing:** 137 (6 Extension + 6 Configuration + 6 Resource + 16 Logging + 22 Tracing + 25 Metrics + 29 ConfigSection + 27 E2E)
 
 **Legend:**
 - ✅ Complete - All tests implemented and passing
@@ -488,7 +473,7 @@ dotnet test --filter FullyQualifiedName~ExtensionTests.GivenWithOpenTelemetry_Wh
 
 ## Next Steps
 
-Based on current implementation progress (170/185 mandatory tests, 92.0% complete):
+Based on current implementation progress (156/173 mandatory tests, 90.2% complete):
 
 ### Medium Priority
 1. **Service Lifecycle Integration Tests** (5/11 → 11/11) - Test remaining pipeline modes
@@ -499,16 +484,17 @@ Based on current implementation progress (170/185 mandatory tests, 92.0% complet
 4. **Demo Validation Tests** (0/4) - Smoke tests for demo application
 
 ### Recently Completed ✅
-- **E2E Observability Tests** (26/26) - Complete telemetry emission validation using InMemoryExporter
+- **E2E Observability Tests** (27/27) - Complete telemetry emission validation using InMemoryExporter
   - TraceEmissionTests (6 tests) - HTTP request tracing, attributes, error status
   - MetricsEmissionTests (6 tests) - HTTP metrics, runtime instrumentation
   - LogEmissionTests (6 tests) - Log capture, levels, structured logging, exceptions
   - ResourceCorrelationTests (4 tests) - Service name, category, resource attributes
   - ContextPropagationTests (4 tests) - TraceId correlation, nested activities, traceparent propagation
+  - AdditiveProviderConfigurationTests (1 test) - additive tracer provider configuration
 - **Configuration Section Tests** (29/29) - Constants, option defaults, configuration binding, protocol enum binding
-- **Metrics Configuration Tests** (29/29) - All 3 instrumentations, OTLP exporter, environment variable fallback, custom overrides
-- **Tracing Configuration Tests** (25/25) - Instrumentations, OTLP exporter, environment variable fallback, custom overrides
-- **Logging Configuration Tests** (19/19) - Console exporter, OTLP exporter, environment variable fallback, custom overrides
+- **Metrics Configuration Tests** (25/25) - All 3 instrumentations, OTLP exporter, environment variable fallback
+- **Tracing Configuration Tests** (22/22) - Instrumentations, OTLP exporter, environment variable fallback, additional activity sources
+- **Logging Configuration Tests** (16/16) - Console exporter, OTLP exporter, environment variable fallback
 - **Environment Variable Tests** (12/12) - Covered within Logging, Tracing, and Metrics ConfigurationTests
 - **Resource Configuration Tests** (6/6) - service.name, service.instance.id, serviceNamespace, serviceVersion, custom attributes
 

@@ -471,7 +471,7 @@ For the full documentation index — design docs, topic guides, build reference,
 
 - [hive_functions_design.md](./docs/design/hive_functions_design.md) - Azure Functions integration design (Draft)
 - [cors_extraction_analysis.md](./docs/design/cors_extraction_analysis.md) - CORS abstraction analysis
-- [hive.opentelemetry/CONFIGURATION_STRATEGY.md](./hive.opentelemetry/CONFIGURATION_STRATEGY.md) - OpenTelemetry configuration strategy
+- [docs/design/otel_configuration_strategy.md](./docs/design/otel_configuration_strategy.md) - OpenTelemetry configuration strategy
 
 ---
 

@@ -775,7 +775,7 @@ public class OtlpOptions
 - [OpenTelemetry .NET Documentation](https://opentelemetry.io/docs/languages/dotnet/)
 - [OTLP Specification](https://opentelemetry.io/docs/specs/otlp/)
 - [Hive MicroServices Framework](../hive.microservices/)
-- [Configuration Strategy Design Doc](./CONFIGURATION_STRATEGY.md)
+- [Configuration Strategy Design Doc](../docs/design/otel_configuration_strategy.md)
 - [Testing Guide](./CLAUDE.md)
 
 ---
