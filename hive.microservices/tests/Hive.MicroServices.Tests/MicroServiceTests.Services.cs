@@ -20,7 +20,6 @@ public partial class MicroServiceTests
     [InlineData(typeof(IConfiguration))]
     [InlineData(typeof(IMicroService))]
     [UnitTest]
-
     public async Task GivenMicroServiceIsStarting_WhenInitalizeAsync_ThenRequiredTypesAreResolveable(Type type)
     {
       // Arrange

@@ -31,7 +31,6 @@ public partial class MicroServiceTests
     [InlineData("Development", false, "shared-logging-config.json", "cors-config-01.json")]
     [InlineData("Production", true, "shared-logging-config.json", "cors-config-01.json")]
     [UnitTest]
-
     public async Task GivenOptionsWithAllowAny_WhenInitializing_ThenValidationShouldBeEnvironmentDependent(string environment, bool shouldFail, params string[] files)
     {
       using var scope = EnvironmentVariableScope.Create(Constants.EnvironmentVariables.DotNet.Environment, environment);
@@ -63,7 +62,6 @@ public partial class MicroServiceTests
     [InlineData(true, "shared-logging-config.json", "cors-config-03.json")]
     [InlineData(false, "shared-logging-config.json", "cors-config-04.json")]
     [UnitTest]
-
     public async Task GivenOptionsWithoutAllowAny_WhenInitializing_ThenAtLeastOnePolicyMustBeDefined(bool shouldFail, params string[] files)
     {
       using var scope = EnvironmentVariableScope.Create(Constants.EnvironmentVariables.DotNet.Environment, "Development");
