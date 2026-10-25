@@ -18,8 +18,10 @@
     <PackageVersion Include="protobuf-net.Grpc.AspNetCore" Version="1.2.2" />
     <PackageVersion Include="HotChocolate.AspNetCore" Version="16.2.*" />
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.4.0" />
-    <!-- Transitive pin: overrides MessagePack 2.5.192 (Aspire.Hosting → StreamJsonRpc) to clear GHSA-hv8m-jj95-wg3x -->
-    <PackageVersion Include="MessagePack" Version="2.5.302" />
+    <!-- Transitive pin: overrides MessagePack (Aspire.Hosting → StreamJsonRpc) to clear GHSA-hv8m-jj95-wg3x and GHSA-qhrr-8q5h-9q3h (NU1902) -->
+    <PackageVersion Include="MessagePack" Version="2.5.307" />
+    <!-- Transitive pin: clears GHSA-v5pm-xwqc-g5wc (NU1903) -->
+    <PackageVersion Include="Microsoft.OpenApi" Version="2.13.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.51.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.1" />
