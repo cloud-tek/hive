@@ -40,7 +40,8 @@ public class AdditiveProviderConfigurationTests : E2ETestBase
     await RunServiceAndExecuteAsync(service, async () =>
     {
       using var client = CreateHttpClient();
-      await client.GetAsync("/custom");
+      using var response = await client.GetAsync("/custom");
+      response.EnsureSuccessStatusCode();
     });
 
     // Assert
