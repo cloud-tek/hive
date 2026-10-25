@@ -143,7 +143,7 @@ This means users don't need to manually wire `builder.AddSource(...)` — regist
 ```csharp
 // ASP.NET Microservice - Using custom extension methods (most common)
 new MicroService("service-name")
-    .WithOpenTelemetry(logging: builder => { }, tracing: builder => { })
+    .WithOpenTelemetry()
     .ConfigureApiPipeline(app => { });
 
 // ASP.NET Microservice - Using RegisterExtension with compile-time safety
@@ -153,7 +153,7 @@ new MicroService("service-name")
 
 // Azure Functions
 new FunctionHost("function-name")
-    .WithOpenTelemetry(logging: builder => { }, tracing: builder => { })
+    .WithOpenTelemetry()
     .ConfigureServices((services, config) => { });
 ```
 
