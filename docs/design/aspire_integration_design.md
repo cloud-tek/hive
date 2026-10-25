@@ -1,5 +1,7 @@
 # Aspire Integration Design
 
+> **Status note (issue #71):** the `logging:` / `tracing:` / `metrics:` lambda parameters of `WithOpenTelemetry` shown in this design were not implemented. The shipped API is `WithOpenTelemetry(additionalActivitySources: ...)`, configured via the `OpenTelemetry` configuration section; additional SDK customisation uses `ConfigureServices` + `ConfigureOpenTelemetry{Tracer,Meter,Logger}Provider`. See [hive.opentelemetry/README.md](../../hive.opentelemetry/README.md).
+
 **Status**: Draft Design Document
 **Date**: 2026-02-06
 **Author**: Architecture Team
