@@ -17,8 +17,7 @@ public partial class PreConfigurationTests
     [InlineData("simple-options-02.json", false, "Name", "empty", "at least")]
     [InlineData("simple-options-03.json", false, "Name", "at least")]
     [UnitTest]
-    public void
-      GivenSimpleOptionsSectionExists_WhenPreConfigureFluentlyValidatedOptions_ThenOptionsAreImmediatelyAvailableAndPropertiesAreBound(
+    public void GivenSimpleOptionsSectionExists_WhenPreConfigureFluentlyValidatedOptions_ThenOptionsAreImmediatelyAvailableAndPropertiesAreBound(
         string config, bool shouldBeValid, string? key, params string[] errors)
     {
       var cfg = GetConfigurationRoot(config);

@@ -12,8 +12,7 @@ public partial class PreConfigurationTests : ConfigurationFixture
   [SmartTheory(Execute.Always, On.All)]
   [InlineData("simple-options-01.json", "Test")]
   [UnitTest]
-  public void
-    GivenSectionExists_WhenPreConfigureOptions_ThenOptionsAreAvailableImmediatelyAndPropertiesAreBound(
+  public void GivenSectionExists_WhenPreConfigureOptions_ThenOptionsAreAvailableImmediatelyAndPropertiesAreBound(
       string config, string expectedName)
   {
     // Arrange
@@ -32,8 +31,7 @@ public partial class PreConfigurationTests : ConfigurationFixture
   [SmartTheory(Execute.Always, On.All)]
   [InlineData("simple-options-01.json", "Test")]
   [UnitTest]
-  public void
-    GivenOptionsAlreadyRegisteredWithFactory_WhenPreConfigureOptions_ThenReturnsConfigBoundValues(
+  public void GivenOptionsAlreadyRegisteredWithFactory_WhenPreConfigureOptions_ThenReturnsConfigBoundValues(
       string config, string expectedName)
   {
     // Arrange
@@ -57,8 +55,7 @@ public partial class PreConfigurationTests : ConfigurationFixture
   [SmartTheory(Execute.Always, On.All)]
   [InlineData("simple-options-01.json", "Test")]
   [UnitTest]
-  public void
-    GivenOptionsAlreadyRegisteredWithImplementationType_WhenPreConfigureOptions_ThenReturnsConfigBoundValues(
+  public void GivenOptionsAlreadyRegisteredWithImplementationType_WhenPreConfigureOptions_ThenReturnsConfigBoundValues(
       string config, string expectedName)
   {
     // Arrange

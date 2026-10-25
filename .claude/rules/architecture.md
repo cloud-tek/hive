@@ -169,8 +169,8 @@ The framework supports multiple service types through pipeline modes:
 - `GraphQL` - GraphQL APIs (HotChocolate)
 - `Grpc` - gRPC services (standard protobuf-first)
 - `Mcp` - MCP (Model Context Protocol) servers (streamable HTTP)
-- `Job` - Background worker services
-- `None` - Basic service without HTTP
+- `Job` - Background job/worker services (custom HTTP routes forbidden)
+- `None` - Default service pipeline (ConfigureDefaultServicePipeline); probes plus optional MapEndpoints routes
 
 Each mode configures a specific middleware pipeline and service registrations.
 

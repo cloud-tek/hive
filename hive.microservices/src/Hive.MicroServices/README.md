@@ -79,8 +79,8 @@ The framework supports multiple service types through pipeline modes:
 | `GraphQL` | GraphQL APIs via HotChocolate | GraphQL services |
 | `Grpc` | gRPC services (protobuf-first) | High-performance RPC |
 | `Mcp` | MCP servers via ModelContextProtocol.AspNetCore | LLM tool/data servers |
-| `Job` | Background worker services | Scheduled tasks, workers |
-| `None` | Basic service without HTTP | Console apps, utilities |
+| `Job` | Background workers (ConfigureJob); no custom HTTP routes | Jobs, workers |
+| `None` | Default service pipeline (ConfigureDefaultServicePipeline) | Console apps, utilities |
 
 ## Basic Usage
 
@@ -400,7 +400,7 @@ ConfigurationException: "No pipeline has been configured. Aborting"
 | `ConfigureGrpcPipeline(endpoints => ...)` | `Grpc` | Protobuf-first gRPC services |
 | `ConfigureCodeFirstGrpcPipeline(endpoints => ...)` | `Grpc` | Code-first gRPC services |
 | `ConfigureMcpPipeline(server => ...)` | `Mcp` | MCP servers (LLM tool/data servers) |
-| `ConfigureJob()` | `None` | Background workers, no HTTP application surface |
+| `ConfigureJob()` | `Job` | Background workers, no HTTP application surface |
 | `ConfigureDefaultServicePipeline()` | `None` | Bare services with optional auxiliary HTTP routes |
 
 ### The `MapEndpoints` seam

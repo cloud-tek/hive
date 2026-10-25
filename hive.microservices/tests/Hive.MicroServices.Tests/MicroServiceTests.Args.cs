@@ -15,7 +15,6 @@ public partial class MicroServiceTests
 
     [SmartFact(Execute.Always, On.All)]
     [UnitTest]
-
     public async Task GivenMicroServiceIsStarting_WhenInitalizeAsyncWithArgs_ThenArgsAvailableInIMicroService()
     {
       // Arrange

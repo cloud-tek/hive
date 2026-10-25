@@ -11,7 +11,7 @@ public enum MicroServicePipelineMode
   NotSet,
 
   /// <summary>
-  /// Fire and forget jobs. Services which do not use a request processing pipeline
+  /// Default service pipeline (ConfigureDefaultServicePipeline): no application request-processing mode; serves probes and optional MapEndpoints routes
   /// </summary>
   None,
 
@@ -38,5 +38,10 @@ public enum MicroServicePipelineMode
   /// <summary>
   /// Model Context Protocol (MCP) server(s)
   /// </summary>
-  Mcp
+  Mcp,
+
+  /// <summary>
+  /// Background job / worker services (ConfigureJob). Execute IHostedService(s); custom HTTP routes via MapEndpoints are forbidden
+  /// </summary>
+  Job
 }

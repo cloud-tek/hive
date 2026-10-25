@@ -17,8 +17,7 @@ public partial class PreConfigurationTests
     [InlineData("simple-options-02.json", false, "Name", "required")]
     [InlineData("simple-options-03.json", false, "Name", "minimum")]
     [UnitTest]
-    public void
-      GivenSimpleOptionsSectionExists_WhenPreConfigureValidatedOptions_ThenOptionsAreImmediatelyAvailableAndPropertiesAreBound(
+    public void GivenSimpleOptionsSectionExists_WhenPreConfigureValidatedOptions_ThenOptionsAreImmediatelyAvailableAndPropertiesAreBound(
         string config, bool shouldBeValid, string? key, string? error)
     {
       var cfg = GetConfigurationRoot(config);
@@ -47,8 +46,7 @@ public partial class PreConfigurationTests
     [InlineData("complex-options-04.json", false, "Children[0].Name", "required")]
     [InlineData("complex-options-05.json", false, "Children[1].Name", "minimum")]
     [UnitTest]
-    public void
-      GivenComplexOptionsSectionExists_WhenPreConfigureValidatedOptions_ThenOptionsAreImmediatelyAvailableAndPropertiesAreBound(
+    public void GivenComplexOptionsSectionExists_WhenPreConfigureValidatedOptions_ThenOptionsAreImmediatelyAvailableAndPropertiesAreBound(
         string config, bool shouldBeValid, string? key, params string[] errors)
     {
       var cfg = GetConfigurationRoot(config);

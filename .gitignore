@@ -18,3 +18,8 @@ results/coverage/
 
 Buffer*.json
 Buffer.bookmark
+
+# Claude Code hook state (local)
+.claude/.quick-build.lock/
+.claude/.quick-build.stamp
+.claude/settings.local.json

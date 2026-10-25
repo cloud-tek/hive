@@ -149,8 +149,7 @@ public partial class MicroServiceTests
 
     [Fact]
     [UnitTest]
-    public async Task
-      GivenConfigureApiControllerPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInApiControllersMode()
+    public async Task GivenConfigureApiControllerPipelineIsUsed_WhenRunAsyncIsInvoked_ThenServiceStartsInApiControllersMode()
     {
       // Arrange
       var config = new ConfigurationBuilder().Build();
