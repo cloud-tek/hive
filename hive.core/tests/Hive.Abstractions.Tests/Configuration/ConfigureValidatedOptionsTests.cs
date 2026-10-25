@@ -14,8 +14,8 @@ public class ConfigureValidatedOptionsTests : ConfigurationFixture
   [InlineData("simple-options-01.json", true, null, null)]
   [InlineData("simple-options-02.json", false, "Name", "required")]
   [InlineData("simple-options-03.json", false, "Name", "minimum")]
-  public void
-    GivenSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreValidatedWhenResolvingFromContainerUsingDataAnnotations(
+  [UnitTest]
+  public void GivenSectionExists_WhenConfigureValidatedOptions_ThenOptionsAreValidatedWhenResolvingFromContainerUsingDataAnnotations(
       string config, bool shouldBeValid, string? key, string? error)
   {
     // Arrange

@@ -13,8 +13,7 @@ public partial class PostConfigurationTests : ConfigurationFixture
   [SmartTheory(Execute.Always, On.All)]
   [InlineData("simple-options-01.json", "Test")]
   [UnitTest]
-  public void
-    GivenSectionExists_WhenConfigureOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
+  public void GivenSectionExists_WhenConfigureOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
       string config, string expectedName)
   {
     // Arrange

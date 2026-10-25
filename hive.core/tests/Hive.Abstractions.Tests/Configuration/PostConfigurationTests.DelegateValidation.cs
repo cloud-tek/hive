@@ -18,8 +18,7 @@ public partial class PostConfigurationTests
     [InlineData("simple-options-02.json", false, "Name")]
     [InlineData("simple-options-03.json", false, "Name")]
     [UnitTest]
-    public void
-      GivenOptions1SectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
+    public void GivenOptions1SectionExists_WhenConfigureValidatedOptions_ThenOptionsAreAvailableWhenResolvingFromContainerAndPropertiesAreBound(
         string config, bool shouldBeValid, string? key)
     {
       var cfg = GetConfigurationRoot(config);
