@@ -359,7 +359,7 @@ Use `[UnitTest]` / `[IntegrationTest]` trait attributes and `CloudTek.Testing` +
 
 - **Full shared-envelope helper extraction (Option B).** Deferred; revisit only if a 7th mode lands or the envelope duplication becomes a maintenance burden. The per-mode asymmetries (§2) make the abstraction premature (YAGNI).
 - **Per-endpoint CORS opt-out / per-route CORS policy selection** for custom routes (§4.2). Out of scope; custom routes inherit the default policy.
-- **A dedicated `Job` enum value** distinct from `None` (§4.3). The `None`-means-two-things ambiguity predates this work and is not introduced by it. **Locked decision 1 now makes this ambiguity load-bearing:** because Job and Default both resolve to `PipelineMode.None`, the Job-forbids / Default-serves split *cannot* be expressed by a mode-enum check and must instead live in the respective pipeline-build delegates (§4.3). A future dedicated `Job` enum value (or a `bool ForbidsCustomEndpoints` flag on `MicroService`) would let the guard be centralised; deferred as a larger change. **Flagged as a NEW consequence of decision 1** — see §11.
+- **A dedicated `Job` enum value** distinct from `None` (§4.3). **Resolved in [§12](#12-amendment--enum-anchored-job-guard-issue-72-1030) (issue #72).** The `None`-means-two-things ambiguity predates this work and is not introduced by it. **Locked decision 1 now makes this ambiguity load-bearing:** because Job and Default both resolve to `PipelineMode.None`, the Job-forbids / Default-serves split *cannot* be expressed by a mode-enum check and must instead live in the respective pipeline-build delegates (§4.3). A future dedicated `Job` enum value (or a `bool ForbidsCustomEndpoints` flag on `MicroService`) would let the guard be centralised; deferred as a larger change. **Flagged as a NEW consequence of decision 1** — see §11.
 - **`MapEndpoints` overloads** (e.g. accepting an `IServiceProvider` or a named-group prefix). YAGNI; ship the single `Action<IEndpointRouteBuilder>` form.
 
 ---
@@ -372,7 +372,7 @@ Both questions previously open here have been decided by the human. They are now
 
 2. **Default `None` pipeline drain (§8) — RESOLVED: DRAIN.** A bare `ConfigureDefaultServicePipeline` service drains `MapEndpointActions` and serves custom routes (before its 404 catch-all), symmetric with the HTTP modes. Captured in: TL;DR, §4.3 (Decision 3), §8 (task 8), §7 (test 6).
 
-**Job-vs-Default `None` reconciliation (explicit).** Both `ConfigureJob` and `ConfigureDefaultServicePipeline` set `PipelineMode.None`. The forbid/serve split therefore **cannot** key off the enum. It keys off **which pipeline-build delegate runs**: the `ConfigureJob` delegate throws; the `ConfigureDefaultServicePipeline` delegate drains. The discriminator is **Job intent at the build site**, never `PipelineMode == None`. Any future reader changing this must preserve that: do not "simplify" the guard into a `PipelineMode.None` check — it would wrongly reject bare Default services too.
+**Job-vs-Default `None` reconciliation (explicit).** Both `ConfigureJob` and `ConfigureDefaultServicePipeline` set `PipelineMode.None`. The forbid/serve split therefore **cannot** key off the enum. It keys off **which pipeline-build delegate runs**: the `ConfigureJob` delegate throws; the `ConfigureDefaultServicePipeline` delegate drains. The discriminator is **Job intent at the build site**, never `PipelineMode == None`. Any future reader changing this must preserve that: do not "simplify" the guard into a `PipelineMode.None` check — it would wrongly reject bare Default services too. **Resolved by §12 (#72):** Job now has its own `PipelineMode.Job` value and the guard keys off it; the "never a `None` check" rule still holds.
 
 Everything else is determined by the existing code and recorded above.
 
@@ -380,9 +380,30 @@ Everything else is determined by the existing code and recorded above.
 
 ## 11. New issues raised by the locked decisions
 
-- **The `None`-means-two-things ambiguity is now load-bearing (not merely cosmetic).** Before decision 1, `Job == Default == None` was a harmless naming wart. Now the forbid/serve behaviour split rides entirely on the two pipeline-build delegates being distinct; there is no enum-level guard rail. **Risk:** a future refactor that consolidates the Job and Default pipeline-build closures, or that reroutes Job through `ConfigureDefaultServicePipeline`, would silently re-enable custom HTTP on Job (or break Default). **Mitigations already in this design:** (a) the §7 test 5 asserts Job throws in *both* call orders, which fails loudly if the guard is lost; (b) the §4.3 / §10 notes forbid collapsing the guard into a `PipelineMode.None` check. **Recommended follow-up (deferred, §9):** introduce a dedicated `Job` enum value or a `MicroService.ForbidsCustomEndpoints` flag so the guard has a single, enum-anchored home. Not in scope for PR-3; flagged for the milestone owner.
+- **The `None`-means-two-things ambiguity is now load-bearing (not merely cosmetic).** Before decision 1, `Job == Default == None` was a harmless naming wart. Now the forbid/serve behaviour split rides entirely on the two pipeline-build delegates being distinct; there is no enum-level guard rail. **Risk:** a future refactor that consolidates the Job and Default pipeline-build closures, or that reroutes Job through `ConfigureDefaultServicePipeline`, would silently re-enable custom HTTP on Job (or break Default). **Mitigations already in this design:** (a) the §7 test 5 asserts Job throws in *both* call orders, which fails loudly if the guard is lost; (b) the §4.3 / §10 notes forbid collapsing the guard into a `PipelineMode.None` check. **Recommended follow-up (deferred, §9):** introduce a dedicated `Job` enum value or a `MicroService.ForbidsCustomEndpoints` flag so the guard has a single, enum-anchored home. Not in scope for PR-3; flagged for the milestone owner. **Resolved by §12 (#72).**
 
 - **No interaction problem found between the Job guard and the rest of the seam.** The guard runs before `app.UseRouting()` in the Job delegate, so it cannot interfere with CORS/auth/endpoint wiring; it shares no state with the draining sites; and because `MapEndpoints` remains a recorder, the gRPC catch-all ordering (§4.1), conditional CORS (§4.2), and the `NotSet` pipeline-not-set guard are all unaffected. The only behavioural change for non-Job modes is the new Default-`None` drain (decision 2), which is additive.
+
+---
+
+## 12. Amendment — enum-anchored Job guard (issue #72, 10.3.0)
+
+**Decision: Option 1.** A dedicated `MicroServicePipelineMode.Job` value, appended after `Mcp` (integer `7`; all existing values keep their numbers), rather than an internal `MicroService.ForbidsCustomEndpoints` flag.
+
+**Why an enum value, not a flag:**
+
+- It is an explicit, enum-level anchor; a flag would be a second piece of state a refactor could also drop.
+- It is observable through `IMicroService.PipelineMode` and the `pipelineMode` field of probe JSON.
+- `architecture.md` already lists `Job` as a pipeline mode, so the code now matches the documentation.
+
+**Mechanism:**
+
+- The internal `CustomEndpointsGuard.ThrowIfCustomEndpointsForbidden(MicroService)` throws `ConfigurationException(Constants.Errors.MapEndpointsJobForbidden)` when `PipelineMode == Job` and `MapEndpointActions` is non-empty.
+- It is called first in `DrainCustomEndpoints` and first in the `ConfigureJob` pipeline delegate (before `UseRouting`). Merging the Job and Default delegates, or routing Job through the shared drain, can therefore no longer re-enable custom HTTP on Job.
+- `ConfigureDefaultServicePipeline` stays `PipelineMode.None` and drains custom routes. The guard is still **never** a `None` check, so §4.3 / §10 hold.
+- `MapEndpoints` remains a pure recorder; the guard runs at pipeline-build time, so the outcome is independent of call order.
+
+**Consumer impact:** Job services now report `Job` (integer `7`) instead of `None` in `IMicroService.PipelineMode` and in probe JSON. Code that checked `PipelineMode == None` to detect a Job service stops matching, hence the minor bump 10.2.0 → 10.3.0.
 
 ---
 
