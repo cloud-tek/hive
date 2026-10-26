@@ -8,6 +8,14 @@
 set -u
 
 input=$(cat)
+
+# Workflow agents (development:wf-*) are gated by the workflow's own harness
+# step. A concurrent build here would race its tree-integrity checks.
+agent_type=$(echo "$input" | jq -r '.agent_type // ""' 2>/dev/null)
+case "$agent_type" in
+  wf-*|*:wf-*) exit 0 ;;
+esac
+
 root="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null)}"
 [ -n "$root" ] && cd "$root" || exit 0
 
@@ -45,16 +53,8 @@ fi
 mkdir "$lock" 2>/dev/null || exit 0
 trap 'rmdir "$lock" 2>/dev/null' EXIT
 
-# The harness's DotnetOutdatedInstall target rewrites the tool manifest.
-# Leave the agent's tree exactly as it was when the manifest was clean before.
-manifest=.config/dotnet-tools.json
-manifest_was_clean=0
-git diff --quiet -- "$manifest" 2>/dev/null && manifest_was_clean=1
-
 dotnet tool run cloudtek-build --target All >"$log" 2>&1
 rc=$?
-
-[ "$manifest_was_clean" = 1 ] && git checkout --quiet -- "$manifest" 2>/dev/null
 
 if [ "$rc" = 0 ]; then
   echo "ok $(fingerprint)" >"$stamp"
