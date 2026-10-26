@@ -96,7 +96,7 @@ The `[McpServerTool]` attribute's `Name` property sets the tool name visible to 
 
 ## Transport
 
-The MCP server uses the **streamable HTTP transport** (`WithHttpTransport()`). The endpoint is registered at the default path `/mcp` (the `ModelContextProtocol.AspNetCore` default) via `MapMcp()` inside `UseEndpoints`.
+The MCP server uses the **streamable HTTP transport** (`WithHttpTransport()`). `ConfigureMcpPipeline` calls `endpoints.MapMcp()` with no route pattern, so the MCP Streamable HTTP endpoint is mapped at the service root (`/`). The mapping happens inside `UseEndpoints`, alongside any `MapEndpoints` routes.
 
 **Middleware order applied by `ConfigureMcpPipeline`:**
 
@@ -109,13 +109,13 @@ UseRouting
                  └─ [custom MapEndpoints routes]
 ```
 
-No additional transport configuration is required. MCP clients connect to `POST /mcp` (SSE stream) on the service's configured port.
+No additional transport configuration is required. MCP clients connect to the service root URL, for example `http://localhost:5190` as in the demo's `mcp.json`. Requests are POSTed to `/` and responses may stream as SSE.
 
 ## Coexistence with Custom Routes
 
 Use the `MapEndpoints` seam to register auxiliary HTTP routes that run **inside the same routing/CORS/authorization envelope** as the MCP endpoint, sharing the same DI container. This is the recommended approach; it replaces older workarounds using `RegisterExtension` with a manual `Configure(IApplicationBuilder)` override.
 
-The seam is defined in `Hive.MicroServices` and is mode-agnostic. See the design rationale in [`docs/design/custom_endpoints_seam_design.md`](../../../../docs/design/custom_endpoints_seam_design.md).
+The seam is defined in `Hive.MicroServices` and is mode-agnostic. See the design rationale in [`docs/design/custom_endpoints_seam_design.md`](../../../docs/design/custom_endpoints_seam_design.md).
 
 ### Example — admin route sharing a DI singleton with a tool
 

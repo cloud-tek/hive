@@ -4,31 +4,33 @@ This file provides guidance to Claude Code (claude.ai/code) about the Hive repos
 
 ## Repository Structure
 
-The monorepo is organized into four main components:
+The monorepo is organized into the following modules:
 
 1. **hive.core/** - Foundation layer
    - `Hive.Abstractions` - Core abstractions (IMicroServiceCore, IMicroService, MicroServiceExtension, configuration patterns)
-   - `Hive.Testing` - Testing utilities and custom xUnit attributes
+   - `Hive.Testing` - In-repo test helpers (`IsPackable=false`, not published): `ShouldStart(TimeSpan)`, `ShouldFailToStart(TimeSpan)`, configuration helpers. The xUnit category attributes, `TestPortProvider` and `EnvironmentVariableScope` come from the `CloudTek.Testing` NuGet package
 
-2. **hive.logging/** - Logging infrastructure
-   - Currently transitioning from Serilog to OpenTelemetry
-   - Includes AppInsights and LogzIo integrations
-
-3. **hive.extensions/** - Feature extensions
-   - `Hive.Messaging` - Messaging extension built on Wolverine (RabbitMQ transport)
+2. **hive.extensions/** - Feature extensions
+   - `Hive.HTTP` - Typed HTTP clients (Refit, resilience, telemetry)
+   - `Hive.HTTP.Testing` - HTTP client testing utilities
+   - `Hive.Messaging` - Messaging extension built on Wolverine
+   - `Hive.Messaging.RabbitMq` - RabbitMQ transport for `Hive.Messaging`
    - `Hive.HealthChecks` - Application-level health checks with threshold-based readiness gating
 
-4. **hive.microservices/** - Microservices framework
+3. **hive.microservices/** - Microservices framework
    - `Hive.MicroServices` - Core orchestration framework
    - `Hive.MicroServices.Api` - REST API support (minimal and controller-based)
    - `Hive.MicroServices.GraphQL` - GraphQL support via HotChocolate
    - `Hive.MicroServices.Grpc` - gRPC support (standard and code-first)
    - `Hive.MicroServices.Mcp` - MCP (Model Context Protocol) server support via ModelContextProtocol.AspNetCore
    - `Hive.MicroServices.Job` - Background job/worker support
+   - `Hive.MicroServices.Testing` - TestServer-based test hosting (`ConfigureTestHost()`)
    - `demo/` - Reference implementations
 
-5. **hive.opentelemetry/** - OpenTelemetry integration
+4. **hive.opentelemetry/** - OpenTelemetry integration
    - Logging, tracing, and metrics via OTLP protocol
+
+5. **hive.functions/** - Azure Functions host (`FunctionHost`, `IFunctionHost`)
 
 ## Interface Hierarchy
 
@@ -92,11 +94,13 @@ re-evaluate this convention (an internal interface seam would then become justif
 All framework features are implemented as extensions inheriting from `MicroServiceExtension<T>`. Extensions participate in the service lifecycle through:
 
 - Constructor receives `IMicroServiceCore` instance (works with all hosting models)
-- `ConfigureServices(IServiceCollection, IConfiguration)` - Service registration
-- `Configure(IApplicationBuilder)` - Middleware pipeline (ASP.NET only)
-- `ConfigureBeforeReadinessProbe(IApplicationBuilder)` - Pre-readiness probe middleware (ASP.NET only)
-- `ConfigureEndpoints(IEndpointRouteBuilder)` - Endpoint registration (ASP.NET only)
-- `ConfigureHealthChecks(IHealthChecksBuilder)` - Health check registration (ASP.NET only)
+- `IServiceCollection ConfigureServices(IServiceCollection, IMicroServiceCore)` - Service registration
+- `IApplicationBuilder Configure(IApplicationBuilder, IMicroServiceCore)` - Middleware pipeline (ASP.NET only)
+- `ConfigureBeforeReadinessProbe(IApplicationBuilder, IWebHostEnvironment)` - defined but not currently invoked by `MicroService`
+- `IEndpointRouteBuilder ConfigureEndpoints(IEndpointRouteBuilder)` - defined but not currently invoked by `MicroService`; use `.MapEndpoints(...)` to add routes
+- There is no `ConfigureHealthChecks` hook.
+
+Register extensions **before** the `Configure*Pipeline` call: that call snapshots the `Extensions` list, so an extension registered afterwards loses its `ConfigureServices`/`Configure` overrides.
 
 ### Creating Extensions with Compile-Time Safety
 
@@ -143,7 +147,7 @@ This means users don't need to manually wire `builder.AddSource(...)` — regist
 ```csharp
 // ASP.NET Microservice - Using custom extension methods (most common)
 new MicroService("service-name")
-    .WithOpenTelemetry(logging: builder => { }, tracing: builder => { })
+    .WithOpenTelemetry()
     .ConfigureApiPipeline(app => { });
 
 // ASP.NET Microservice - Using RegisterExtension with compile-time safety
@@ -153,7 +157,7 @@ new MicroService("service-name")
 
 // Azure Functions
 new FunctionHost("function-name")
-    .WithOpenTelemetry(logging: builder => { }, tracing: builder => { })
+    .WithOpenTelemetry()
     .ConfigureServices((services, config) => { });
 ```
 
@@ -180,12 +184,12 @@ The framework provides two-phase configuration:
 
 **Pre-configuration** - Used when configuration is needed before `IServiceProvider` is built:
 ```csharp
-services.PreConfigureValidatedOptions<TOptions>(configuration.GetSection("SectionName"));
+services.PreConfigureValidatedOptions<TOptions>(configuration, () => "SectionName");
 ```
 
 **Post-configuration** - Standard options pattern after service provider is available:
 ```csharp
-services.ConfigureValidatedOptions<TOptions>(configuration.GetSection("SectionName"));
+services.ConfigureValidatedOptions<TOptions>(configuration, () => "SectionName");
 ```
 
 Both support validation via DataAnnotations, FluentValidation, or custom delegates.
@@ -205,8 +209,9 @@ The `IMicroService` interface includes `IsReady` and `IsStarted` flags for lifec
 ```
 Hive.Abstractions (foundation)
     ├── Hive.Testing
-    ├── Hive.Logging
     ├── Hive.OpenTelemetry
+    ├── Hive.HTTP
+    ├── Hive.Functions
     ├── Hive.HealthChecks (→ Hive.MicroServices)
     ├── Hive.Messaging (→ Hive.MicroServices)
     └── Hive.MicroServices

@@ -577,3 +577,7 @@ Console.WriteLine($"Policies Count: {corsConfig.GetSection("Policies").GetChildr
 ## License
 
 Part of the Hive framework. See repository root for license information.
+
+## Related documentation
+
+- [CORS extraction analysis](../../../../docs/design/cors_extraction_analysis.md)

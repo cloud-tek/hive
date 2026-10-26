@@ -2,7 +2,7 @@
 
 [![.NET Version](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/download/dotnet/10.0)
 [![C# Version](https://img.shields.io/badge/C%23-14-239120)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![Version](https://img.shields.io/badge/version-10.0.0-blue)](./Version.targets)
+[![NuGet](https://img.shields.io/nuget/v/Hive.MicroServices)](https://www.nuget.org/packages/Hive.MicroServices)
 
 An opinionated, extensible microservices framework for .NET 10 that provides a plugin-based architecture for building production-ready services with minimal boilerplate.
 
@@ -82,7 +82,7 @@ Hive follows these core principles:
 graph TB
     subgraph "Foundation"
         Abstractions[Hive.Abstractions<br/>Core abstractions & interfaces]
-        Testing[Hive.Testing<br/>Testing utilities]
+        Testing[Hive.Testing<br/>In-repo test helpers, not published]
     end
 
     subgraph "Observability"
@@ -143,7 +143,7 @@ hive/
 ├── hive.core/                          # Foundation layer
 │   ├── src/
 │   │   ├── Hive.Abstractions/         # Core abstractions & interfaces
-│   │   └── Hive.Testing/              # Testing utilities
+│   │   └── Hive.Testing/              # In-repo test helpers (not published)
 │   └── tests/
 │       └── Hive.Abstractions.Tests/
 │
@@ -256,7 +256,7 @@ var service = new MicroService("my-api")
     {
         services.AddSingleton<IMyService, MyService>();
         services.ConfigureValidatedOptions<MyOptions>(
-            configuration.GetSection("MyOptions")
+            configuration, () => "MyOptions"
         );
     })
     .ConfigureApiPipeline(endpoints =>
@@ -295,7 +295,7 @@ Foundation layer providing core abstractions and testing utilities.
 
 **Packages:**
 - [Hive.Abstractions](./hive.core/src/Hive.Abstractions/) - Core abstractions, configuration patterns, extension base classes
-- [Hive.Testing](./hive.core/src/Hive.Testing/) - xUnit attributes, test extensions, port providers
+- [Hive.Testing](./hive.core/src/Hive.Testing/) - In-repo test helper library (not published): `ShouldStart(TimeSpan)`, `ShouldFailToStart(TimeSpan)` and configuration helpers. The test attributes, `TestPortProvider` and `EnvironmentVariableScope` come from the `CloudTek.Testing` NuGet package
 
 **Key Features:**
 - `IMicroServiceCore` and `IMicroService` interfaces
@@ -402,8 +402,8 @@ Azure Functions integration following the same extension pattern.
 ### Using CloudTek.Build.Tool (Recommended)
 
 ```bash
-# Install the build tool (if not already installed)
-dotnet tool install CloudTek.Build.Tool
+# Restore the build tool (version pinned in .config/dotnet-tools.json)
+dotnet tool restore
 
 # Run complete build (all targets)
 dotnet tool run cloudtek-build --target All
@@ -434,7 +434,7 @@ dotnet test --filter FullyQualifiedName~MyTestClass.MyTestMethod
 
 ### Test Categories
 
-Hive uses custom xUnit attributes for test categorization:
+Hive uses custom xUnit attributes (from the `CloudTek.Testing` package) for test categorization:
 
 | Attribute | Category | Use Case |
 |-----------|----------|----------|
@@ -453,7 +453,7 @@ For the full documentation index — design docs, topic guides, build reference,
 ### Project Documentation
 
 - [CLAUDE.md](./CLAUDE.md) - Comprehensive project guide for Claude Code
-- [Version.targets](./Version.targets) - Version source of truth (10.0.0)
+- [Version.targets](./Version.targets) - Version source of truth
 - [Repository Policies](./.claude/rules/repository-policies.md) - Module structure and naming conventions
 - [.NET Artifacts](./.claude/rules/dotnet-artifacts.md) - Package and versioning rules
 - [General Principles](./.claude/rules/general-principles.md) - KISS, YAGNI, SOLID
@@ -471,7 +471,7 @@ For the full documentation index — design docs, topic guides, build reference,
 
 - [hive_functions_design.md](./docs/design/hive_functions_design.md) - Azure Functions integration design (Draft)
 - [cors_extraction_analysis.md](./docs/design/cors_extraction_analysis.md) - CORS abstraction analysis
-- [hive.opentelemetry/CONFIGURATION_STRATEGY.md](./hive.opentelemetry/CONFIGURATION_STRATEGY.md) - OpenTelemetry configuration strategy
+- [otel_configuration_strategy.md](./docs/design/otel_configuration_strategy.md) - OpenTelemetry configuration strategy
 
 ---
 
@@ -504,13 +504,6 @@ public class MyExtension : MicroServiceExtension<MyExtension>
         app.UseMiddleware<MyMiddleware>();
         return app;
     }
-
-    public override IEndpointRouteBuilder ConfigureEndpoints(
-        IEndpointRouteBuilder builder)
-    {
-        builder.MapGet("/my-endpoint", () => "Hello!");
-        return builder;
-    }
 }
 
 // Usage
@@ -518,6 +511,9 @@ var service = new MicroService("my-service")
     .RegisterExtension<MyExtension>()
     .ConfigureApiPipeline(endpoints => { });
 ```
+
+> Register extensions **before** the `Configure*Pipeline` call; the call snapshots the extension list, so later registrations are ignored.
+> `ConfigureEndpoints` and `ConfigureBeforeReadinessProbe` are defined on the base class but not currently invoked by `MicroService`. Use `.MapEndpoints(...)` to add routes.
 
 ### Adding a New Module
 
@@ -543,10 +539,10 @@ When creating a new module:
 
 Hive uses centralized package management:
 
-- **Version Source of Truth**: [Version.targets](./Version.targets) (current: `10.0.0`)
+- **Version Source of Truth**: [Version.targets](./Version.targets) (current version: see the file)
 - **Package Versions**: [Directory.Packages.props](./Directory.Packages.props)
 - **Global Properties**: [Directory.Build.props](./Directory.Build.props)
-- **Custom MSBuild SDK**: `CloudTek.Sdk` (version 10.0.0-beta.5)
+- **Custom MSBuild SDK**: `CloudTek.Sdk` (version pinned in [global.json](./global.json))
 
 ### Adding a New Package
 
@@ -636,7 +632,7 @@ git push origin feature/my-feature
 
 ## License
 
-[Check Repository License]
+[MIT](./LICENSE)
 
 ---
 
@@ -645,7 +641,7 @@ git push origin feature/my-feature
 - **GitHub**: https://github.com/cloud-tek/hive
 - **Target Framework**: .NET 10.0
 - **C# Version**: 14
-- **Current Version**: 10.0.0
+- **Current Version**: see [Version.targets](./Version.targets)
 
 ---
 

@@ -19,8 +19,9 @@ dotnet new web -n MyHiveService
 cd MyHiveService
 ```
 
-> Note: The repository does not currently publish `dotnet new` hive-* templates.
-> Use `dotnet new web` (or `dotnet new worker` for background jobs) as the starting point.
+> Note: `hive-*` `dotnet new` templates live in [cloud-tek/templates](https://github.com/cloud-tek/templates).
+> Otherwise start from `dotnet new web`, as above. Background workers also start from `dotnet new web`:
+> `Hive.MicroServices.Job` runs on the ASP.NET host.
 
 ---
 
@@ -40,6 +41,10 @@ For a background worker:
 dotnet add package Hive.MicroServices
 dotnet add package Hive.MicroServices.Job
 ```
+
+> **Constraints:** one pipeline per service; register extensions (e.g. `.WithOpenTelemetry()`) **before** the
+> `Configure*Pipeline` call; add extra routes via `.MapEndpoints(...)`.
+> See [Constraints & Gotchas](../hive.microservices/src/Hive.MicroServices/README.md#constraints--gotchas).
 
 ---
 

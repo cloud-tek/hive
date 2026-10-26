@@ -569,3 +569,7 @@ If JSON config specifies `"Type": "ApiKey"` but also sets up a bearer token via 
 **Error:** `InvalidOperationException: No Hive.HTTP extension found. Call WithHttpClient<T>() before WithTestHandler<T>() or WithMockResponse<T>().`
 
 Ensure `WithHttpClient<TApi>()` is called before `WithTestHandler<TApi>()` or `WithMockResponse<TApi>()`. The test methods need to find the existing HTTP extension to inject the handler override.
+
+## Related documentation
+
+- [HTTP design notes](../../../docs/http.md)

@@ -1,6 +1,6 @@
 # Build & CI Reference
 
-All build targets run via `CloudTek.Build.Tool` (`cloudtek-build`), which is declared in `.config/dotnet-tools.json` at version `10.0.0`.
+All build targets run via `CloudTek.Build.Tool` (`cloudtek-build`), whose version is pinned in `.config/dotnet-tools.json` and restored by `dotnet tool restore`.
 
 ---
 
@@ -16,10 +16,39 @@ dotnet tool restore
 
 | Command | What it does |
 |---|---|
-| `dotnet tool run cloudtek-build --target All` | Full build: compile, test, and all checks (outdated packages, formatting, etc.) |
-| `dotnet tool run cloudtek-build --target All --Skip RunChecks` | Compile and test only — skips the `RunChecks` phase (faster for local iteration) |
+| Target | What it does |
+|---|---|
+| `Restore` | Restore packages (depends on `Clean`) |
+| `Clean` | Clean build outputs and artifacts |
+| `Compile` | Build the solution |
+| `UnitTests` | Run unit tests |
+| `IntegrationTests` | Run integration tests |
+| `Test` | Run unit and integration tests, plus `RunChecks` |
+| `Pack` | Pack packable projects into NuGet packages in `artifacts/packages` |
+| `Format` / `FormatCheck` | Apply / verify `dotnet format` |
+| `OutdatedCheck` | Fail when packages are outdated |
+| `BetaCheck` | Fail when pre-release packages are referenced |
+| `VulnerabilityCheck` | Report vulnerable packages |
+| `RunChecks` | Run all checks (commit lint, format, beta, outdated) |
+| `All` (default) | Compile, test, pack and publish |
 
-The `--Skip` flag accepts a comma-separated list of target names to exclude.
+Run `dotnet cloudtek-build --help` for the full target list with dependencies.
+
+```bash
+# Full build
+dotnet tool run cloudtek-build --target All
+
+# Only unit tests
+dotnet tool run cloudtek-build --target UnitTests
+
+# The CI-style gate
+dotnet tool run cloudtek-build --target RunChecks Compile UnitTests
+
+# Compile and test only — skip the RunChecks phase (faster for local iteration)
+dotnet tool run cloudtek-build --target All --Skip RunChecks
+```
+
+`--target` and `--Skip` accept one or more target names separated by spaces.
 
 ---
 
@@ -59,7 +88,7 @@ dotnet test Hive.sln --filter FullyQualifiedName~MyTestClass.MyTestMethod
 
 ### Test category attributes
 
-Hive defines custom xUnit attributes in `CloudTek.Testing` (exposed via `Hive.Testing`):
+The attributes are provided by the `CloudTek.Testing` NuGet package. Add `[Feature("ARTIFACT/REQ")]` to trace a test to a requirement.
 
 | Attribute | `Category` value | Typical use |
 |---|---|---|

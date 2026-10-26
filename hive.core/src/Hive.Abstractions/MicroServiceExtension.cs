@@ -38,6 +38,9 @@ public abstract class MicroServiceExtension
   /// <param name="app"></param>
   /// <param name="microservice"></param>
   /// <returns>The IApplicationBuilder</returns>
+  /// <remarks>
+  /// Applied when a Configure*Pipeline / ConfigureJob / ConfigureDefaultServicePipeline method is called; register the extension before that call.
+  /// </remarks>
   public virtual IApplicationBuilder Configure(IApplicationBuilder app, IMicroServiceCore microservice)
   {
     return app;
@@ -49,6 +52,9 @@ public abstract class MicroServiceExtension
   /// <param name="app"></param>
   /// <param name="env"></param>
   /// <returns>The IApplicationBuilder</returns>
+  /// <remarks>
+  /// Not currently invoked by the Hive.MicroServices host. To add HTTP routes use the <c>MapEndpoints(...)</c> extension on IMicroService; to add middleware override <c>Configure</c>.
+  /// </remarks>
   public virtual IApplicationBuilder ConfigureBeforeReadinessProbe(IApplicationBuilder app, IWebHostEnvironment env)
   {
     return app;
@@ -59,6 +65,9 @@ public abstract class MicroServiceExtension
   /// </summary>
   /// <param name="builder"></param>
   /// <returns>The IEndpointRouteBuilder</returns>
+  /// <remarks>
+  /// Not currently invoked by the Hive.MicroServices host. To add HTTP routes use the <c>MapEndpoints(...)</c> extension on IMicroService; to add middleware override <c>Configure</c>.
+  /// </remarks>
   public virtual IEndpointRouteBuilder ConfigureEndpoints(IEndpointRouteBuilder builder)
   {
     return builder;
@@ -70,6 +79,9 @@ public abstract class MicroServiceExtension
   /// <param name="services"></param>
   /// <param name="microservice"></param>
   /// <returns>The IServiceCollection</returns>
+  /// <remarks>
+  /// Applied when a Configure*Pipeline / ConfigureJob / ConfigureDefaultServicePipeline method is called; register the extension before that call.
+  /// </remarks>
   public virtual IServiceCollection ConfigureServices(IServiceCollection services, IMicroServiceCore microservice)
   {
     return services;

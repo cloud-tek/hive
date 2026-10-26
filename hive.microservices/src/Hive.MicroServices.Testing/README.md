@@ -44,6 +44,7 @@ Add the package reference to your test project:
 ### Simple Integration Test
 
 ```csharp
+using CloudTek.Testing;
 using Hive.MicroServices.Api;
 using Hive.MicroServices.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -53,6 +54,7 @@ using Xunit;
 public class MyApiTests
 {
     [Fact]
+    [IntegrationTest]
     public async Task GivenEndpoint_WhenCalled_ThenReturnsOk()
     {
         // Arrange
@@ -160,6 +162,7 @@ graph LR
 
 ```csharp
 [Fact]
+[IntegrationTest]
 public async Task GivenConfiguration_WhenAccessingEndpoint_ThenConfigurationIsApplied()
 {
     // Arrange
@@ -206,6 +209,7 @@ public async Task GivenConfiguration_WhenAccessingEndpoint_ThenConfigurationIsAp
 
 ```csharp
 [Fact]
+[IntegrationTest]
 public async Task GivenMultipleEndpoints_WhenMakingRequests_ThenAllRespond()
 {
     // Arrange
@@ -253,6 +257,7 @@ public interface IUserService
 public class UserServiceTests
 {
     [Fact]
+    [IntegrationTest]
     public async Task GivenUserService_WhenCallingEndpoint_ThenReturnsUsers()
     {
         // Arrange
@@ -302,16 +307,14 @@ public class UserServiceTests
 
 ```csharp
 [Fact]
+[IntegrationTest]
 public async Task GivenExtension_WhenStarted_ThenExtensionIsActive()
 {
     // Arrange
     var config = new ConfigurationBuilder().Build();
 
     await using var microservice = new MicroService("test-service")
-        .WithOpenTelemetry(
-            logging: builder => { /* test logging config */ },
-            tracing: builder => { /* test tracing config */ }
-        )
+        .WithOpenTelemetry()
         .ConfigureApiPipeline(endpoints =>
         {
             endpoints.MapGet("/", () => "Hello");
@@ -371,10 +374,10 @@ var config = new ConfigurationBuilder()
 
 ### 4. Test Categories
 
-Use Hive's test attributes for categorization:
+Use the test attributes from the `CloudTek.Testing` NuGet package for categorization (every test carries exactly one):
 
 ```csharp
-using Hive.Testing;
+using CloudTek.Testing;
 
 [Fact]
 [IntegrationTest] // Category: "IntegrationTests"
@@ -412,6 +415,7 @@ client.DefaultRequestHeaders.Authorization =
 
 ```csharp
 [Fact]
+[IntegrationTest]
 public async Task GivenInvalidRequest_WhenCalled_ThenReturns400()
 {
     await using var microservice = new MicroService("test-service")
@@ -485,7 +489,8 @@ graph TB
 ## Related Libraries
 
 - **[Hive.MicroServices](../Hive.MicroServices/)**: Core microservices framework
-- **[Hive.Testing](../../../hive.core/src/Hive.Testing/)**: Generic testing utilities
+- **[CloudTek.Testing](https://www.nuget.org/packages/CloudTek.Testing)**: Test category attributes (`[UnitTest]`, `[IntegrationTest]`, ...), `[Feature]`, `TestPortProvider`, `EnvironmentVariableScope`
+- **[Hive.Testing](../../../hive.core/src/Hive.Testing/)**: In-repo, unpublished helpers (`ShouldStart`/`ShouldFailToStart`, configuration helpers) used by this repository's own tests
 - **[Microsoft.AspNetCore.TestHost](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Testing/)**: ASP.NET Core test infrastructure
 
 ## Package Information

@@ -7,7 +7,7 @@ Core abstractions and utilities for the Hive microservices framework.
 The `hive.core` module provides the foundational components for building microservices with Hive:
 
 - **Hive.Abstractions** - Core abstractions, interfaces, and extension methods
-- **Hive.Testing** - Testing utilities and xUnit extensions
+- **Hive.Testing** - In-repo (unpublished, `IsPackable=false`) test helpers used by this repository's own test projects. The xUnit category attributes, `TestPortProvider` and `EnvironmentVariableScope` come from the `CloudTek.Testing` NuGet package
 
 ## Hive.Abstractions
 
@@ -71,7 +71,7 @@ var options = services.PreConfigureValidatedOptions<MyOptions, MyOptionsValidato
   () => "MySection");
 ```
 
-#### PreConfigureOptionalValidatedOptions ⭐ NEW
+#### PreConfigureOptionalValidatedOptions
 
 Load and validate configuration from an **optional section**. Returns `null` if the section doesn't exist, allowing you to provide defaults.
 
@@ -139,50 +139,51 @@ Hive supports three validation approaches:
 
 ### MicroService Extensions
 
-The `MicroServiceExtension` abstract class provides the foundation for extending microservices with additional functionality.
+Extensions inherit from the generic `MicroServiceExtension<TExtension>` base class, where `TExtension` is the extension type itself. The constructor receives an `IMicroServiceCore`.
 
 ```csharp
-public class MyExtension : MicroServiceExtension
+public class MyExtension : MicroServiceExtension<MyExtension>
 {
-  public MyExtension(IMicroService service) : base(service)
+  public MyExtension(IMicroServiceCore service) : base(service)
   {
-    // Configure during construction
-    ConfigureActions.Add((services, config) =>
-    {
-      // Service registration before IServiceProvider is built
-      services.AddSingleton<IMyService, MyService>();
-    });
   }
 
-  public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+  public override IServiceCollection ConfigureServices(
+    IServiceCollection services,
+    IMicroServiceCore microservice)
   {
-    // Service configuration after construction
+    // Service registration
+    services.AddSingleton<IMyService, MyService>();
+    return services;
   }
 
-  public override void Configure(IApplicationBuilder app)
+  public override IApplicationBuilder Configure(
+    IApplicationBuilder app,
+    IMicroServiceCore microservice)
   {
     // Middleware pipeline configuration
-  }
-
-  public override void ConfigureEndpoints(IEndpointRouteBuilder endpoints)
-  {
-    // Endpoint registration
-  }
-
-  public override void ConfigureHealthChecks(IHealthChecksBuilder healthChecks)
-  {
-    // Health check registration
+    return app;
   }
 }
 ```
 
-## Hive.Testing
+Notes:
 
-### Test Attributes
+- Register extensions (`RegisterExtension<T>()` or a `With*` method) **before** the `Configure*Pipeline` call; the pipeline call takes a snapshot of the registered extensions.
+- `ConfigureEndpoints` and `ConfigureBeforeReadinessProbe` are not currently invoked by the framework. To add routes use `.MapEndpoints(...)`.
+- There is no `ConfigureHealthChecks` hook.
 
-Custom xUnit trait attributes for categorizing tests:
+## Testing helpers
+
+Test helpers come from three places.
+
+### CloudTek.Testing (NuGet)
+
+Custom xUnit trait attributes for categorizing tests (exactly one per test), plus `[Feature("ARTIFACT/REQ")]` for requirement traceability:
 
 ```csharp
+using CloudTek.Testing;
+
 [Fact]
 [UnitTest]
 public void MyUnitTest() { }
@@ -211,7 +212,7 @@ dotnet test --filter "Category=UnitTests"
 dotnet test --filter "Category=IntegrationTests"
 ```
 
-### TestPortProvider
+#### TestPortProvider
 
 Provides available ports for integration tests to avoid port conflicts:
 
@@ -222,25 +223,7 @@ using var portScope = TestPortProvider.GetAvailableServicePortScope(5000, out va
 // Port is automatically released when portScope is disposed
 ```
 
-### MicroServiceTestExtensions
-
-Extensions for testing microservices:
-
-```csharp
-var service = new MicroService("test-service")
-  .InTestClass<MyTestClass>()  // Scopes configuration to test class
-  .ConfigureApiPipeline(app => { });
-
-service.CancellationTokenSource.CancelAfter(1000);
-
-// Verify service starts successfully
-service.ShouldStart(TimeSpan.FromSeconds(5));
-
-// Verify service fails to start (for negative tests)
-service.ShouldFailToStart(TimeSpan.FromSeconds(5));
-```
-
-### EnvironmentVariableScope
+#### EnvironmentVariableScope
 
 Scoped environment variable manipulation for tests:
 
@@ -251,6 +234,35 @@ using (EnvironmentVariableScope.Create("MY_VAR", "test-value"))
   Assert.Equal("test-value", Environment.GetEnvironmentVariable("MY_VAR"));
 }
 // MY_VAR is automatically restored to original value
+```
+
+### Hive.MicroServices
+
+`InTestClass<T>()` and `InTestAssembly()` (namespace `Hive.MicroServices.Extensions`) scope a service's entrypoint-assembly discovery to a test class or assembly:
+
+```csharp
+var service = new MicroService("test-service")
+  .InTestClass<MyTestClass>()
+  .ConfigureApiPipeline(endpoints => { });
+```
+
+For TestServer hosting, `ConfigureTestHost()` lives in `Hive.MicroServices.Testing`.
+
+### Hive.Testing (in-repo only)
+
+Not published to NuGet; used by this repository's own test projects. Provides:
+
+- `ShouldStart(this IMicroService, TimeSpan)` and `ShouldFailToStart(this IMicroService, TimeSpan)` (synchronous)
+- `UseEmbeddedConfiguration` and `UseDefaultLoggingConfiguration` configuration helpers
+
+```csharp
+service.CancellationTokenSource.CancelAfter(1000);
+
+// Verify service starts successfully
+service.ShouldStart(TimeSpan.FromSeconds(5));
+
+// Verify service fails to start (for negative tests)
+service.ShouldFailToStart(TimeSpan.FromSeconds(5));
 ```
 
 ## Best Practices
@@ -264,9 +276,9 @@ using (EnvironmentVariableScope.Create("MY_VAR", "test-value"))
 
 ### Testing
 
-1. **Use test attributes** - Categorize tests for selective execution
+1. **Use test attributes** (`CloudTek.Testing`) - Categorize tests for selective execution
 2. **Use `TestPortProvider`** - Avoid port conflicts in parallel test execution
-3. **Use `MicroServiceTestExtensions`** - Simplify microservice testing
+3. **Use `InTestClass<T>()`** - Simplify microservice testing
 4. **Scope test configuration** - Use `InTestClass<T>()` to isolate test configuration
 
 ## Examples
@@ -274,28 +286,32 @@ using (EnvironmentVariableScope.Create("MY_VAR", "test-value"))
 ### Example: Extension with Optional Configuration
 
 ```csharp
-public class CacheExtension : MicroServiceExtension
+public class CacheExtension : MicroServiceExtension<CacheExtension>
 {
-  public CacheExtension(IMicroService service) : base(service)
+  public CacheExtension(IMicroServiceCore service) : base(service)
   {
-    ConfigureActions.Add((services, config) =>
+  }
+
+  public override IServiceCollection ConfigureServices(
+    IServiceCollection services,
+    IMicroServiceCore microservice)
+  {
+    // Load optional cache configuration
+    var options = services.PreConfigureOptionalValidatedOptions<CacheOptions, CacheOptionsValidator>(
+      microservice.ConfigurationRoot,
+      () => "Cache");
+
+    // Use defaults if not configured
+    var cacheOptions = options?.Value ?? new CacheOptions
     {
-      // Load optional cache configuration
-      var options = services.PreConfigureOptionalValidatedOptions<CacheOptions, CacheOptionsValidator>(
-        config,
-        () => "Cache");
+      ExpirationMinutes = 60,
+      MaxSize = 1000
+    };
 
-      // Use defaults if not configured
-      var cacheOptions = options?.Value ?? new CacheOptions
-      {
-        ExpirationMinutes = 60,
-        MaxSize = 1000
-      };
-
-      // Register cache service with configuration
-      services.AddSingleton(cacheOptions);
-      services.AddSingleton<ICacheService, CacheService>();
-    });
+    // Register cache service with configuration
+    services.AddSingleton(cacheOptions);
+    services.AddSingleton<ICacheService, CacheService>();
+    return services;
   }
 }
 
@@ -316,6 +332,8 @@ var service = new MicroService("my-service")
 ### Example: Integration Test with Port Provider
 
 ```csharp
+using CloudTek.Testing;
+
 [Fact]
 [IntegrationTest]
 public async Task GivenService_WhenStarted_ThenRespondsToRequests()
@@ -326,14 +344,7 @@ public async Task GivenService_WhenStarted_ThenRespondsToRequests()
   var config = new ConfigurationBuilder().Build();
   var service = new MicroService("test-service")
     .InTestClass<MyIntegrationTests>()
-    .ConfigureApiPipeline(app =>
-    {
-      app.UseRouting();
-      app.UseEndpoints(endpoints =>
-      {
-        endpoints.MapGet("/health", () => "healthy");
-      });
-    });
+    .ConfigureApiPipeline(endpoints => endpoints.MapGet("/health", () => "healthy"));
 
   service.CancellationTokenSource.CancelAfter(5000);
 
