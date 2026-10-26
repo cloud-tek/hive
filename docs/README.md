@@ -73,22 +73,22 @@ Documents in [`plan/`](plan/) track implementation status and handoff notes.
 
 | Document | Description |
 |---|---|
-| [open_issues_implementation_plan.md](plan/open_issues_implementation_plan.md) | Consolidated implementation plan covering issues #62, #64, #65, #66 and their release groupings |
+| [open_issues_implementation_plan.md](plan/open_issues_implementation_plan.md) | Consolidated implementation plan covering issues #62, #64, #65, #66 and their release groupings (#62 is still open) |
 | [pr1_logger_nre_handoff.md](plan/pr1_logger_nre_handoff.md) | Handoff note for the Logger NRE bug fix shipped in 10.1.1 (PR-1 of issue #64) |
 
 ---
 
 ## Topic Guides
 
-Focused deep-dives on specific concerns.
+Focused deep-dives on specific concerns. `http.md`, `healthchecks.md`, `messaging.md` and `optimization.md` are design notes; the package READMEs below are the usage reference.
 
 | Document | Description |
 |---|---|
 | [dagger.md](dagger.md) | Workaround for the 128 MB `File.Contents()` limit in the Dagger-based CI validate workflow |
-| [healthchecks.md](healthchecks.md) | Design notes for the threshold-based readiness gating system in `Hive.HealthChecks` |
-| [http.md](http.md) | Design and usage guide for `Hive.HTTP` typed HTTP clients (Refit, resilience, telemetry) |
-| [messaging.md](messaging.md) | Design notes for the `Hive.Messaging` extension built on Wolverine |
-| [optimization.md](optimization.md) | Code duplication and optimization analysis for `Hive.HealthChecks` |
+| [healthchecks.md](healthchecks.md) | Design note for the threshold-based readiness gating system in `Hive.HealthChecks` |
+| [http.md](http.md) | Design note for `Hive.HTTP` typed HTTP clients (Refit, resilience, telemetry) |
+| [messaging.md](messaging.md) | Design note for the `Hive.Messaging` extension built on Wolverine |
+| [optimization.md](optimization.md) | Design note: code duplication and optimization analysis for `Hive.HealthChecks` |
 | [otel-aspire.md](otel-aspire.md) | Implemented guide for OpenTelemetry Collector integration with Aspire and VictoriaMetrics |
 
 ---
@@ -97,13 +97,13 @@ Focused deep-dives on specific concerns.
 
 | Package | Purpose |
 |---|---|
-| [Hive.Abstractions & Hive.Testing](../hive.core/readme.md) | Foundation layer — core interfaces, extension base classes, xUnit test attributes |
+| [Hive.Abstractions & Hive.Testing](../hive.core/readme.md) | Foundation layer — core interfaces, extension base classes, in-repo test helpers (test attributes come from CloudTek.Testing) |
 | [Hive.MicroServices](../hive.microservices/src/Hive.MicroServices/README.md) | Core ASP.NET Core orchestration framework — lifecycle, pipeline modes, Kubernetes probes |
-| [Hive.MicroServices.Api](../hive.microservices/README.md#hive.microservicesapi) | REST API support — minimal APIs and MVC controllers |
-| [Hive.MicroServices.GraphQL](../hive.microservices/README.md#hive.microservicesgraphql) | GraphQL API support via HotChocolate |
-| [Hive.MicroServices.Grpc](../hive.microservices/README.md#hive.microservicesgrpc) | gRPC service support (protobuf-first) |
+| [Hive.MicroServices.Api](../hive.microservices/README.md#hivemicroservicesapi) | REST API support — minimal APIs and MVC controllers |
+| [Hive.MicroServices.GraphQL](../hive.microservices/README.md#hivemicroservicesgraphql) | GraphQL API support via HotChocolate |
+| [Hive.MicroServices.Grpc](../hive.microservices/README.md#hivemicroservicesgrpc) | gRPC service support (protobuf-first) |
 | [Hive.MicroServices.Mcp](../hive.microservices/src/Hive.MicroServices.Mcp/README.md) | MCP (Model Context Protocol) server support — expose tools/data to LLM clients |
-| [Hive.MicroServices.Job](../hive.microservices/README.md#hive.microservicesjob) | Background worker and scheduled job support |
+| [Hive.MicroServices.Job](../hive.microservices/README.md#hivemicroservicesjob) | Background job support (runs on the ASP.NET host) |
 | [Hive.MicroServices.Testing](../hive.microservices/src/Hive.MicroServices.Testing/README.md) | TestServer integration testing utilities |
 | [CORS](../hive.microservices/src/Hive.MicroServices/CORS/README.md) | CORS configuration guide — policies, security best practices, validation |
 | [Hive.HTTP](../hive.extensions/src/Hive.HTTP/README.md) | Typed HTTP clients with Refit, resilience, and OpenTelemetry instrumentation |
