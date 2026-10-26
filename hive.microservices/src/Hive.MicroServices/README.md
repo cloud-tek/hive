@@ -31,7 +31,7 @@ graph TB
 ### Key Interfaces
 
 - **`IMicroService`**: Core abstraction representing a microservice instance
-- **`MicroServiceExtension`**: Base class for all framework extensions
+- **`MicroServiceExtension<TExtension>`**: Base class for all framework extensions (`TExtension` is the extension type itself)
 - **`IMicroServiceLifetime`**: Lifecycle event management (startup, failure)
 
 ## Lifecycle
@@ -80,7 +80,7 @@ The framework supports multiple service types through pipeline modes:
 | `Grpc` | gRPC services (protobuf-first) | High-performance RPC |
 | `Mcp` | MCP servers via ModelContextProtocol.AspNetCore | LLM tool/data servers |
 | `Job` | Background workers (ConfigureJob); no custom HTTP routes | Jobs, workers |
-| `None` | Default service pipeline (ConfigureDefaultServicePipeline) | Console apps, utilities |
+| `None` | Default service pipeline (ConfigureDefaultServicePipeline): serves the probe endpoints plus optional `MapEndpoints` routes, with no application request pipeline | Bare services with auxiliary routes |
 
 ## Basic Usage
 
@@ -126,10 +126,7 @@ await microservice.RunAsync(config);
 
 ```csharp
 var microservice = new MicroService("my-service")
-    .WithOpenTelemetry(
-        logging: builder => { /* configure logging */ },
-        tracing: builder => { /* configure tracing */ }
-    )
+    .WithOpenTelemetry()
     .RegisterExtension<MyCustomExtension>()
     .ConfigureApiPipeline(endpoints =>
     {
@@ -141,7 +138,7 @@ await microservice.RunAsync();
 
 ## Extension Pattern
 
-All framework features are implemented as extensions inheriting from `MicroServiceExtension`.
+All framework features are implemented as extensions inheriting from `MicroServiceExtension<TExtension>`.
 
 ```mermaid
 graph LR
@@ -172,23 +169,32 @@ graph LR
 ### Creating a Custom Extension
 
 ```csharp
-public class MyCustomExtension : MicroServiceExtension
+public class MyCustomExtension : MicroServiceExtension<MyCustomExtension>
 {
-    public MyCustomExtension(IMicroService microService) : base(microService)
+    public MyCustomExtension(IMicroServiceCore service) : base(service)
     {
     }
 
-    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    public override IServiceCollection ConfigureServices(
+        IServiceCollection services,
+        IMicroServiceCore microservice)
     {
         services.AddSingleton<IMyCustomService, MyCustomService>();
+        return services;
     }
 
-    public override void Configure(IApplicationBuilder app)
+    public override IApplicationBuilder Configure(
+        IApplicationBuilder app,
+        IMicroServiceCore microservice)
     {
         app.UseMiddleware<MyCustomMiddleware>();
+        return app;
     }
 }
 ```
+
+The type argument must be the extension class itself. Register the extension **before** the pipeline call
+(see [Constraints & Gotchas](#constraints--gotchas)).
 
 ## Configuration Patterns
 
@@ -199,9 +205,7 @@ The framework provides two-phase configuration for different scenarios:
 Use when configuration is needed **before** `IServiceProvider` is built:
 
 ```csharp
-services.PreConfigureValidatedOptions<MyOptions>(
-    configuration.GetSection("MySection")
-);
+services.PreConfigureValidatedOptions<MyOptions>(configuration, () => "MySection");
 ```
 
 ### Post-configuration
@@ -209,9 +213,7 @@ services.PreConfigureValidatedOptions<MyOptions>(
 Standard options pattern **after** service provider is available:
 
 ```csharp
-services.ConfigureValidatedOptions<MyOptions>(
-    configuration.GetSection("MySection")
-);
+services.ConfigureValidatedOptions<MyOptions>(configuration, () => "MySection");
 ```
 
 Both support validation via:
@@ -237,7 +239,7 @@ graph LR
 
     Startup -->|IsStarted| MicroService
     Readiness -->|IsReady| MicroService
-    Liveness -->|IsAlive| MicroService
+    Liveness -->|process alive| MicroService
 
     style K8s fill:#326ce5
     style Startup fill:#81d4fa
@@ -354,23 +356,29 @@ await microservice.StartAsync();
 
 ## Advanced Scenarios
 
-### Custom Assembly Provider
+### Controlling the Entry Assembly in Tests
 
-For testing scenarios where entry assembly needs to be controlled:
+For testing scenarios where the entry assembly needs to be controlled, use `InTestClass<T>()` or
+`InTestAssembly(assembly)` (namespace `Hive.MicroServices.Extensions`):
 
 ```csharp
-var microservice = new MicroService("test-service");
-((MicroService)microservice).MicroServiceEntrypointAssemblyProvider =
-    () => typeof(MyTestClass).Assembly;
+var microservice = new MicroService("test-service")
+    .InTestClass<MyTestClass>();
+
+// or
+var other = new MicroService("test-service")
+    .InTestAssembly(typeof(MyTestClass).Assembly);
 ```
 
 ### Accessing Service Provider
+
+`ServiceProvider` is defined on the concrete `MicroService`, not on `IMicroService`, so a cast is required:
 
 ```csharp
 await microservice.InitializeAsync(config);
 
 // Access services after initialization
-var myService = microservice.ServiceProvider.GetRequiredService<IMyService>();
+var myService = ((MicroService)microservice).ServiceProvider.GetRequiredService<IMyService>();
 ```
 
 ## Constraints & Gotchas
@@ -423,7 +431,33 @@ It does **not** work with `ConfigureJob`: if any `MapEndpoints` calls are record
 Remove the MapEndpoints call, or select an HTTP pipeline mode (e.g. ConfigureApiPipeline / ConfigureGraphQLPipeline)."
 ```
 
-See [custom_endpoints_seam_design.md](../../../../docs/design/custom_endpoints_seam_design.md) for the design rationale.
+See [custom_endpoints_seam_design.md](../../../docs/design/custom_endpoints_seam_design.md) for the design rationale.
+
+### Register extensions before the pipeline call
+
+Every `Configure*Pipeline`, `ConfigureJob` and `ConfigureDefaultServicePipeline` call snapshots the extensions
+registered **at that moment** and wires their `ConfigureServices` / `Configure` overrides. An extension registered
+after the pipeline call does not get those overrides applied.
+
+```csharp
+// Correct: extensions first, pipeline last
+new MicroService("my-service")
+    .WithOpenTelemetry()
+    .RegisterExtension<MyCustomExtension>()
+    .ConfigureApiPipeline(endpoints => { /* ... */ });
+
+// Incorrect: MyCustomExtension.ConfigureServices / Configure are silently skipped
+new MicroService("my-service")
+    .ConfigureApiPipeline(endpoints => { /* ... */ })
+    .RegisterExtension<MyCustomExtension>();
+```
+
+### Extension endpoint hooks
+
+`MicroServiceExtension` declares `ConfigureEndpoints(IEndpointRouteBuilder)` and
+`ConfigureBeforeReadinessProbe(IApplicationBuilder, IWebHostEnvironment)`, but `MicroService` currently **does not
+invoke** either of them; overriding them has no effect. Use `MapEndpoints` to add routes and override
+`Configure` to add middleware.
 
 ### CORS is `IMicroService`-only
 
@@ -442,14 +476,14 @@ discovered and subscribed to automatically.
 
 ## Related Libraries
 
-- **[Hive.Abstractions](../../hive.core/src/Hive.Abstractions/)**: Core abstractions and interfaces
+- **[Hive.Abstractions](../../../hive.core/src/Hive.Abstractions/)**: Core abstractions and interfaces
 - **[Hive.MicroServices.Api](../Hive.MicroServices.Api/)**: REST API extensions (Minimal APIs, Controllers)
 - **[Hive.MicroServices.GraphQL](../Hive.MicroServices.GraphQL/)**: GraphQL support
 - **[Hive.MicroServices.Grpc](../Hive.MicroServices.Grpc/)**: gRPC support
 - **[Hive.MicroServices.Mcp](../Hive.MicroServices.Mcp/)**: MCP (Model Context Protocol) server support
 - **[Hive.MicroServices.Job](../Hive.MicroServices.Job/)**: Background job support
 - **[Hive.MicroServices.Testing](../Hive.MicroServices.Testing/)**: Testing utilities
-- **[Hive.OpenTelemetry](../../hive.opentelemetry/)**: OpenTelemetry integration
+- **[Hive.OpenTelemetry](../../../hive.opentelemetry/)**: OpenTelemetry integration
 
 ## Built-in Extensions
 

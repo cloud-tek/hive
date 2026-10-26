@@ -140,15 +140,14 @@ await microservice.RunAsync();
 
 #### [Hive.MicroServices.Job](src/Hive.MicroServices.Job/)
 
-Background worker and scheduled job support.
+Background worker support.
 
 **Capabilities:**
 - Background service hosting
-- Scheduled task execution
 - Worker service patterns
 - Long-running processes
 
-**Use Cases:** Background workers, scheduled tasks, message processors, queue consumers
+**Use Cases:** Background workers, message processors, queue consumers
 
 ### Testing Support
 
@@ -200,9 +199,7 @@ var microservice = new MicroService("my-service")
     .ConfigureServices((services, configuration) =>
     {
         services.AddSingleton<IUserService, UserService>();
-        services.ConfigureValidatedOptions<AppSettings>(
-            configuration.GetSection("App")
-        );
+        services.ConfigureValidatedOptions<AppSettings>(configuration, () => "App");
     })
     .ConfigureApiPipeline(endpoints =>
     {
@@ -219,6 +216,7 @@ await microservice.RunAsync(config);
 ### Integration Testing
 
 ```csharp
+using CloudTek.Testing;
 using Hive.MicroServices.Api;
 using Hive.MicroServices.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -227,6 +225,7 @@ using Xunit;
 public class ApiTests
 {
     [Fact]
+    [IntegrationTest]
     public async Task GivenEndpoint_WhenCalled_ThenReturnsOk()
     {
         await using var microservice = new MicroService("test-service")
@@ -252,17 +251,28 @@ public class ApiTests
 
 ## Pipeline Modes
 
-Each extension configures a specific pipeline mode:
+Each pipeline mode is selected by one configuration method:
 
-| Extension | Pipeline Mode | Description |
-|-----------|--------------|-------------|
-| **Api** | `Api` | Minimal APIs with endpoint routing |
-| **Api** | `ApiControllers` | Traditional MVC controller-based APIs |
-| **GraphQL** | `GraphQL` | GraphQL APIs via HotChocolate |
-| **Grpc** | `Grpc` | gRPC services (protobuf-first) |
-| **Mcp** | `Mcp` | MCP (Model Context Protocol) servers over streamable HTTP |
-| **Job** | `Job` | Background worker services |
-| - | `None` | Basic service without HTTP |
+| Mode | Configured by | Description |
+|------|---------------|-------------|
+| `Api` | `ConfigureApiPipeline` | Minimal APIs with endpoint routing |
+| `ApiControllers` | `ConfigureApiControllerPipeline` | Traditional MVC controller-based APIs |
+| `GraphQL` | `ConfigureGraphQLPipeline` | GraphQL APIs via HotChocolate |
+| `Grpc` | `ConfigureGrpcPipeline`, `ConfigureCodeFirstGrpcPipeline` | gRPC services (protobuf-first or code-first) |
+| `Mcp` | `ConfigureMcpPipeline` | MCP (Model Context Protocol) servers over streamable HTTP |
+| `Job` | `ConfigureJob` | Background worker services; no custom HTTP routes |
+| `None` | `ConfigureDefaultServicePipeline` | Probe endpoints plus optional `MapEndpoints` routes |
+
+Modes are mutually exclusive: a second call throws `InvalidOperationException("MicroService PipelineMode is already set")`.
+See [Constraints & Gotchas](src/Hive.MicroServices/README.md#constraints--gotchas).
+
+Custom HTTP routes can be added alongside any HTTP mode (not `Job`) with `MapEndpoints`:
+
+```csharp
+new MicroService("my-service")
+    .ConfigureApiPipeline(endpoints => { /* ... */ })
+    .MapEndpoints(routes => routes.MapPost("/admin/flush", () => Results.Ok()));
+```
 
 ## Extension Pattern
 
@@ -274,53 +284,51 @@ graph LR
     Extension[MicroServiceExtension]
     Services[ConfigureServices]
     Pipeline[Configure Pipeline]
-    Endpoints[ConfigureEndpoints]
-    Health[ConfigureHealthChecks]
 
     MicroService -->|Hosts| Extension
     Extension -->|1| Services
     Extension -->|2| Pipeline
-    Extension -->|3| Endpoints
-    Extension -->|4| Health
 
     style MicroService fill:#e1f5ff
     style Extension fill:#b3e5fc
     style Services fill:#81d4fa
     style Pipeline fill:#81d4fa
-    style Endpoints fill:#81d4fa
-    style Health fill:#81d4fa
 ```
 
 ### Creating Custom Extensions
 
 ```csharp
-public class MyCustomExtension : MicroServiceExtension
+public class MyCustomExtension : MicroServiceExtension<MyCustomExtension>
 {
-    public MyCustomExtension(IMicroService microService) : base(microService)
+    public MyCustomExtension(IMicroServiceCore service) : base(service)
     {
     }
 
-    public override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    public override IServiceCollection ConfigureServices(
+        IServiceCollection services,
+        IMicroServiceCore microservice)
     {
         services.AddSingleton<IMyService, MyService>();
+        return services;
     }
 
-    public override void Configure(IApplicationBuilder app)
+    public override IApplicationBuilder Configure(
+        IApplicationBuilder app,
+        IMicroServiceCore microservice)
     {
         app.UseMiddleware<MyCustomMiddleware>();
-    }
-
-    public override void ConfigureEndpoints(IEndpointRouteBuilder endpoints)
-    {
-        endpoints.MapGet("/custom", () => "Custom endpoint");
+        return app;
     }
 }
 
 // Usage
 var microservice = new MicroService("my-service")
-    .RegisterExtension<MyCustomExtension>()
+    .RegisterExtension<MyCustomExtension>()   // register before the pipeline call
     .ConfigureApiPipeline(endpoints => { /* ... */ });
 ```
+
+Extensions customise services (`ConfigureServices`) and middleware (`Configure`). To add HTTP routes use
+`MapEndpoints`; the `ConfigureEndpoints` hook on the base class is not currently invoked.
 
 ## Built-in Extensions
 
@@ -456,8 +464,17 @@ dotnet run --project demo/Hive.MicroServices.Demo.Aspire
 ```
 hive.microservices/
 ├── demo/                              # Demo applications
+│   ├── Hive.MicroServices.Demo/
 │   ├── Hive.MicroServices.Demo.Api/
+│   ├── Hive.MicroServices.Demo.ApiControllers/
+│   ├── Hive.MicroServices.Demo.ApiControllers.Client/
 │   ├── Hive.MicroServices.Demo.Aspire/
+│   ├── Hive.MicroServices.Demo.Events/
+│   ├── Hive.MicroServices.Demo.GraphQL/
+│   ├── Hive.MicroServices.Demo.Grpc/
+│   ├── Hive.MicroServices.Demo.GrpcCodeFirst/
+│   ├── Hive.MicroServices.Demo.Job/
+│   ├── Hive.MicroServices.Demo.Mcp/
 │   └── Hive.MicroServices.Demo.ServiceDefaults/
 ├── src/                               # Source code
 │   ├── Hive.MicroServices/           # Core framework
@@ -488,7 +505,7 @@ hive.microservices/
 
 ### Within Hive Repository
 - **[Hive.Abstractions](../hive.core/src/Hive.Abstractions/)**: Core abstractions and interfaces
-- **[Hive.Testing](../hive.core/src/Hive.Testing/)**: Generic testing utilities
+- **[Hive.Testing](../hive.core/src/Hive.Testing/)**: In-repo helper library (not published; `IsPackable=false`) with `ShouldStart`/`ShouldFailToStart` and configuration helpers. The test attributes (`[UnitTest]`, `[IntegrationTest]`, ...) come from the `CloudTek.Testing` package
 - **[Hive.OpenTelemetry](../hive.opentelemetry/)**: OpenTelemetry integration
 
 ### Dependency Graph
