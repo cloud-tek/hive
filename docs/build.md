@@ -48,7 +48,7 @@ dotnet tool run cloudtek-build --target RunChecks Compile UnitTests
 dotnet tool run cloudtek-build --target All --Skip RunChecks
 ```
 
-`--target` and `--Skip` accept one or more target names separated by spaces (NUKE convention).
+`--target` and `--Skip` accept one or more target names separated by spaces.
 
 ---
 

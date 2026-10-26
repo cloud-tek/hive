@@ -94,7 +94,7 @@ Use custom xUnit trait attributes for test categorization:
 
 ### Testing Utilities
 
-Test helpers come from three places:
+Test helpers come from four places:
 
 - `CloudTek.Testing` (NuGet) - `[UnitTest]`/`[IntegrationTest]`/`[ModuleTest]`/`[SmokeTest]`/`[SystemTest]`, `[Feature]`, `TestPortProvider`, `EnvironmentVariableScope`
 - `Hive.MicroServices` (namespace `Hive.MicroServices.Extensions`) - `.InTestClass<T>()`, `.InTestAssembly()`

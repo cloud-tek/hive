@@ -14,8 +14,8 @@ The repository already uses **Husky.Net** for Git hooks with:
 - ✅ CloudTek.Git library for commit message analysis
 
 **Current hooks:**
-- [.husky/husky/commit-msg](.husky/husky/commit-msg) - Validates commit message format
-- [.husky/husky/task-runner.json](.husky/husky/task-runner.json) - Defines tasks
+- [.husky/husky/commit-msg](../.husky/husky/commit-msg) - Validates commit message format
+- [.husky/husky/task-runner.json](../.husky/husky/task-runner.json) - Defines tasks
 
 ## Policy Enforcement Opportunities
 
