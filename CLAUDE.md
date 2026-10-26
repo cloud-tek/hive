@@ -94,14 +94,17 @@ Use custom xUnit trait attributes for test categorization:
 
 ### Testing Utilities
 
-Available via `Hive.Testing`:
+Test helpers come from three places:
 
-- `TestPortProvider` - Dynamic port allocation for integration tests
-- `EnvironmentVariableScope` - Scoped environment variable manipulation
-- `MicroServiceTestExtensions` - Extensions like `.InTestClass<T>()`, `.ShouldStart()`, `.ShouldFailToStart()`
+- `CloudTek.Testing` (NuGet) - `[UnitTest]`/`[IntegrationTest]`/`[ModuleTest]`/`[SmokeTest]`/`[SystemTest]`, `[Feature]`, `TestPortProvider`, `EnvironmentVariableScope`
+- `Hive.MicroServices` (namespace `Hive.MicroServices.Extensions`) - `.InTestClass<T>()`, `.InTestAssembly()`
+- `Hive.Testing` (in-repo, `IsPackable=false`) - `.ShouldStart(TimeSpan)`, `.ShouldFailToStart(TimeSpan)`, `UseEmbeddedConfiguration`, `UseDefaultLoggingConfiguration`
+- `Hive.MicroServices.Testing` - `ConfigureTestHost()` (TestServer)
 
 Example:
 ```csharp
+using CloudTek.Testing;
+
 [Fact]
 [UnitTest]
 public async Task TestMicroServiceStartup()
