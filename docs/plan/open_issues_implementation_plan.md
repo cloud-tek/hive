@@ -1,8 +1,8 @@
 # Open Issues — Implementation Plan
 
-**Status:** Approved decisions captured; awaiting sign-off to begin implementation.
+**Status:** Implemented, except #62 (open, planned for 11.0.0). See the Status column below.
 **Date:** 2026-06-21
-**Version source of truth:** `Version.targets` → currently `10.1.0` (untouched until sign-off)
+**Version source of truth:** `Version.targets` → currently `10.3.0`
 **Issues covered:** [#62](https://github.com/cloud-tek/hive/issues/62), [#64](https://github.com/cloud-tek/hive/issues/64), [#65](https://github.com/cloud-tek/hive/issues/65), [#66](https://github.com/cloud-tek/hive/issues/66)
 
 ## Versioning rule
@@ -15,13 +15,13 @@ The single source of truth is `Version.targets` (`<VersionPrefix>`) at the repo 
 
 ## Triage summary
 
-| Issue | Title | Type | Target version |
-|-------|-------|------|----------------|
-| #64 (sub-finding) | Null `Logger` NRE masks original startup exception | Bug fix | 10.1.1 |
-| #66 | Ambiguous/silent environment resolution (`DOTNET_ENVIRONMENT` vs `ASPNETCORE_ENVIRONMENT`) | Bug fix | 10.1.1 |
-| #64 (main) | First-class custom HTTP routes alongside any pipeline mode | Feature | 10.2.0 |
-| #65 | Docs: pipeline-mode constraints, MCP usage, discoverability | Docs | 10.2.0 |
-| #62 | Adopt `IHostApplicationBuilder` / `WebApplication` host | Feature (large, breaking) | 11.0.0 (separate milestone) |
+| Issue | Title | Type | Target version | Status |
+|-------|-------|------|----------------|--------|
+| #64 (sub-finding) | Null `Logger` NRE masks original startup exception | Bug fix | 10.1.1 | Merged (commit fb896e1) |
+| #66 | Ambiguous/silent environment resolution (`DOTNET_ENVIRONMENT` vs `ASPNETCORE_ENVIRONMENT`) | Bug fix | 10.1.1 | Closed, implemented (`EnvironmentVariableConflictDetector` in Hive.Abstractions) |
+| #64 (main) | First-class custom HTTP routes alongside any pipeline mode | Feature | 10.2.0 | Merged via PR #69 |
+| #65 | Docs: pipeline-mode constraints, MCP usage, discoverability | Docs | 10.2.0 | P0/P1/P2 docs merged; follow-up drift fixed in this change |
+| #62 | Adopt `IHostApplicationBuilder` / `WebApplication` host | Feature (large, breaking) | 11.0.0 (separate milestone) | Open, 11.0.0 |
 
 ## Locked decisions
 

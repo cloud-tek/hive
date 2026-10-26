@@ -413,3 +413,8 @@ Configurable at `Hive:HealthChecks`.
 - [Hive.Messaging.RabbitMq](../Hive.Messaging.RabbitMq/) — Provides `RabbitMqHealthCheck` as a concrete implementation
 - [Hive.OpenTelemetry](../../../hive.opentelemetry/src/Hive.OpenTelemetry/) — Auto-discovers the `Hive.HealthChecks` activity source
 - [Hive.Abstractions](../../../hive.core/src/Hive.Abstractions/HealthChecks/) — Core abstractions (`IHiveHealthCheck`, `HiveHealthCheckOptions`, `HealthCheckStatus`, `HealthCheckStateSnapshot`)
+
+## Related documentation
+
+- [Health checks design notes](../../../docs/healthchecks.md)
+- [Optimization notes](../../../docs/optimization.md)
