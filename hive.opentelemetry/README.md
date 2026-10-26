@@ -30,7 +30,7 @@ The Hive.OpenTelemetry extension provides production-ready observability for Hiv
 ✅ **Declarative Configuration** - Configure via `appsettings.json`
 ✅ **Environment-Aware** - Different configs per environment (dev/staging/prod)
 ✅ **OTEL Standard Compliant** - Respects standard environment variables
-✅ **Programmatic Overrides** - Lambda callbacks for advanced scenarios
+✅ **Extra Activity Sources** - Subscribe to your own `ActivitySource`s via `additionalActivitySources`
 ✅ **Automatic Instrumentation** - ASP.NET Core, HTTP Client, Runtime metrics
 
 ---
@@ -79,24 +79,23 @@ await service.RunAsync();
 
 ### Configuration Hierarchy
 
-The extension uses a three-layer configuration system:
+The extension uses a two-layer configuration system:
 
 ```mermaid
 graph LR
     A[Framework Defaults] --> B[IConfiguration / appsettings.json]
-    B --> C[Lambda Overrides]
-    C --> D[Final Configuration]
+    B --> D[Final Configuration]
 
     style A fill:#e1f5ff
     style B fill:#fff4e1
-    style C fill:#ffe1e1
     style D fill:#e1ffe1
 ```
 
 **Priority Order:**
-1. **Lambda Overrides** (highest) - Programmatic configuration via callbacks
-2. **IConfiguration** (medium) - Configuration from `appsettings.json`, environment variables, command line
-3. **Framework Defaults** (lowest) - Built-in sensible defaults
+1. **IConfiguration** (highest) - The `OpenTelemetry` section from `appsettings.json`, environment variables, command line
+2. **Framework Defaults** (lowest) - Built-in defaults from `OpenTelemetryOptions`
+
+There is no programmatic (lambda) override layer: `WithOpenTelemetry` only accepts an optional list of additional activity source names.
 
 ### Configuration Schema
 
@@ -151,7 +150,7 @@ flowchart TD
     B -->|Yes| C[Use appsettings.json endpoint]
     B -->|No| D{Environment variable<br/>OTEL_EXPORTER_OTLP_ENDPOINT<br/>set?}
     D -->|Yes| E[Use environment variable]
-    D -->|No| F[No OTLP export<br/>Console only]
+    D -->|No| F[No OTLP export<br/>Console logs only]
 
     C --> G[Enable OTLP exporters]
     E --> G
@@ -343,53 +342,33 @@ var service = new MicroService("payment-service")
 await service.RunAsync();
 ```
 
-### Example 4: Programmatic Override (Advanced)
+### Example 4: Additional activity sources
 
-For complete control when needed:
+Tracing automatically subscribes to the `ActivitySourceNames` of every registered extension that implements `IActivitySourceProvider` (for example `Hive.Messaging` contributes `Wolverine`). To trace your own `ActivitySource`s, pass their names:
 
 ```csharp
-var service = new MicroService("custom-service")
-    .WithOpenTelemetry(
-        logging: log =>
-        {
-            // Custom logging configuration
-            log.AddOtlpExporter(o =>
-            {
-                o.Endpoint = new Uri("http://custom-endpoint:4317");
-                o.Headers = "x-api-key=secret";
-            });
-        },
-        tracing: trace =>
-        {
-            // Custom tracing - add your own sources
-            trace.AddAspNetCoreInstrumentation();
-            trace.AddSource("MyApp.*");
-            trace.AddOtlpExporter();
-        },
-        metrics: meter =>
-        {
-            // Custom metrics
-            meter.AddMeter("MyApp.Orders");
-            meter.AddRuntimeInstrumentation();
-            meter.AddOtlpExporter();
-        }
-    )
+var service = new MicroService("orders-service")
+    .WithOpenTelemetry(additionalActivitySources: ["MyApp.Orders"])
     .ConfigureApiPipeline(app => { });
 
 await service.RunAsync();
 ```
 
-**Note:** When lambda overrides are provided, they **completely replace** the default configuration for that signal.
+### Example 5: Per-signal tuning via appsettings
 
-### Example 5: Hybrid Approach
-
-Override one signal, configure others via JSON:
+Everything else is tuned through the `OpenTelemetry` configuration section:
 
 ```json
 {
   "OpenTelemetry": {
     "Otlp": {
       "Endpoint": "http://otel-collector:4317"
+    },
+    "Logging": {
+      "EnableConsoleExporter": false
+    },
+    "Tracing": {
+      "EnableHttpClientInstrumentation": false
     },
     "Metrics": {
       "EnableRuntimeInstrumentation": false
@@ -399,19 +378,8 @@ Override one signal, configure others via JSON:
 ```
 
 ```csharp
-var service = new MicroService("hybrid-service")
-    .WithOpenTelemetry(
-        // Only override tracing, let logging & metrics use appsettings.json
-        tracing: trace =>
-        {
-            trace.AddAspNetCoreInstrumentation(options =>
-            {
-                options.RecordException = true;
-                options.Filter = (ctx) => !ctx.Request.Path.StartsWithSegments("/health");
-            });
-            trace.AddSource("MyApp.CustomTracing");
-        }
-    )
+var service = new MicroService("tuned-service")
+    .WithOpenTelemetry()
     .ConfigureApiPipeline(app => { });
 
 await service.RunAsync();
@@ -546,13 +514,13 @@ Total: **15 tests** - All passing ✅
 
 ### Writing Tests
 
-Use `Hive.Testing` utilities:
+The test attributes (`[UnitTest]` etc.) and `EnvironmentVariableScope` come from `CloudTek.Testing`. `InTestClass<T>()` is in `Hive.MicroServices.Extensions`. `Hive.Testing` is an in-repo, unpublished helper that provides `ShouldStart()` / `ShouldFailToStart()` (taking a `TimeSpan`).
 
 ```csharp
+using CloudTek.Testing;
 using Hive.MicroServices;
 using Hive.MicroServices.Api;
 using Hive.OpenTelemetry;
-using Hive.Testing;
 
 [Fact]
 [UnitTest]
@@ -633,21 +601,16 @@ curl http://otel-collector:4317
 </ItemGroup>
 ```
 
-#### 3. Lambda Override Not Working
+#### 3. Custom Spans Missing
 
-**Symptoms:** Configuration from `appsettings.json` is used despite lambda override.
+**Symptoms:** Spans from your own `ActivitySource` do not show up in the backend.
 
-**Explanation:** Lambda overrides **completely replace** defaults for that signal. Make sure you configure everything needed:
+**Explanation:** Only ASP.NET Core and HTTP client instrumentation plus the activity sources of registered `IActivitySourceProvider` extensions are subscribed.
+
+**Solution:** Implement `IActivitySourceProvider` on your extension, or pass the source names explicitly:
 
 ```csharp
-.WithOpenTelemetry(
-    logging: log =>
-    {
-        // Must add exporters explicitly
-        log.AddConsoleExporter();
-        log.AddOtlpExporter();
-    }
-)
+.WithOpenTelemetry(additionalActivitySources: ["MyApp.Orders"])
 ```
 
 #### 4. Resource Attributes Missing
@@ -697,15 +660,7 @@ curl http://otel-collector:4317
    }
    ```
 
-3. Use sampling (via lambda override):
-   ```csharp
-   .WithOpenTelemetry(
-       tracing: trace =>
-       {
-           trace.SetSampler(new TraceIdRatioBasedSampler(0.1)); // 10% sampling
-       }
-   )
-   ```
+3. Sampling: Hive.OpenTelemetry does not currently expose sampling configuration; the OpenTelemetry SDK default sampler is used.
 
 ### Debugging
 
@@ -799,7 +754,8 @@ public class OtlpOptions
 - [OpenTelemetry .NET Documentation](https://opentelemetry.io/docs/languages/dotnet/)
 - [OTLP Specification](https://opentelemetry.io/docs/specs/otlp/)
 - [Hive MicroServices Framework](../hive.microservices/)
-- [Configuration Strategy Design Doc](./CONFIGURATION_STRATEGY.md)
+- [Configuration Strategy Design Doc](../docs/design/otel_configuration_strategy.md)
+- [OpenTelemetry with Aspire](../docs/otel-aspire.md)
 - [Testing Guide](./CLAUDE.md)
 
 ---

@@ -100,13 +100,6 @@ Tests for OpenTelemetry resource attribute configuration:
 - [x] Verify service works without any OTLP endpoint (console only)
 - [x] Verify empty configuration endpoint falls back to environment variable
 
-#### Custom logging configuration
-
-- [x] Verify custom `Action<LoggerProviderBuilder>` parameter is accepted (tested in ExtensionTests)
-- [x] Verify custom configuration is applied
-- [x] Verify custom configuration completely overrides IConfiguration
-- [x] Verify service starts with custom logging and no exporters
-
 #### Combined configuration
 
 - [x] Verify both console and OTLP can be enabled simultaneously
@@ -145,14 +138,6 @@ Tests for OpenTelemetry resource attribute configuration:
 - [x] Verify IConfiguration takes priority over environment variable
 - [x] Verify service works without any OTLP endpoint
 - [x] Verify empty configuration endpoint falls back to environment variable
-
-#### Custom tracing configuration
-
-- [x] Verify custom `Action<TracerProviderBuilder>` parameter is accepted (tested in ExtensionTests)
-- [x] Verify custom configuration is applied
-- [x] Verify custom configuration completely overrides IConfiguration
-- [x] Verify service starts with custom tracing and no instrumentations
-- [x] Verify custom tracing with custom activity source
 
 #### Combined configuration
 
@@ -197,14 +182,6 @@ Tests for OpenTelemetry resource attribute configuration:
 - [x] Verify service works without any OTLP endpoint
 - [x] Verify empty configuration endpoint falls back to environment variable
 
-#### Custom metrics configuration
-
-- [x] Verify custom `Action<MeterProviderBuilder>` parameter is accepted (tested in ExtensionTests)
-- [x] Verify custom configuration is applied
-- [x] Verify custom configuration completely overrides IConfiguration
-- [x] Verify service starts with custom metrics and no instrumentations
-- [x] Verify custom metrics with custom meter
-
 #### Combined configuration
 
 - [x] Verify all instrumentations and OTLP enabled simultaneously
@@ -231,7 +208,7 @@ Tests for OpenTelemetry resource attribute configuration:
 - [x] Verify environment variable is used as fallback when IConfiguration Otlp.Endpoint is empty (Logging, Tracing, Metrics)
 
 **Testing Utilities:**
-- Uses `EnvironmentVariableScope` from `Hive.Testing` for scoped environment variable manipulation
+- Uses `EnvironmentVariableScope` from `CloudTek.Testing` for scoped environment variable manipulation
 
 **Status:** 12/12 tests passing (4 per signal type)
 
@@ -425,15 +402,21 @@ Tests for demo application integration:
 
 ## Testing Utilities
 
-### From Hive.Testing
+### From CloudTek.Testing
 
 - **`[UnitTest]`** - Attribute for unit tests (Category: "UnitTests")
 - **`[IntegrationTest]`** - Attribute for integration tests (Category: "IntegrationTests")
 - **`[SmokeTest]`** - Attribute for smoke tests (Category: "SmokeTests")
 - **`[SystemTest]`** - Attribute for system tests (Category: "SystemTests")
 - **`EnvironmentVariableScope`** - Scoped environment variable manipulation for tests
+
+### From Hive.MicroServices
+
 - **`.InTestClass<T>()`** - Extension for test isolation
-- **`.ShouldStart()`** - Extension for startup verification
+
+### From Hive.Testing (in-repo, unpublished helper)
+
+- **`.ShouldStart()`** - Extension for startup verification (takes a `TimeSpan`)
 - **`.ShouldFailToStart()`** - Extension for negative startup tests
 
 ### Running Tests
@@ -506,9 +489,9 @@ Based on current implementation progress (170/185 mandatory tests, 92.0% complet
   - ResourceCorrelationTests (4 tests) - Service name, category, resource attributes
   - ContextPropagationTests (4 tests) - TraceId correlation, nested activities, traceparent propagation
 - **Configuration Section Tests** (29/29) - Constants, option defaults, configuration binding, protocol enum binding
-- **Metrics Configuration Tests** (29/29) - All 3 instrumentations, OTLP exporter, environment variable fallback, custom overrides
-- **Tracing Configuration Tests** (25/25) - Instrumentations, OTLP exporter, environment variable fallback, custom overrides
-- **Logging Configuration Tests** (19/19) - Console exporter, OTLP exporter, environment variable fallback, custom overrides
+- **Metrics Configuration Tests** (29/29) - All 3 instrumentations, OTLP exporter, environment variable fallback
+- **Tracing Configuration Tests** (25/25) - Instrumentations, OTLP exporter, environment variable fallback
+- **Logging Configuration Tests** (19/19) - Console exporter, OTLP exporter, environment variable fallback
 - **Environment Variable Tests** (12/12) - Covered within Logging, Tracing, and Metrics ConfigurationTests
 - **Resource Configuration Tests** (6/6) - service.name, service.instance.id, serviceNamespace, serviceVersion, custom attributes
 

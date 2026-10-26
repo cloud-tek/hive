@@ -520,9 +520,7 @@ await functionHost.RunAsync();
 
 ```csharp
 var functionHost = new FunctionHost("my-function")
-  .WithOpenTelemetry(
-    logging: builder => builder.AddConsole(),
-    tracing: builder => { /* custom tracing */ })
+  .WithOpenTelemetry()
   .RegisterExtension<MyCustomExtension>()
   .RegisterExtension<AnotherExtension>()
   .ConfigureServices((services, config) =>
@@ -531,6 +529,13 @@ var functionHost = new FunctionHost("my-function")
   });
 
 await functionHost.RunAsync();
+```
+
+OpenTelemetry is configured through the `OpenTelemetry` section of `IConfiguration`. To trace your own `ActivitySource`s, pass their names:
+
+```csharp
+var functionHost = new FunctionHost("my-function")
+  .WithOpenTelemetry(additionalActivitySources: ["MyApp.Orders"]);
 ```
 
 ### Accessing IMicroServiceCore
@@ -577,7 +582,7 @@ public class MyFunction
 - **[Hive.Abstractions](../hive.core/src/Hive.Abstractions/)**: Core abstractions (`IMicroServiceCore`, `MicroServiceExtension`)
 - **[Hive.MicroServices](../hive.microservices/)**: ASP.NET Core microservices framework
 - **[Hive.OpenTelemetry](../hive.opentelemetry/)**: OpenTelemetry integration (works with both)
-- **[Hive.Testing](../hive.core/src/Hive.Testing/)**: Testing utilities
+- **[Hive.Testing](../hive.core/src/Hive.Testing/)**: In-repo, unpublished test helper (`ShouldStart`/`ShouldFailToStart`); the test attributes (`[UnitTest]`, `[IntegrationTest]`) come from `CloudTek.Testing`
 
 ### Dependency Graph
 
